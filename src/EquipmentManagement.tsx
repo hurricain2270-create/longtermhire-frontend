@@ -7,6 +7,7 @@ import { equipmentApi } from "./services/equipmentApi";
 import ClipLoader from "react-spinners/ClipLoader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router";
 
 const EquipmentManagement = () => {
   const [searchData, setSearchData] = useState({
@@ -23,6 +24,7 @@ const EquipmentManagement = () => {
   const [equipment, setEquipment] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -132,8 +134,7 @@ const EquipmentManagement = () => {
   };
 
   const handleViewDetails = (equipment) => {
-    setSelectedEquipment(equipment);
-    setIsDetailsModalOpen(true);
+    navigate(`/equipment-management/${equipment.id}`);
   };
 
   const handleUpdateEquipment = async (equipmentData) => {
@@ -401,9 +402,6 @@ const EquipmentManagement = () => {
                       <span>Duration</span>
                     </div>
                   </th>
-                  <th className="text-[#E5E5E5] font-inter font-bold text-xs lg:text-sm text-center px-3 py-4">
-                    Availability
-                  </th>
                   <th className="text-[#E5E5E5] font-inter font-bold text-xs lg:text-sm text-left px-3 py-4">
                     Actions
                   </th>
@@ -414,7 +412,7 @@ const EquipmentManagement = () => {
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan="9" className="text-center py-8">
+                    <td colSpan="8" className="text-center py-8">
                       <div className="flex justify-center items-center">
                         <ClipLoader color="#FDCE06" size={30} />
                         <span className="ml-3 text-[#E5E5E5]">
@@ -425,7 +423,7 @@ const EquipmentManagement = () => {
                   </tr>
                 ) : error ? (
                   <tr>
-                    <td colSpan="9" className="text-center py-8">
+                    <td colSpan="8" className="text-center py-8">
                       <div className="text-red-500">
                         <p>{error}</p>
                         <button
@@ -439,7 +437,7 @@ const EquipmentManagement = () => {
                   </tr>
                 ) : equipment.length === 0 ? (
                   <tr>
-                    <td colSpan="9" className="text-center py-8">
+                    <td colSpan="8" className="text-center py-8">
                       <div className="text-[#9CA3AF]">
                         <p>No equipment found</p>
                         <button
@@ -487,42 +485,12 @@ const EquipmentManagement = () => {
                         {item.minimum_duration}
                       </td>
                       <td className="px-3 py-4">
-                        <div className="flex justify-center">
-                          <div className="relative">
-                            <div
-                              className={`rounded-full transition-colors cursor-pointer ${
-                                item.availability
-                                  ? "bg-[#FDCE06]"
-                                  : "bg-[#4A5568]"
-                              }`}
-                              style={{ width: "50px", height: "26px" }}
-                              onClick={() =>
-                                handleToggleAvailability(
-                                  item.id,
-                                  item.availability
-                                )
-                              }
-                            >
-                              <div
-                                className="absolute bg-[#FFFFFF] rounded-full transition-all duration-200"
-                                style={{
-                                  width: "18px",
-                                  height: "18px",
-                                  left: item.availability ? "28px" : "4px",
-                                  top: "4px",
-                                }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-3 py-4">
                         <div className="flex flex-wrap gap-2 items-center">
                           <button
                             onClick={() => handleViewDetails(item)}
                             className="text-[#FDCE06] font-inter font-medium text-sm hover:underline transition-all"
                           >
-                            Details
+                            View
                           </button>
                           <button
                             onClick={() => handleEditEquipment(item)}

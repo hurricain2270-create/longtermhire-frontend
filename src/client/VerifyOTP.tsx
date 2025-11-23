@@ -3,6 +3,7 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import { clientPasswordApi } from "../services/clientPasswordApi";
+import { useCompanyLogo } from "../hooks/useCompanyLogo";
 import { useEffect, useRef, useState } from "react";
 
 function VerifyOTP() {
@@ -13,6 +14,7 @@ function VerifyOTP() {
   const [resendCooldown, setResendCooldown] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
+  const { companyLogo } = useCompanyLogo();
   const inputRefs = useRef([]);
 
   const email = location.state?.email || "";
@@ -109,8 +111,8 @@ function VerifyOTP() {
         {/* Logo Section */}
         <div className="text-center mb-8">
           <img
-            src="/login-logo.png"
-            alt="Equipment Rental Logo"
+            src={companyLogo || "/login-logo.png"}
+            alt="Company Logo"
             className="mx-auto mb-4"
             style={{ width: "200px", height: "auto" }}
           />
@@ -185,11 +187,10 @@ function VerifyOTP() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full h-12 rounded-md font-[Inter] font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${
-                loading
+              className={`w-full h-12 rounded-md font-[Inter] font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${loading
                   ? "bg-[#9CA3AF] text-[#666] cursor-not-allowed"
                   : "bg-[#FDCE06] text-[#1F1F20] hover:bg-[#E5B800]"
-              }`}
+                }`}
             >
               {loading ? (
                 <>

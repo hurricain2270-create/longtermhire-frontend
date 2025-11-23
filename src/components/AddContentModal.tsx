@@ -5,6 +5,7 @@ import { equipmentApi } from "../services/equipmentApi";
 import { contentApi } from "../services/contentApi";
 import ImageManager from "./ImageManager";
 import { toast } from "react-toastify";
+import SimpleRichTextEditor from "./SimpleRichTextEditor";
 
 const AddContentModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
   const [formData, setFormData] = useState({
@@ -63,6 +64,13 @@ const AddContentModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+    }));
+  };
+
+  const handleDescriptionChange = (value) => {
+    setFormData((prev) => ({
+      ...prev,
+      description: value,
     }));
   };
 
@@ -185,18 +193,18 @@ const AddContentModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
                 </span>
               </div>
             ) : equipmentList.filter((equipment) => {
-                const hasContent = existingContent.some((content) => {
-                  const contentEquipmentId = content.equipment_id?.toString();
-                  const equipmentId = equipment.equipment_id?.toString();
-                  const equipmentDbId = equipment.id?.toString();
+              const hasContent = existingContent.some((content) => {
+                const contentEquipmentId = content.equipment_id?.toString();
+                const equipmentId = equipment.equipment_id?.toString();
+                const equipmentDbId = equipment.id?.toString();
 
-                  return (
-                    contentEquipmentId === equipmentId ||
-                    contentEquipmentId === equipmentDbId
-                  );
-                });
-                return !hasContent;
-              }).length === 0 ? (
+                return (
+                  contentEquipmentId === equipmentId ||
+                  contentEquipmentId === equipmentDbId
+                );
+              });
+              return !hasContent;
+            }).length === 0 ? (
               <div className="w-full h-[48px] bg-[#1A1A1A] border border-[#333333] rounded-[8px] px-4 flex items-center">
                 <span className="text-[#9CA3AF] text-sm">
                   All equipment already have content. No equipment available for
@@ -261,13 +269,10 @@ const AddContentModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
             <label className="block text-[#E5E5E5] font-[Inter] font-medium text-[14px] leading-[1.21em] mb-2">
               Description
             </label>
-            <textarea
-              name="description"
+            <SimpleRichTextEditor
               value={formData.description}
-              onChange={handleInputChange}
-              rows={4}
-              className="w-full bg-[#1A1A1A] border border-[#333333] rounded-[8px] px-4 py-3 text-[#E5E5E5] font-[Inter] font-normal text-[14px] leading-[1.21em] focus:outline-none focus:border-[#FDCE06] transition-colors resize-none"
-              placeholder="Enter equipment description"
+              onChange={handleDescriptionChange}
+              height={200}
             />
           </div>
 

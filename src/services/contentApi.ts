@@ -63,6 +63,18 @@ export const contentApi = {
     }
   },
 
+  // Get content by ID
+  getContentById: async (contentId) => {
+    try {
+      const response = await api.get(
+        `/v1/api/longtermhire/super_admin/content/${contentId}`
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
   // Get content by equipment ID
   getContentByEquipment: async (equipmentId) => {
     try {

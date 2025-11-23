@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import { clientAuthApi } from "../services/clientAuthApi";
+import { useCompanyLogo } from "../hooks/useCompanyLogo";
 
 function ClientLogin() {
   const [email, setEmail] = useState("");
@@ -13,6 +14,7 @@ function ClientLogin() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { companyLogo } = useCompanyLogo();
 
   // Check if client is already logged in and handle success messages
   useEffect(() => {
@@ -279,11 +281,10 @@ function ClientLogin() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className={`w-full h-full border text-[#1F1F20] font-[Inter] transition-colors flex items-center justify-center gap-2 ${
-                    loading
-                      ? "bg-[#9CA3AF] border-[#9CA3AF] cursor-not-allowed"
-                      : "bg-[#FDCE06] border-[#FDCE06] hover:bg-[#e6b800]"
-                  }`}
+                  className={`w-full h-full border text-[#1F1F20] font-[Inter] transition-colors flex items-center justify-center gap-2 ${loading
+                    ? "bg-[#9CA3AF] border-[#9CA3AF] cursor-not-allowed"
+                    : "bg-[#FDCE06] border-[#FDCE06] hover:bg-[#e6b800]"
+                    }`}
                   style={{
                     borderRadius: "6px",
                     fontSize: "14px",

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { ClipLoader } from "react-spinners";
-import { clientProfileApi } from "../services/clientProfileApi";
+import { clientPasswordApi } from "../services/clientPasswordApi";
+import { useNavigate } from "react-router-dom";
+import { useCompanyLogo } from "../hooks/useCompanyLogo";
 
 function ClientChangePassword({ onBack }) {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -12,6 +14,9 @@ function ClientChangePassword({ onBack }) {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  const navigate = useNavigate();
+  const { companyLogo } = useCompanyLogo();
 
   const validatePassword = (password) => {
     const minLength = 8;
@@ -64,7 +69,7 @@ function ClientChangePassword({ onBack }) {
     }
 
     try {
-      await clientProfileApi.changePassword(currentPassword, newPassword);
+      await clientPasswordApi.changePassword(currentPassword, newPassword);
       setSuccess(true);
 
       // Auto redirect after 2 seconds
@@ -116,8 +121,8 @@ function ClientChangePassword({ onBack }) {
         {/* Logo Section */}
         <div className="text-center mb-8">
           <img
-            src="/login-logo.png"
-            alt="Equipment Rental Logo"
+            src={companyLogo || "/login-logo.png"}
+            alt="Company Logo"
             className="mx-auto mb-4"
             style={{ width: "200px", height: "auto" }}
           />
@@ -369,11 +374,10 @@ function ClientChangePassword({ onBack }) {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full h-12 rounded-md font-[Inter] font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${
-                loading
+              className={`w-full h-12 rounded-md font-[Inter] font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${loading
                   ? "bg-[#9CA3AF] text-[#666] cursor-not-allowed"
                   : "bg-[#FDCE06] text-[#1F1F20] hover:bg-[#E5B800]"
-              }`}
+                }`}
             >
               {loading ? (
                 <>

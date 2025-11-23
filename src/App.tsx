@@ -6,9 +6,13 @@ import DashboardMain from "./DashboardMain";
 import Login from "./Login";
 import Incoming from "./Incoming";
 import ClientManagement from "./ClientManagement";
+import CompanyDetails from "./CompanyDetails";
 import EquipmentManagement from "./EquipmentManagement";
+import EquipmentDetails from "./EquipmentDetails";
 import PricingManagement from "./PricingManagement";
 import ContentManagement from "./ContentManagement";
+import ContentDetails from "./ContentDetails";
+import QuoteManagement from "./QuoteManagement";
 import Profile from "./Profile";
 import Chat from "./components/Chat";
 import PrivateRoute from "./components/PrivateRoute";
@@ -76,11 +80,31 @@ function App() {
           }
         />
         <Route
+          path="/client-management/:id"
+          element={
+            <PrivateRoute allowedRoles={["super_admin"]}>
+              <DashboardLayout>
+                <CompanyDetails />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
           path="/equipment-management"
           element={
             <PrivateRoute allowedRoles={["super_admin"]}>
               <DashboardLayout>
                 <EquipmentManagement />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/equipment-management/:id"
+          element={
+            <PrivateRoute allowedRoles={["super_admin"]}>
+              <DashboardLayout>
+                <EquipmentDetails />
               </DashboardLayout>
             </PrivateRoute>
           }
@@ -101,6 +125,26 @@ function App() {
             <PrivateRoute allowedRoles={["super_admin"]}>
               <DashboardLayout>
                 <ContentManagement />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/content-management/:id"
+          element={
+            <PrivateRoute allowedRoles={["super_admin"]}>
+              <DashboardLayout>
+                <ContentDetails />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/quote-management"
+          element={
+            <PrivateRoute allowedRoles={["super_admin"]}>
+              <DashboardLayout>
+                <QuoteManagement />
               </DashboardLayout>
             </PrivateRoute>
           }

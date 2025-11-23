@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import { clientPasswordApi } from "../services/clientPasswordApi";
+import { useCompanyLogo } from "../hooks/useCompanyLogo";
 
 function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -13,6 +14,7 @@ function ResetPassword() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { companyLogo } = useCompanyLogo();
 
   const email = location.state?.email || "";
   const resetToken = location.state?.resetToken || "";
@@ -103,8 +105,8 @@ function ResetPassword() {
         {/* Logo Section */}
         <div className="text-center mb-8">
           <img
-            src="/login-logo.png"
-            alt="Equipment Rental Logo"
+            src={companyLogo || "/login-logo.png"}
+            alt="Company Logo"
             className="mx-auto mb-4"
             style={{ width: "200px", height: "auto" }}
           />
@@ -294,11 +296,10 @@ function ResetPassword() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full h-12 rounded-md font-[Inter] font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${
-                loading
+              className={`w-full h-12 rounded-md font-[Inter] font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${loading
                   ? "bg-[#9CA3AF] text-[#666] cursor-not-allowed"
                   : "bg-[#FDCE06] text-[#1F1F20] hover:bg-[#E5B800]"
-              }`}
+                }`}
             >
               {loading ? (
                 <>

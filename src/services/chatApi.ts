@@ -27,6 +27,22 @@ export const chatApi = {
     return response.data;
   },
 
+  uploadFile: async (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await api.post(
+      "/v1/api/longtermhire/chat/upload",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  },
+
   // Send equipment request
   sendEquipmentRequest: async (requestData) => {
     const response = await api.post(
@@ -117,6 +133,46 @@ export const chatApi = {
   getClientStatusById: async (clientId) => {
     const response = await api.get(
       `/v1/api/longtermhire/chat/client-status/${clientId}`
+    );
+    return response.data;
+  },
+
+  // ============================================================================
+  // V2: Unread Message Tracking for Admin
+  // ============================================================================
+
+  /**
+   * Get unread message counts by conversation
+   */
+  getUnreadCount: async () => {
+    const response = await api.get(
+      "/v1/api/longtermhire/super_admin/chat/unread-count"
+    );
+    return response.data;
+  },
+
+  /**
+   * Mark messages as read
+   * @param conversationId - Required conversation ID
+   * @param messageIds - Optional array of specific message IDs to mark as read. If not provided, marks all messages in conversation as read
+   */
+  markMessagesAsRead: async (conversationId, messageIds = null) => {
+    const response = await api.put(
+      "/v1/api/longtermhire/super_admin/chat/mark-read",
+      {
+        conversation_id: conversationId,
+        message_ids: messageIds,
+      }
+    );
+    return response.data;
+  },
+
+  /**
+   * Get unread status for specific conversation
+   */
+  getConversationUnread: async (conversationId) => {
+    const response = await api.get(
+      `/v1/api/longtermhire/super_admin/chat/conversation/${conversationId}/unread`
     );
     return response.data;
   },

@@ -5,6 +5,7 @@ import { equipmentApi } from "../services/equipmentApi";
 import { contentApi } from "../services/contentApi";
 import ImageManager from "./ImageManager";
 import { toast } from "react-toastify";
+import SimpleRichTextEditor from "./SimpleRichTextEditor";
 
 const EditContentModal = ({
   isOpen,
@@ -89,6 +90,13 @@ const EditContentModal = ({
     setFormData((prev) => ({
       ...prev,
       [name]: value,
+    }));
+  };
+
+  const handleDescriptionChange = (value) => {
+    setFormData((prev) => ({
+      ...prev,
+      description: value,
     }));
   };
 
@@ -264,13 +272,10 @@ const EditContentModal = ({
             <label className="block text-[#E5E5E5] font-[Inter] font-medium text-[14px] leading-[1.21em] mb-2">
               Description
             </label>
-            <textarea
-              name="description"
+            <SimpleRichTextEditor
               value={formData.description}
-              onChange={handleInputChange}
-              rows={4}
-              className="w-full bg-[#1A1A1A] border border-[#333333] rounded-[8px] px-4 py-3 text-[#E5E5E5] font-[Inter] font-normal text-[14px] leading-[1.21em] focus:outline-none focus:border-[#FDCE06] transition-colors resize-none"
-              placeholder="Enter equipment description"
+              onChange={handleDescriptionChange}
+              height={200}
             />
           </div>
 

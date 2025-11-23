@@ -13,6 +13,7 @@ import CustomPackageModal from "./components/CustomPackageModal";
 import { clientApi } from "./services/clientApi";
 import { equipmentApi } from "./services/equipmentApi";
 import { pricingApi } from "./services/pricingApi";
+import { useNavigate } from "react-router";
 
 const ClientManagement = () => {
   const [searchData, setSearchData] = useState({
@@ -20,7 +21,7 @@ const ClientManagement = () => {
     clientName: "",
     companyName: "",
   });
-
+  const navigate = useNavigate();
   const [isAddClientModalOpen, setIsAddClientModalOpen] = useState(false);
   const [isEditClientModalOpen, setIsEditClientModalOpen] = useState(false);
   const [isClientDetailsModalOpen, setIsClientDetailsModalOpen] =
@@ -350,8 +351,7 @@ const ClientManagement = () => {
 
   // View client details handler
   const handleViewClientDetails = (client) => {
-    setSelectedClient(client);
-    setIsClientDetailsModalOpen(true);
+    navigate(`/client-management/${client.company_id}`);
   };
 
   const handleUpdateClient = async (clientData) => {
@@ -627,7 +627,7 @@ const ClientManagement = () => {
                   ID#
                 </th>
                 <th className="text-[#9CA3AF] font-[Inter] font-bold text-[12px] leading-[1.25em] text-left px-4 py-3 min-w-[160px]">
-                  Client Name*
+                  Owner Name*
                 </th>
                 <th className="text-[#9CA3AF] font-[Inter] font-bold text-[12px] leading-[1.25em] text-left px-4 py-3 min-w-[180px]">
                   Email
@@ -637,9 +637,6 @@ const ClientManagement = () => {
                 </th>
                 <th className="text-[#9CA3AF] font-[Inter] font-bold text-[12px] leading-[1.25em] text-center px-4 py-3 min-w-[120px]">
                   Equipment
-                </th>
-                <th className="text-[#9CA3AF] font-[Inter] font-bold text-[12px] leading-[1.25em] text-center px-4 py-3 min-w-[140px]">
-                  Pricing
                 </th>
                 <th className="text-[#9CA3AF] font-[Inter] font-bold text-[12px] leading-[1.25em] text-center px-4 py-3 min-w-[160px]">
                   Actions
@@ -651,7 +648,7 @@ const ClientManagement = () => {
             <tbody>
               {clients.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="text-center text-[#9CA3AF] py-8">
+                  <td colSpan="6" className="text-center text-[#9CA3AF] py-8">
                     No clients found. Click "Add Client" to invite your first
                     client.
                   </td>
@@ -722,49 +719,12 @@ const ClientManagement = () => {
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="flex justify-center">
-                        <button
-                          onClick={(e) => handlePricingClick(client.user_id, e)}
-                          className={`border rounded-md font-[Inter] font-normal line-clamp-2 text-[12px] leading-[1.25em] px-3 py-1 flex items-center gap-2 transition-colors ${
-                            client.has_custom_discounts === 1 ||
-                            client.pricing_package_name
-                              ? "bg-[#FDCE06] border-[#FDCE06] text-[#1F1F20]"
-                              : "bg-[#292A2B] border-[#333333] text-[#E5E5E5] hover:border-[#FDCE06]"
-                          }`}
-                        >
-                          {(() => {
-                            if (client.has_custom_discounts === 1) {
-                              return "Custom";
-                            } else if (client.pricing_package_name) {
-                              return client.pricing_package_name;
-                            } else {
-                              return "Set Pricing";
-                            }
-                          })()}
-                          <svg
-                            width="12"
-                            height="12"
-                            viewBox="0 0 12 12"
-                            fill="none"
-                          >
-                            <path
-                              d="M3 4.5L6 7.5L9 4.5"
-                              stroke="currentColor"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4">
                       <div className="flex gap-3 items-center justify-center">
                         <button
                           onClick={() => handleViewClientDetails(client)}
                           className="text-[#FDCE06] font-[Inter] font-medium text-[14px] leading-[1.43em] hover:underline transition-all"
                         >
-                          Details
+                          View
                         </button>
                         <button
                           onClick={() => handleEditClient(client)}

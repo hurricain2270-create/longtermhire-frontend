@@ -2,13 +2,20 @@
 import React, { useState, useEffect } from "react";
 import { ClipLoader } from "react-spinners";
 import { adminProfileApi } from "./services/adminProfileApi";
+import { equipmentApi } from "./services/equipmentApi";
+import { settingsApi } from "./services/settingsApi";
 import AdminChangePassword from "./components/AdminChangePassword";
 
 const Profile = () => {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
+    companyName: "",
+    contactInfo: "",
+    companyAddress: "",
+    companyLogo: null,
   });
+  const [profilePicturePreview, setProfilePicturePreview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -47,7 +54,18 @@ const Profile = () => {
               userData.username ||
               "",
             email: userData.email || "",
+            companyName: profileData.company_name || "",
+            contactInfo: profileData.contact_info || profileData.phone || "",
+            companyAddress: profileData.company_address || "",
+            companyLogo: null,
           });
+
+          // Set company logo preview if exists
+          if (profileData.company_logo || userData.company_logo) {
+            setProfilePicturePreview(
+              profileData.company_logo || userData.company_logo
+            );
+          }
 
           console.log("Parsed profile data:", {
             profileData,
@@ -58,6 +76,9 @@ const Profile = () => {
                 userData.username ||
                 "",
               email: userData.email || "",
+              companyName: profileData.company_name || "",
+              contactInfo: profileData.contact_info || profileData.phone || "",
+              companyAddress: profileData.company_address || "",
             },
           });
         }
@@ -83,18 +104,75 @@ const Profile = () => {
     setSuccess("");
   };
 
+  const handleCompanyLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        companyLogo: file,
+      }));
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePicturePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+      setError("");
+      setSuccess("");
+    }
+  };
+
   const handleSaveChanges = async () => {
     try {
       setSaving(true);
       setError("");
       setSuccess("");
 
-      await adminProfileApi.updateProfile({
+      let logoUrl = profilePicturePreview;
+
+      // Upload logo if a new file was selected
+      if (formData.companyLogo) {
+        try {
+          const uploadResponse = await equipmentApi.uploadFile(formData.companyLogo);
+          if (uploadResponse && uploadResponse.url) {
+            logoUrl = uploadResponse.url;
+            setProfilePicturePreview(logoUrl);
+          } else {
+            throw new Error("Failed to upload logo");
+          }
+        } catch (uploadError) {
+          console.error("Logo upload error:", uploadError);
+          setError("Failed to upload logo. Please try again.");
+          return;
+        }
+      }
+
+      // Update admin profile
+      const updateData = {
         name: formData.fullName,
         first_name: formData.fullName,
-      });
+        company_name: formData.companyName,
+        contact_info: formData.contactInfo,
+        company_address: formData.companyAddress,
+      };
 
-      setSuccess("Profile updated successfully!");
+      await adminProfileApi.updateProfile(updateData);
+
+      // Update company settings
+      const settingsData = {
+        company_name: formData.companyName,
+        company_address: formData.companyAddress,
+        company_email: formData.email,
+        company_phone: formData.contactInfo,
+        company_logo: logoUrl,
+      };
+
+      await settingsApi.updateSettings(settingsData);
+
+      setSuccess("Profile and company settings updated successfully!");
+
+      // Clear the file input
+      setFormData(prev => ({ ...prev, companyLogo: null }));
     } catch (error) {
       console.error("Error updating profile:", error);
       setError(error.message || "Failed to update profile");
@@ -158,65 +236,223 @@ const Profile = () => {
             Personal Information
           </h3>
 
-          {/* Form Container */}
-          <div className="space-y-6">
-            {/* Full Name Field */}
-            <div className="w-full">
-              <label
-                className="block text-[#9CA3AF] mb-2"
-                style={{
-                  fontWeight: 500,
-                  fontSize: "14px",
-                  lineHeight: "17px",
-                }}
-              >
-                Full Name
-              </label>
-              <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleInputChange}
-                className="w-full sm:max-w-md border border-[#333333] rounded-md bg-[#292A2B] text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors"
-                style={{
-                  fontFamily: "Inter",
-                  fontWeight: 400,
-                  fontSize: "16px",
-                  lineHeight: "24px",
-                }}
-              />
+          {/* Form Container - 2 Column Layout */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Left Column */}
+            <div className="space-y-6">
+              {/* Full Name Field */}
+              <div className="w-full">
+                <label
+                  className="block text-[#9CA3AF] mb-2"
+                  style={{
+                    fontWeight: 500,
+                    fontSize: "14px",
+                    lineHeight: "17px",
+                  }}
+                >
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleInputChange}
+                  className="w-full border border-[#333333] rounded-md bg-[#292A2B] text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors"
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: 400,
+                    fontSize: "16px",
+                    lineHeight: "24px",
+                  }}
+                />
+              </div>
+
+              {/* Email Field (Read-only) */}
+              <div className="w-full">
+                <label
+                  className="block text-[#9CA3AF] mb-2"
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: 500,
+                    fontSize: "14px",
+                    lineHeight: "17px",
+                  }}
+                >
+                  Email
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  readOnly
+                  className="w-full border border-[#333333] rounded-md bg-[#1A1A1A] text-[#9CA3AF] px-4 py-3 outline-none cursor-not-allowed"
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: 400,
+                    fontSize: "16px",
+                    lineHeight: "24px",
+                  }}
+                />
+              </div>
             </div>
 
-            {/* Email Field (Read-only) */}
-            <div className="w-full">
-              <label
-                className="block text-[#9CA3AF] mb-2"
-                style={{
-                  fontFamily: "Inter",
-                  fontWeight: 500,
-                  fontSize: "14px",
-                  lineHeight: "17px",
-                }}
-              >
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                readOnly
-                className="w-full sm:max-w-md border border-[#333333] rounded-md bg-[#1A1A1A] text-[#9CA3AF] px-4 py-3 outline-none cursor-not-allowed"
-                style={{
-                  fontFamily: "Inter",
-                  fontWeight: 400,
-                  fontSize: "16px",
-                  lineHeight: "24px",
-                }}
-              />
-              {/* <p className="text-[#6B7280] text-xs mt-1">
-                Email cannot be changed for security reasons
-              </p> */}
+            {/* Right Column */}
+            <div className="space-y-6">
+              {/* Company Name Field */}
+              <div className="w-full">
+                <label
+                  className="block text-[#9CA3AF] mb-2"
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: 500,
+                    fontSize: "14px",
+                    lineHeight: "17px",
+                  }}
+                >
+                  Company Name
+                </label>
+                <input
+                  type="text"
+                  name="companyName"
+                  value={formData.companyName}
+                  onChange={handleInputChange}
+                  className="w-full border border-[#333333] rounded-md bg-[#292A2B] text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors"
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: 400,
+                    fontSize: "16px",
+                    lineHeight: "24px",
+                  }}
+                />
+              </div>
+
+              {/* Contact Information Field */}
+              <div className="w-full">
+                <label
+                  className="block text-[#9CA3AF] mb-2"
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: 500,
+                    fontSize: "14px",
+                    lineHeight: "17px",
+                  }}
+                >
+                  Contact Information
+                </label>
+                <input
+                  type="text"
+                  name="contactInfo"
+                  value={formData.contactInfo}
+                  onChange={handleInputChange}
+                  className="w-full border border-[#333333] rounded-md bg-[#292A2B] text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors"
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: 400,
+                    fontSize: "16px",
+                    lineHeight: "24px",
+                  }}
+                />
+              </div>
+
+              {/* Company Address Field */}
+              <div className="w-full">
+                <label
+                  className="block text-[#9CA3AF] mb-2"
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: 500,
+                    fontSize: "14px",
+                    lineHeight: "17px",
+                  }}
+                >
+                  Company address
+                </label>
+                <input
+                  type="text"
+                  name="companyAddress"
+                  value={formData.companyAddress}
+                  onChange={handleInputChange}
+                  className="w-full border border-[#333333] rounded-md bg-[#292A2B] text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors"
+                  style={{
+                    fontFamily: "Inter",
+                    fontWeight: 400,
+                    fontSize: "16px",
+                    lineHeight: "24px",
+                  }}
+                />
+              </div>
+
+              {/* Company Logo Upload */}
+              <div className="w-full">
+                <label
+                  className="block text-[#9CA3AF] mb-2"
+                  style={{
+                    fontWeight: 500,
+                    fontSize: "14px",
+                    lineHeight: "17px",
+                  }}
+                >
+                  Company Logo
+                </label>
+                <div className="border-2 border-dashed border-[#333333] rounded-md p-4 flex items-center justify-center">
+                  {profilePicturePreview ? (
+                    <div className="relative w-full">
+                      <img
+                        src={profilePicturePreview}
+                        alt="Company Logo"
+                        className="w-full h-32 object-contain"
+                      />
+                      <input
+                        type="file"
+                        id="companyLogo"
+                        accept="image/*"
+                        onChange={handleCompanyLogoChange}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="companyLogo"
+                        className="absolute top-2 right-2 cursor-pointer text-[#FDCE06] hover:text-[#E5B800]"
+                      >
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </label>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <input
+                        type="file"
+                        id="companyLogo"
+                        accept="image/*"
+                        onChange={handleCompanyLogoChange}
+                        className="hidden"
+                      />
+                      <label
+                        htmlFor="companyLogo"
+                        className="cursor-pointer flex flex-col items-center"
+                      >
+                        <svg
+                          width="48"
+                          height="48"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#9CA3AF"
+                          strokeWidth="2"
+                          className="mb-2"
+                        >
+                          <path d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-[#9CA3AF] text-sm">Upload logo</span>
+                        <span className="text-[#666] text-xs mt-1">↑</span>
+                      </label>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
+          </div>
+
+          <div className="mt-6 space-y-4">
 
             {/* Success/Error Messages */}
             {success && (
@@ -235,11 +471,10 @@ const Profile = () => {
               <button
                 onClick={handleSaveChanges}
                 disabled={saving}
-                className={`rounded-md px-6 py-3 border-none cursor-pointer transition-colors font-bold flex items-center gap-2 ${
-                  saving
-                    ? "bg-[#9CA3AF] text-[#666] cursor-not-allowed"
-                    : "bg-[#FDCE06] text-[#1F1F20] hover:bg-[#E5B800]"
-                }`}
+                className={`rounded-md px-6 py-3 border-none cursor-pointer transition-colors font-bold flex items-center gap-2 ${saving
+                  ? "bg-[#9CA3AF] text-[#666] cursor-not-allowed"
+                  : "bg-[#FDCE06] text-[#1F1F20] hover:bg-[#E5B800]"
+                  }`}
                 style={{
                   fontFamily: "Inter",
                   fontWeight: 700,

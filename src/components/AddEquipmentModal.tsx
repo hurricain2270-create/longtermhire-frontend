@@ -388,6 +388,20 @@ const AddEquipmentModal = ({ isOpen, onClose, onSave }) => {
             )}
           </div>
 
+          {/* Description Field */}
+          <div>
+            <label className="block text-[#D1D5DB] font-[Inter] font-medium text-[14px] leading-[20px] mb-2">
+              Description
+            </label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => handleInputChange("description", e.target.value)}
+              placeholder="Enter equipment description..."
+              rows={5}
+              className="w-full bg-[#292A2B] border border-[#333333] rounded-[6px] text-[#E5E5E5] text-[16px] font-[Inter] px-3 py-3 outline-none focus:border-[#FDCE06] transition-colors resize-none"
+            />
+          </div>
+
           {/* Action Buttons */}
           <div className="flex justify-end items-center gap-4 pt-4">
             <button

@@ -8,12 +8,15 @@ import ContentDetailsModal from "./components/ContentDetailsModal";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { isImageUrl } from "./utils/uploadUtils";
+import { useNavigate } from "react-router";
 
 const ContentManagement = () => {
   const [searchData, setSearchData] = useState({
     contentId: "",
     equipmentName: "",
   });
+
+  const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -132,8 +135,7 @@ const ContentManagement = () => {
   };
 
   const handleViewDetails = (content) => {
-    setSelectedContent(content);
-    setIsDetailsModalOpen(true);
+    navigate(`/content-management/${content.id}`);
   };
 
   const handleUpdateContent = async (contentData, contentId = null) => {
@@ -427,9 +429,8 @@ const ContentManagement = () => {
                 contentData.map((item, index) => (
                   <tr
                     key={item.id}
-                    className={`cursor-pointer hover:bg-[#292A2B] transition-colors ${
-                      index > 0 ? "border-t border-[#333333]" : ""
-                    }`}
+                    className={`cursor-pointer hover:bg-[#292A2B] transition-colors ${index > 0 ? "border-t border-[#333333]" : ""
+                      }`}
                     onClick={() => handleViewDetails(item)}
                     style={{
                       height: index === 0 || index === 4 ? "64.5px" : "65px",
@@ -489,12 +490,8 @@ const ContentManagement = () => {
                     >
                       {Array.isArray(item.description) ? (
                         <div>
-                          <div style={{ marginTop: "0.4px" }}>
-                            {item.description[0]}
-                          </div>
-                          <div style={{ marginTop: "20px" }}>
-                            {item.description[1]}
-                          </div>
+                          <div style={{ marginTop: "0.4px" }} dangerouslySetInnerHTML={{ __html: item.description[0] }} />
+                          <div style={{ marginTop: "20px" }} dangerouslySetInnerHTML={{ __html: item.description[1] }} />
                         </div>
                       ) : (
                         <div
@@ -502,9 +499,8 @@ const ContentManagement = () => {
                             marginTop:
                               index === 0 || index === 4 ? "9.9px" : "10.4px",
                           }}
-                        >
-                          {item.description}
-                        </div>
+                          dangerouslySetInnerHTML={{ __html: item.description || '' }}
+                        />
                       )}
                     </td>
                     <td
@@ -556,8 +552,8 @@ const ContentManagement = () => {
                         }}
                       >
                         {item.images &&
-                        Array.isArray(item.images) &&
-                        item.images.length > 0 ? (
+                          Array.isArray(item.images) &&
+                          item.images.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
                             {/* Show only main image in table */}
                             {(() => {
@@ -714,11 +710,10 @@ const ContentManagement = () => {
                     <button
                       key={pageNum}
                       onClick={() => handlePageChange(pageNum)}
-                      className={`px-3 py-2 border rounded-md font-inter font-medium text-sm transition-colors ${
-                        pageNum === pagination.page
+                      className={`px-3 py-2 border rounded-md font-inter font-medium text-sm transition-colors ${pageNum === pagination.page
                           ? "bg-[#FDCE06] border-[#FDCE06] text-[#1A1A1A]"
                           : "bg-[#292A2B] border-[#333333] text-[#E5E5E5] hover:bg-[#333333]"
-                      }`}
+                        }`}
                     >
                       {pageNum}
                     </button>

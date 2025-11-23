@@ -84,15 +84,22 @@ export const clientApi = {
     }
   },
 
-  // Assign equipment to client
-  assignEquipment: async (clientUserId, equipmentIds) => {
+  // Assign equipment to client (V2 - with discount support)
+  assignEquipment: async (clientUserId, equipmentAssignments) => {
     try {
+      // Support both old format (array of IDs) and new format (array of objects with discounts)
+      const isNewFormat = Array.isArray(equipmentAssignments) &&
+        equipmentAssignments.length > 0 &&
+        typeof equipmentAssignments[0] === 'object' &&
+        'equipment_id' in equipmentAssignments[0];
+
+      const payload = isNewFormat
+        ? { client_user_id: clientUserId, equipment_assignments: equipmentAssignments }
+        : { client_user_id: clientUserId, equipment_ids: equipmentAssignments };
+
       const response = await api.post(
         "/v1/api/longtermhire/super_admin/assign-equipment",
-        {
-          client_user_id: clientUserId,
-          equipment_ids: equipmentIds,
-        }
+        payload
       );
       return response.data;
     } catch (error) {

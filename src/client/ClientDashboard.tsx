@@ -6,6 +6,7 @@ import { clientEquipmentApi } from "../services/clientEquipmentApi";
 import { chatApi } from "../services/chatApi";
 import { dashboardApi } from "../services/dashboardApi";
 import { useClientChat } from "../hooks/useClientChat";
+import { useCompanyLogo } from "../hooks/useCompanyLogo";
 import { ClipLoader } from "react-spinners";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -163,6 +164,7 @@ function ClientDashboard() {
     clearUnreadCount,
     clearError: clearChatError,
   } = useClientChat();
+  const { companyLogo } = useCompanyLogo();
 
   // Track screen size to determine which chat state to use
   const [isMobile, setIsMobile] = useState(false);
@@ -417,8 +419,8 @@ function ClientDashboard() {
       if (container) {
         const isNearBottom =
           container.scrollHeight -
-            container.scrollTop -
-            container.clientHeight <
+          container.scrollTop -
+          container.clientHeight <
           100;
 
         if (force || isNearBottom) {
@@ -680,21 +682,21 @@ function ClientDashboard() {
       const hasDiscount = item.discount_type && item.discount_value;
       const discountInfo = hasDiscount
         ? {
-            has_discount: true,
-            discount_type: item.discount_type,
-            discount_value: item.discount_value,
-            original_price: item.base_price,
-            discounted_price: null, // Will be calculated dynamically
-            pricing_package: item.pricing_package,
-          }
+          has_discount: true,
+          discount_type: item.discount_type,
+          discount_value: item.discount_value,
+          original_price: item.base_price,
+          discounted_price: null, // Will be calculated dynamically
+          pricing_package: item.pricing_package,
+        }
         : {
-            has_discount: false,
-            discount_type: null,
-            discount_value: null,
-            original_price: item.base_price,
-            discounted_price: null,
-            pricing_package: null,
-          };
+          has_discount: false,
+          discount_type: null,
+          discount_value: null,
+          original_price: item.base_price,
+          discounted_price: null,
+          pricing_package: null,
+        };
 
       // Handle multiple images - get all images and determine main display image
       let allImages = [];
@@ -1123,8 +1125,8 @@ function ClientDashboard() {
         <div className="flex items-center justify-between  mx-auto">
           <div className="flex items-center">
             <img
-              src="/login-logo.png"
-              alt="Equipment Rental Logo"
+              src={companyLogo || "/login-logo.png"}
+              alt="Company Logo"
               className="h-[100px] sm:h-[100px] mr-4 sm:mr-6"
             />
           </div>
@@ -1201,10 +1203,9 @@ function ClientDashboard() {
                               key={`${equipment.id}-${selectedImages[equipment.id] || 0}`}
                               src={getMainImageSrc(equipment)}
                               alt={equipment.name}
-                              className={`w-full h-28 sm:h-32 rounded-md transition-all duration-300 ease-in-out ${
-                                imageObjectFit[getMainImageSrc(equipment)] ||
+                              className={`w-full h-28 sm:h-32 rounded-md transition-all duration-300 ease-in-out ${imageObjectFit[getMainImageSrc(equipment)] ||
                                 "object-cover"
-                              }`}
+                                }`}
                               onError={(e) => {
                                 e.target.src = "/images/graphview.png";
                               }}
@@ -1358,11 +1359,10 @@ function ClientDashboard() {
                                     return (
                                       <div
                                         key={index}
-                                        className={`flex-shrink-0 w-16 h-12 rounded-md overflow-hidden border-2 cursor-pointer transition-all duration-200 hover:scale-105 ${
-                                          isSelected
-                                            ? "border-[#FDCE06] ring-2 ring-[#FDCE06] ring-opacity-50 shadow-lg"
-                                            : "border-[#333333] hover:border-[#555555] hover:shadow-md"
-                                        }`}
+                                        className={`flex-shrink-0 w-16 h-12 rounded-md overflow-hidden border-2 cursor-pointer transition-all duration-200 hover:scale-105 ${isSelected
+                                          ? "border-[#FDCE06] ring-2 ring-[#FDCE06] ring-opacity-50 shadow-lg"
+                                          : "border-[#333333] hover:border-[#555555] hover:shadow-md"
+                                          }`}
                                         onClick={(e) => {
                                           e.stopPropagation(); // Prevent modal from opening
                                           handleImageSelect(
@@ -1410,12 +1410,11 @@ function ClientDashboard() {
                             )}
 
                           <div
-                            className={`space-y-2 sm:space-y-3 ${
-                              equipment?.allImages.length == 1 ||
+                            className={`space-y-2 sm:space-y-3 ${equipment?.allImages.length == 1 ||
                               equipment?.allImages.length == 0
-                                ? "mt-[70px]"
-                                : ""
-                            }`}
+                              ? "mt-[70px]"
+                              : ""
+                              }`}
                           >
                             <div className="flex items-start justify-between gap-2">
                               <h3 className="text-[#FFFFFF] text-sm font-bold lg:h-[40px] flex-1">
@@ -1481,11 +1480,10 @@ function ClientDashboard() {
           <div className="space-y-6 lg:space-y-8 lg:flex lg:flex-col lg:justify-between h-full">
             {/* Equipment Selector */}
             <div
-              className={`bg-[#1F1F20] border w-full lg:w-[378px] border-[#333333] rounded-lg p-4 sm:p-6 sm:pb-3 lg:fixed ${
-                scrollTop > 150
-                  ? "lg:top-[20px] right-4"
-                  : "lg:top-[150px] right-4"
-              } transition-all duration-300 ease-in-out`}
+              className={`bg-[#1F1F20] border w-full lg:w-[378px] border-[#333333] rounded-lg p-4 sm:p-6 sm:pb-3 lg:fixed ${scrollTop > 150
+                ? "lg:top-[20px] right-4"
+                : "lg:top-[150px] right-4"
+                } transition-all duration-300 ease-in-out`}
             >
               <div className="mb-4 sm:mb-6">
                 <label className="block text-[#D1D5DB] text-sm font-medium mb-3 sm:mb-4">
@@ -1613,13 +1611,12 @@ function ClientDashboard() {
                       return (
                         <div
                           key={month}
-                          className={`text-xs font-medium transition-all duration-300 ${
-                            isSelected
-                              ? "text-[#FDCE06] scale-110 font-bold"
-                              : isMinimum
-                                ? "text-[#FDCE06] font-semibold"
-                                : "text-[#9CA3AF] hover:text-[#E5E5E5] cursor-pointer hover:scale-105"
-                          }`}
+                          className={`text-xs font-medium transition-all duration-300 ${isSelected
+                            ? "text-[#FDCE06] scale-110 font-bold"
+                            : isMinimum
+                              ? "text-[#FDCE06] font-semibold"
+                              : "text-[#9CA3AF] hover:text-[#E5E5E5] cursor-pointer hover:scale-105"
+                            }`}
                           onClick={() => {
                             requestAnimationFrame(() => {
                               setSelectedDuration(
@@ -1795,20 +1792,18 @@ function ClientDashboard() {
                                 return (
                                   <div
                                     key={message.id}
-                                    className={`flex ${
-                                      isCurrentUser
-                                        ? "justify-end"
-                                        : "justify-start"
-                                    }`}
+                                    className={`flex ${isCurrentUser
+                                      ? "justify-end"
+                                      : "justify-start"
+                                      }`}
                                   >
                                     <div
-                                      className={`max-w-[280px] mb-5 rounded-lg p-3 ${
-                                        isEquipmentRequest
-                                          ? "bg-[#FDCE06] text-[#000000] border-2 border-[#E5B800]"
-                                          : isCurrentUser
-                                            ? "bg-[#FDCE06] text-[#000000]"
-                                            : "bg-[#292A2B] text-[#E5E5E5]"
-                                      }`}
+                                      className={`max-w-[280px] mb-5 rounded-lg p-3 ${isEquipmentRequest
+                                        ? "bg-[#FDCE06] text-[#000000] border-2 border-[#E5B800]"
+                                        : isCurrentUser
+                                          ? "bg-[#FDCE06] text-[#000000]"
+                                          : "bg-[#292A2B] text-[#E5E5E5]"
+                                        }`}
                                     >
                                       {isEquipmentRequest && (
                                         <div className="mb-2">
@@ -2087,18 +2082,16 @@ function ClientDashboard() {
                       return (
                         <div
                           key={message.id}
-                          className={`flex ${
-                            isCurrentUser ? "justify-end" : "justify-start"
-                          }`}
+                          className={`flex ${isCurrentUser ? "justify-end" : "justify-start"
+                            }`}
                         >
                           <div
-                            className={`max-w-[80%] rounded-lg p-3 ${
-                              isEquipmentRequest
-                                ? "bg-[#FDCE06] text-[#000000] border-2 border-[#E5B800]"
-                                : isCurrentUser
-                                  ? "bg-[#FDCE06] text-[#000000]"
-                                  : "bg-[#292A2B] text-[#E5E5E5]"
-                            }`}
+                            className={`max-w-[80%] rounded-lg p-3 ${isEquipmentRequest
+                              ? "bg-[#FDCE06] text-[#000000] border-2 border-[#E5B800]"
+                              : isCurrentUser
+                                ? "bg-[#FDCE06] text-[#000000]"
+                                : "bg-[#292A2B] text-[#E5E5E5]"
+                              }`}
                           >
                             {isEquipmentRequest && (
                               <div className="mb-2">
@@ -2107,7 +2100,67 @@ function ClientDashboard() {
                                 </span>
                               </div>
                             )}
-                            <p className="text-sm">{message.message}</p>
+                            {/* Message Text - hide default file message if attachment exists */}
+                            {message.message && !(message.attachment_url && message.message.startsWith("Sent a file:")) && (
+                              <p className="text-sm">{message.message}</p>
+                            )}
+                            {/* File Attachment Display */}
+                            {message.attachment_url && (
+                              <div className="mt-2">
+                                {message.attachment_type === "image" ? (
+                                  <img
+                                    src={message.attachment_url}
+                                    alt={message.attachment_name || "Image"}
+                                    className="max-w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                    style={{ maxHeight: "200px", maxWidth: "250px" }}
+                                    onClick={() => window.open(message.attachment_url, "_blank")}
+                                  />
+                                ) : (
+                                  <a
+                                    href={message.attachment_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 p-2 bg-[#333333] rounded-lg hover:bg-[#404040] transition-colors max-w-[250px]"
+                                  >
+                                    <svg
+                                      width="18"
+                                      height="18"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      className="flex-shrink-0"
+                                    >
+                                      <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                                      <polyline points="13 2 13 9 20 9" />
+                                    </svg>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-xs font-medium truncate">
+                                        {message.attachment_name || "Download File"}
+                                      </p>
+                                      {message.attachment_size && (
+                                        <p className="text-xs opacity-70">
+                                          {(message.attachment_size / 1024).toFixed(2)} KB
+                                        </p>
+                                      )}
+                                    </div>
+                                    <svg
+                                      width="14"
+                                      height="14"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      className="flex-shrink-0"
+                                    >
+                                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                      <polyline points="7 10 12 15 17 10" />
+                                      <line x1="12" y1="15" x2="12" y2="3" />
+                                    </svg>
+                                  </a>
+                                )}
+                              </div>
+                            )}
                             {message.equipment_name && (
                               <div className="mt-2 text-xs opacity-80">
                                 Equipment: {message.equipment_name}
@@ -2293,13 +2346,12 @@ function ClientDashboard() {
                           className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}
                         >
                           <div
-                            className={`max-w-[80%] rounded-lg mt-4 p-3 ${
-                              isEquipmentRequest
-                                ? "bg-[#FDCE06] text-[#000000] border-2 border-[#E5B800]"
-                                : isCurrentUser
-                                  ? "bg-[#FDCE06] text-[#000000]"
-                                  : "bg-[#292A2B] text-[#E5E5E5]"
-                            }`}
+                            className={`max-w-[80%] rounded-lg mt-4 p-3 ${isEquipmentRequest
+                              ? "bg-[#FDCE06] text-[#000000] border-2 border-[#E5B800]"
+                              : isCurrentUser
+                                ? "bg-[#FDCE06] text-[#000000]"
+                                : "bg-[#292A2B] text-[#E5E5E5]"
+                              }`}
                           >
                             {isEquipmentRequest && (
                               <div className="mb-1">
@@ -2308,7 +2360,67 @@ function ClientDashboard() {
                                 </span>
                               </div>
                             )}
-                            <p className="text-sm">{message.message}</p>
+                            {/* Message Text - hide default file message if attachment exists */}
+                            {message.message && !(message.attachment_url && message.message.startsWith("Sent a file:")) && (
+                              <p className="text-sm">{message.message}</p>
+                            )}
+                            {/* File Attachment Display */}
+                            {message.attachment_url && (
+                              <div className="mt-2">
+                                {message.attachment_type === "image" ? (
+                                  <img
+                                    src={message.attachment_url}
+                                    alt={message.attachment_name || "Image"}
+                                    className="max-w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                    style={{ maxHeight: "200px", maxWidth: "250px" }}
+                                    onClick={() => window.open(message.attachment_url, "_blank")}
+                                  />
+                                ) : (
+                                  <a
+                                    href={message.attachment_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 p-2 bg-[#333333] rounded-lg hover:bg-[#404040] transition-colors max-w-[250px]"
+                                  >
+                                    <svg
+                                      width="18"
+                                      height="18"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      className="flex-shrink-0"
+                                    >
+                                      <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                                      <polyline points="13 2 13 9 20 9" />
+                                    </svg>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-xs font-medium truncate">
+                                        {message.attachment_name || "Download File"}
+                                      </p>
+                                      {message.attachment_size && (
+                                        <p className="text-xs opacity-70">
+                                          {(message.attachment_size / 1024).toFixed(2)} KB
+                                        </p>
+                                      )}
+                                    </div>
+                                    <svg
+                                      width="14"
+                                      height="14"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth="2"
+                                      className="flex-shrink-0"
+                                    >
+                                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                      <polyline points="7 10 12 15 17 10" />
+                                      <line x1="12" y1="15" x2="12" y2="3" />
+                                    </svg>
+                                  </a>
+                                )}
+                              </div>
+                            )}
                             {message.equipment_name && (
                               <div className="mt-1 text-[10px] opacity-80">
                                 Equipment: {message.equipment_name}
@@ -2439,17 +2551,16 @@ function ClientDashboard() {
                 <div className="relative w-full h-full">
                   <div className="lg:hidden aspect-[4/3] w-full h-full">
                     {quickViewEquipment.allImages &&
-                    quickViewEquipment.allImages.length > 0 ? (
+                      quickViewEquipment.allImages.length > 0 ? (
                       quickViewEquipment.allImages.map((img, index) => (
                         <img
                           key={`modal-image-${index}`}
                           src={img.image_url}
                           alt={`${quickViewEquipment.name} - Image ${index + 1}`}
-                          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-75 ${
-                            index === quickViewImageIndex
-                              ? "opacity-100"
-                              : "opacity-0"
-                          }`}
+                          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-75 ${index === quickViewImageIndex
+                            ? "opacity-100"
+                            : "opacity-0"
+                            }`}
                           onError={(e) => {
                             e.target.src = "/images/graphview.png";
                           }}
@@ -2471,17 +2582,16 @@ function ClientDashboard() {
                   {/* Desktop view - untouched */}
                   <div className="hidden lg:block">
                     {quickViewEquipment.allImages &&
-                    quickViewEquipment.allImages.length > 0 ? (
+                      quickViewEquipment.allImages.length > 0 ? (
                       quickViewEquipment.allImages.map((img, index) => (
                         <img
                           key={`modal-image-${index}`}
                           src={img.image_url}
                           alt={`${quickViewEquipment.name} - Image ${index + 1}`}
-                          className={`max-w-[90%] max-h-[90%] object-contain absolute inset-0 lg:top-7 mx-auto transition-opacity duration-75 ${
-                            index === quickViewImageIndex
-                              ? "opacity-100"
-                              : "opacity-0"
-                          }`}
+                          className={`max-w-[90%] max-h-[90%] object-contain absolute inset-0 lg:top-7 mx-auto transition-opacity duration-75 ${index === quickViewImageIndex
+                            ? "opacity-100"
+                            : "opacity-0"
+                            }`}
                           onError={(e) => {
                             e.target.src = "/images/graphview.png";
                           }}
