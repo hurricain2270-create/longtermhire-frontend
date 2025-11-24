@@ -118,6 +118,29 @@ const CompanyDetails = () => {
       return;
     }
 
+    // Check if trying to add a Company Owner when one already exists
+    if (newTeamMember.roles === "Company Owner") {
+      const existingOwner = teamMembers.find(
+        (member) => member.role === "Company Owner"
+      );
+
+      if (existingOwner) {
+        toast.error(
+          `Only one Company Owner is allowed per company. ${existingOwner.name} is already the Company Owner.`
+        );
+        return;
+      }
+
+      // Confirm the assignment
+      if (
+        !window.confirm(
+          "Assigning Company Owner role is permanent and cannot be changed later. Are you sure?"
+        )
+      ) {
+        return;
+      }
+    }
+
     try {
       // Call V2 API to add team member
       const response = await companyApi.addTeamMember(id, {
@@ -171,6 +194,63 @@ const CompanyDetails = () => {
     } catch (error) {
       console.error("Error removing team member:", error);
       toast.error(error.message || "Failed to remove team member");
+    }
+  };
+
+  const handleRoleChange = async (memberId, newRole, currentRole) => {
+    // Prevent changing Company Owner role
+    if (currentRole === "Company Owner") {
+      toast.error("Cannot change the role of a Company Owner. This role is permanent.");
+      return;
+    }
+
+    // Check if trying to assign Company Owner role
+    if (newRole === "Company Owner") {
+      // Check if a Company Owner already exists
+      const existingOwner = teamMembers.find(
+        (member) => member.role === "Company Owner" && member.id !== memberId
+      );
+
+      if (existingOwner) {
+        toast.error(
+          `Only one Company Owner is allowed per company. ${existingOwner.name} is already the Company Owner.`
+        );
+        return;
+      }
+
+      // Confirm the assignment
+      if (
+        !window.confirm(
+          "Assigning Company Owner role is permanent and cannot be changed later. Are you sure?"
+        )
+      ) {
+        return;
+      }
+    }
+
+    try {
+      const response = await companyApi.updateTeamMemberRole(id, memberId, {
+        role: newRole,
+      });
+
+      if (!response.error) {
+        // Update local state
+        setTeamMembers(
+          teamMembers.map((member) =>
+            member.id === memberId ? { ...member, role: newRole } : member
+          )
+        );
+        toast.success("Role updated successfully");
+      } else {
+        toast.error(response.message || "Failed to update role");
+      }
+    } catch (error) {
+      console.error("Error updating role:", error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to update role";
+      toast.error(errorMessage);
     }
   };
 
@@ -394,7 +474,19 @@ const CompanyDetails = () => {
                       <td className="text-[#E5E5E5] font-[Inter] text-sm px-4 py-4">
                         <select
                           value={member.role}
-                          className="bg-[#292A2B] border border-[#333333] rounded px-2 py-1 text-[#E5E5E5] text-sm outline-none focus:border-[#FDCE06]"
+                          onChange={(e) =>
+                            handleRoleChange(member.id, e.target.value, member.role)
+                          }
+                          disabled={member.role === "Company Owner"}
+                          className={`bg-[#292A2B] border border-[#333333] rounded px-2 py-1 text-[#E5E5E5] text-sm outline-none focus:border-[#FDCE06] ${member.role === "Company Owner"
+                            ? "opacity-50 cursor-not-allowed"
+                            : "cursor-pointer"
+                            }`}
+                          title={
+                            member.role === "Company Owner"
+                              ? "Company Owner role cannot be changed"
+                              : "Select role"
+                          }
                         >
                           <option>Company Owner</option>
                           <option>Engineer</option>
@@ -527,8 +619,8 @@ const CompanyDetails = () => {
                                   )
                                 }
                                 className={`px-2 py-1 text-xs rounded-l border ${equipment.discountType === '%'
-                                    ? 'bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06]'
-                                    : 'bg-[#292A2B] text-[#9CA3AF] border-[#333333]'
+                                  ? 'bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06]'
+                                  : 'bg-[#292A2B] text-[#9CA3AF] border-[#333333]'
                                   }`}
                               >
                                 %
@@ -542,8 +634,8 @@ const CompanyDetails = () => {
                                   )
                                 }
                                 className={`px-2 py-1 text-xs rounded-r border-t border-r border-b ${equipment.discountType === '$'
-                                    ? 'bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06]'
-                                    : 'bg-[#292A2B] text-[#9CA3AF] border-[#333333]'
+                                  ? 'bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06]'
+                                  : 'bg-[#292A2B] text-[#9CA3AF] border-[#333333]'
                                   }`}
                               >
                                 $
@@ -576,8 +668,8 @@ const CompanyDetails = () => {
                                   )
                                 }
                                 className={`px-2 py-1 text-xs rounded-l border ${equipment.compoundingDiscountType === '%'
-                                    ? 'bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06]'
-                                    : 'bg-[#292A2B] text-[#9CA3AF] border-[#333333]'
+                                  ? 'bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06]'
+                                  : 'bg-[#292A2B] text-[#9CA3AF] border-[#333333]'
                                   }`}
                               >
                                 %
@@ -591,8 +683,8 @@ const CompanyDetails = () => {
                                   )
                                 }
                                 className={`px-2 py-1 text-xs rounded-r border-t border-r border-b ${equipment.compoundingDiscountType === '$'
-                                    ? 'bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06]'
-                                    : 'bg-[#292A2B] text-[#9CA3AF] border-[#333333]'
+                                  ? 'bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06]'
+                                  : 'bg-[#292A2B] text-[#9CA3AF] border-[#333333]'
                                   }`}
                               >
                                 $
@@ -834,8 +926,8 @@ const CompanyDetails = () => {
                     <button
                       onClick={() => setBulkDiscountType('%')}
                       className={`px-3 py-2 text-sm rounded-l border ${bulkDiscountType === '%'
-                          ? 'bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06]'
-                          : 'bg-[#292A2B] text-[#9CA3AF] border-[#333333]'
+                        ? 'bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06]'
+                        : 'bg-[#292A2B] text-[#9CA3AF] border-[#333333]'
                         }`}
                     >
                       %
@@ -843,8 +935,8 @@ const CompanyDetails = () => {
                     <button
                       onClick={() => setBulkDiscountType('$')}
                       className={`px-3 py-2 text-sm rounded-r border-t border-r border-b ${bulkDiscountType === '$'
-                          ? 'bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06]'
-                          : 'bg-[#292A2B] text-[#9CA3AF] border-[#333333]'
+                        ? 'bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06]'
+                        : 'bg-[#292A2B] text-[#9CA3AF] border-[#333333]'
                         }`}
                     >
                       $
@@ -869,8 +961,8 @@ const CompanyDetails = () => {
                     <button
                       onClick={() => setCompoundingDiscountType('%')}
                       className={`px-3 py-2 text-sm rounded-l border ${compoundingDiscountType === '%'
-                          ? 'bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06]'
-                          : 'bg-[#292A2B] text-[#9CA3AF] border-[#333333]'
+                        ? 'bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06]'
+                        : 'bg-[#292A2B] text-[#9CA3AF] border-[#333333]'
                         }`}
                     >
                       %
@@ -878,8 +970,8 @@ const CompanyDetails = () => {
                     <button
                       onClick={() => setCompoundingDiscountType('$')}
                       className={`px-3 py-2 text-sm rounded-r border-t border-r border-b ${compoundingDiscountType === '$'
-                          ? 'bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06]'
-                          : 'bg-[#292A2B] text-[#9CA3AF] border-[#333333]'
+                        ? 'bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06]'
+                        : 'bg-[#292A2B] text-[#9CA3AF] border-[#333333]'
                         }`}
                     >
                       $

@@ -60,11 +60,26 @@ const Profile = () => {
             companyLogo: null,
           });
 
-          // Set company logo preview if exists
-          if (profileData.company_logo || userData.company_logo) {
-            setProfilePicturePreview(
-              profileData.company_logo || userData.company_logo
-            );
+          // Fetch company settings to get the logo URL
+          try {
+            const settingsResponse = await settingsApi.getSettings();
+            console.log("Company settings response:", settingsResponse);
+
+            if (settingsResponse && settingsResponse.data) {
+              const settings = settingsResponse.data;
+              // Set company logo preview from settings if exists
+              if (settings.company_logo) {
+                setProfilePicturePreview(settings.company_logo);
+              }
+            }
+          } catch (settingsError) {
+            console.warn("Failed to load company settings:", settingsError);
+            // Fallback to profile data logo if settings fetch fails
+            if (profileData.company_logo || userData.company_logo) {
+              setProfilePicturePreview(
+                profileData.company_logo || userData.company_logo
+              );
+            }
           }
 
           console.log("Parsed profile data:", {

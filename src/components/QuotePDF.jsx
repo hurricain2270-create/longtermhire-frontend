@@ -307,11 +307,12 @@ const QuotePDF = ({ quoteData }) => {
               {/* Far Right Column - From */}
               <View style={styles.farRightColumn}>
                 <Text style={styles.sectionLabel}>From:</Text>
-
                 <Text style={styles.infoText}>
-                  Address: {quoteData?.company_address || "Your Address"}
+                  Company: {quoteData?.admin_company_name || "Long Term Hire Pty Ltd"}
                 </Text>
-
+                <Text style={styles.infoText}>
+                  Address: {quoteData?.admin_company_address || "PO Box 4089 MOUNT ELIZA VIC 3930 AUSTRALIA"}
+                </Text>
               </View>
             </View>
           </View>

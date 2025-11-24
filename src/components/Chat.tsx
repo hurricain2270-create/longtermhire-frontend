@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useChat } from "../hooks/useChat";
 import { useOnlineStatus } from "../contexts/OnlineStatusContext";
 import { chatApi } from "../services/chatApi";
+import { equipmentApi } from "../services/equipmentApi";
 import { ClipLoader } from "react-spinners";
 
 const Chat = () => {
@@ -27,11 +28,15 @@ const Chat = () => {
     const [justSwitchedConversation, setJustSwitchedConversation] =
         useState(false);
     const [shouldScrollOnNextLoad, setShouldScrollOnNextLoad] = useState(false);
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [filePreview, setFilePreview] = useState<string | null>(null);
+    const [uploadingFile, setUploadingFile] = useState(false);
 
-    // Refs for scroll management
+    // Refs for scroll management and file input
     const messagesEndRef = useRef(null);
     const lastMessageCountRef = useRef(0);
     const lastConversationIdRef = useRef(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Use the chat hook for real-time functionality
     const {
@@ -262,24 +267,90 @@ const Chat = () => {
         setShowSidebar(false);
     };
 
-    // Handle sending messages
+    // Handle file selection
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Check file size (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            alert("File size must be less than 10MB");
+            return;
+        }
+
+        setSelectedFile(file);
+
+        // Create preview for images
+        if (file.type.startsWith("image/")) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFilePreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        } else {
+            setFilePreview(null);
+        }
+    };
+
+    // Handle sending messages with optional file attachment
     const handleSendMessage = async () => {
-        if (!messageInput.trim() || !selectedConversation || sendingMessage) return;
+        if ((!messageInput.trim() && !selectedFile) || !selectedConversation || sendingMessage) return;
 
         try {
             setSendingMessage(true);
+            let attachmentData = null;
+            let messageType = "text";
+
+            // Upload file if selected
+            if (selectedFile) {
+                setUploadingFile(true);
+                try {
+                    const uploadResponse = await equipmentApi.uploadFile(selectedFile);
+                    if (uploadResponse && uploadResponse.url) {
+                        // Determine message type based on file MIME type
+                        if (selectedFile.type.startsWith("image/")) {
+                            messageType = "image";
+                        } else if (selectedFile.type === "application/pdf") {
+                            messageType = "pdf";
+                        } else {
+                            messageType = "file";
+                        }
+
+                        attachmentData = {
+                            attachment_url: uploadResponse.url,
+                            attachment_type: messageType,
+                            attachment_name: selectedFile.name,
+                            attachment_size: selectedFile.size,
+                        };
+                    } else {
+                        throw new Error("Upload failed - no URL returned");
+                    }
+                } catch (uploadError) {
+                    console.error("File upload error:", uploadError);
+                    alert("Failed to upload file. Please try again.");
+                    return;
+                } finally {
+                    setUploadingFile(false);
+                }
+            }
 
             const messageData = {
                 to_user_id: selectedConversation.other_user_id,
-                message: messageInput.trim(),
-                message_type: "text",
+                message: messageInput.trim() || (selectedFile ? `Sent a file: ${selectedFile.name}` : ""),
+                message_type: messageType,
                 from_user_id: currentUserId,
+                ...attachmentData,
             };
 
             const result = await sendMessage(messageData);
             if (!result.error) {
                 setMessageInput("");
-                // Don't reload conversations here - let the polling handle updates
+                setSelectedFile(null);
+                setFilePreview(null);
+                // Reset file input
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = "";
+                }
             } else {
                 console.error("Failed to send message:", result.message);
             }
@@ -532,8 +603,8 @@ const Chat = () => {
                                     key={conversation.id}
                                     onClick={() => handleSelectConversation(conversation)}
                                     className={`p-4 border-b border-[#333333] cursor-pointer overflow-hidden hover:bg-[#292A2B] transition-colors ${selectedConversation?.id === conversation.id
-                                            ? "bg-[#292A2B] border-l-4 border-l-[#FDCE06]"
-                                            : ""
+                                        ? "bg-[#292A2B] border-l-4 border-l-[#FDCE06]"
+                                        : ""
                                         }`}
                                 >
                                     <div className="flex items-center justify-between">
@@ -546,14 +617,14 @@ const Chat = () => {
                                                 <div className="flex items-center gap-1">
                                                     <div
                                                         className={`w-2 h-2 rounded-full ${clientStatus.is_online
-                                                                ? "bg-green-500"
-                                                                : "bg-gray-500"
+                                                            ? "bg-green-500"
+                                                            : "bg-gray-500"
                                                             }`}
                                                     ></div>
                                                     <span
                                                         className={`text-xs ${clientStatus.is_online
-                                                                ? "text-green-400"
-                                                                : "text-gray-400"
+                                                            ? "text-green-400"
+                                                            : "text-gray-400"
                                                             }`}
                                                     >
                                                         {clientStatus.is_online ? "Online" : "Offline"}
@@ -633,14 +704,14 @@ const Chat = () => {
                                         <div className="flex items-center gap-2">
                                             <div
                                                 className={`w-2 h-2 rounded-full ${getClientOnlineStatus(selectedConversation).is_online
-                                                        ? "bg-green-500"
-                                                        : "bg-gray-500"
+                                                    ? "bg-green-500"
+                                                    : "bg-gray-500"
                                                     }`}
                                             ></div>
                                             <span
                                                 className={`text-xs ${getClientOnlineStatus(selectedConversation).is_online
-                                                        ? "text-green-400"
-                                                        : "text-gray-400"
+                                                    ? "text-green-400"
+                                                    : "text-gray-400"
                                                     }`}
                                             >
                                                 {getClientOnlineStatus(selectedConversation).is_online
@@ -730,10 +801,10 @@ const Chat = () => {
                                                 >
                                                     <div
                                                         className={`max-w-[85%] mb-5 sm:max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${isEquipmentRequest
-                                                                ? "bg-[#FDCE06] text-[#1F1F20] border-2 border-[#E5B800]"
-                                                                : isFromCurrentUser
-                                                                    ? "bg-[#FDCE06] text-[#1F1F20]"
-                                                                    : "bg-[#1F1F20] text-[#E5E5E5] border border-[#333333]"
+                                                            ? "bg-[#FDCE06] text-[#1F1F20] border-2 border-[#E5B800]"
+                                                            : isFromCurrentUser
+                                                                ? "bg-[#FDCE06] text-[#1F1F20]"
+                                                                : "bg-[#1F1F20] text-[#E5E5E5] border border-[#333333]"
                                                             }`}
                                                     >
                                                         {isEquipmentRequest && (
@@ -743,17 +814,77 @@ const Chat = () => {
                                                                 </span>
                                                             </div>
                                                         )}
-                                                        <p className="text-sm">{message.message}</p>
+                                                        {/* Message Text - hide default file message if attachment exists */}
+                                                        {message.message && !(message.attachment_url && message.message.startsWith("Sent a file:")) && (
+                                                            <p className="text-sm">{message.message}</p>
+                                                        )}
                                                         {message.equipment_name && (
                                                             <div className="mt-2 text-xs opacity-80">
                                                                 Equipment: {message.equipment_name}
                                                             </div>
                                                         )}
+                                                        {/* File Attachment Display */}
+                                                        {message.attachment_url && (
+                                                            <div className="mt-2">
+                                                                {message.attachment_type === "image" ? (
+                                                                    <img
+                                                                        src={message.attachment_url}
+                                                                        alt={message.attachment_name || "Image"}
+                                                                        className="max-w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                                                        style={{ maxHeight: "200px", maxWidth: "280px" }}
+                                                                        onClick={() => window.open(message.attachment_url, "_blank")}
+                                                                    />
+                                                                ) : (
+                                                                    <a
+                                                                        href={message.attachment_url}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="flex items-center gap-2 p-2 bg-[#333333] rounded-lg hover:bg-[#404040] transition-colors"
+                                                                    >
+                                                                        <svg
+                                                                            width="20"
+                                                                            height="20"
+                                                                            viewBox="0 0 24 24"
+                                                                            fill="none"
+                                                                            stroke="currentColor"
+                                                                            strokeWidth="2"
+                                                                            className="flex-shrink-0"
+                                                                        >
+                                                                            <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                                                                            <polyline points="13 2 13 9 20 9" />
+                                                                        </svg>
+                                                                        <div className="flex-1 min-w-0">
+                                                                            <p className="text-sm font-medium truncate">
+                                                                                {message.attachment_name || "Download File"}
+                                                                            </p>
+                                                                            {message.attachment_size && (
+                                                                                <p className="text-xs opacity-70">
+                                                                                    {(message.attachment_size / 1024).toFixed(2)} KB
+                                                                                </p>
+                                                                            )}
+                                                                        </div>
+                                                                        <svg
+                                                                            width="16"
+                                                                            height="16"
+                                                                            viewBox="0 0 24 24"
+                                                                            fill="none"
+                                                                            stroke="currentColor"
+                                                                            strokeWidth="2"
+                                                                            className="flex-shrink-0"
+                                                                        >
+                                                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                                                            <polyline points="7 10 12 15 17 10" />
+                                                                            <line x1="12" y1="15" x2="12" y2="3" />
+                                                                        </svg>
+                                                                    </a>
+                                                                )}
+                                                            </div>
+                                                        )}
                                                         <div className="flex items-center justify-between mt-1">
                                                             <p
                                                                 className={`text-xs ${isFromCurrentUser
-                                                                        ? "text-[#1F1F20] opacity-70"
-                                                                        : "text-[#9CA3AF]"
+                                                                    ? "text-[#1F1F20] opacity-70"
+                                                                    : "text-[#9CA3AF]"
                                                                     }`}
                                                             >
                                                                 {new Date(
@@ -822,7 +953,107 @@ const Chat = () => {
 
                         {/* Message Input */}
                         <div className="bg-[#1F1F20] border-t border-[#333333] p-3 sm:p-4">
+                            {/* File Preview */}
+                            {selectedFile && (
+                                <div className="mb-3 p-3 bg-[#292A2B] rounded-lg border border-[#333333]">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            {filePreview ? (
+                                                <img
+                                                    src={filePreview}
+                                                    alt="Preview"
+                                                    className="w-16 h-16 object-cover rounded"
+                                                />
+                                            ) : (
+                                                <div className="w-16 h-16 bg-[#333333] rounded flex items-center justify-center">
+                                                    <svg
+                                                        width="24"
+                                                        height="24"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="currentColor"
+                                                        strokeWidth="2"
+                                                        className="text-[#9CA3AF]"
+                                                    >
+                                                        <path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+                                                        <polyline points="13 2 13 9 20 9" />
+                                                    </svg>
+                                                </div>
+                                            )}
+                                            <div>
+                                                <p className="text-[#E5E5E5] text-sm font-medium">
+                                                    {selectedFile.name}
+                                                </p>
+                                                <p className="text-[#9CA3AF] text-xs">
+                                                    {(selectedFile.size / 1024).toFixed(2)} KB
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setSelectedFile(null);
+                                                setFilePreview(null);
+                                                if (fileInputRef.current) {
+                                                    fileInputRef.current.value = "";
+                                                }
+                                            }}
+                                            className="text-[#9CA3AF] hover:text-[#E5E5E5] p-2 rounded-lg hover:bg-[#333333] transition-colors"
+                                        >
+                                            <svg
+                                                width="16"
+                                                height="16"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                            >
+                                                <line x1="18" y1="6" x2="6" y2="18" />
+                                                <line x1="6" y1="6" x2="18" y2="18" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    {uploadingFile && (
+                                        <div className="mt-2">
+                                            <div className="w-full bg-[#333333] rounded-full h-2">
+                                                <div className="bg-[#FDCE06] h-2 rounded-full animate-pulse" style={{ width: "100%" }} />
+                                            </div>
+                                            <p className="text-[#9CA3AF] text-xs mt-1">Uploading...</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             <div className="flex items-center gap-2 sm:gap-3">
+                                {/* Hidden File Input */}
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    onChange={handleFileSelect}
+                                    accept="image/*,.pdf,.doc,.docx,.txt"
+                                    className="hidden"
+                                />
+
+                                {/* Attachment Button */}
+                                <button
+                                    type="button"
+                                    onClick={() => fileInputRef.current?.click()}
+                                    disabled={uploadingFile}
+                                    className="text-[#9CA3AF] hover:text-[#FDCE06] p-2 rounded-lg hover:bg-[#292A2B] transition-colors flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title="Attach file"
+                                >
+                                    <svg
+                                        width="20"
+                                        height="20"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="2"
+                                    >
+                                        <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+                                    </svg>
+                                </button>
+
+                                {/* Text Input */}
                                 <div className="flex-1">
                                     <textarea
                                         value={messageInput}
@@ -844,10 +1075,12 @@ const Chat = () => {
                                         disabled={sendingMessage}
                                     />
                                 </div>
+
+                                {/* Send Button */}
                                 <button
                                     onClick={handleSendMessage}
-                                    disabled={!messageInput.trim() || loading || sendingMessage}
-                                    className="bg-[#FDCE06] text-[#1F1F20] p-3 rounded-lg hover:bg-[#E5B800] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    disabled={(!messageInput.trim() && !selectedFile) || loading || sendingMessage}
+                                    className="bg-[#FDCE06] text-[#1F1F20] p-3 rounded-lg hover:bg-[#E5B800] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex-shrink-0"
                                 >
                                     {sendingMessage ? (
                                         <ClipLoader size={16} color="#1F1F20" />

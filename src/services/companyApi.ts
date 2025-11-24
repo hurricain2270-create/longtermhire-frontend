@@ -80,6 +80,21 @@ export const companyApi = {
   },
 
   /**
+   * Update team member role
+   */
+  updateTeamMemberRole: async (companyId, memberId, roleData) => {
+    try {
+      const response = await api.put(
+        `/v1/api/longtermhire/super_admin/company/${companyId}/member/${memberId}/role`,
+        roleData
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  /**
    * Get company equipment with pricing
    */
   getCompanyEquipment: async (companyId) => {

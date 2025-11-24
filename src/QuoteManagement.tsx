@@ -8,6 +8,7 @@ import EditQuoteModal from "./components/EditQuoteModal";
 import { pdf } from "@react-pdf/renderer";
 import QuotePDF from "./components/QuotePDF";
 import { quoteApi } from "./services/quoteApi";
+import { settingsApi } from "./services/settingsApi";
 
 const QuoteManagement = () => {
   const [searchData, setSearchData] = useState({
@@ -36,15 +37,15 @@ const QuoteManagement = () => {
     try {
       setLoading(true);
 
+      // Only use quote_id for API filtering (company_name not supported by backend)
       const filters = {};
       if (searchData.quoteId) filters.quote_id = searchData.quoteId;
-      if (searchData.companyName) filters.company_name = searchData.companyName;
 
       const response = await quoteApi.getQuotes(pagination.page, pagination.limit, filters);
 
       if (!response.error && response.data) {
         // Map backend field names to frontend format
-        const mappedQuotes = response.data.map((quote) => ({
+        let mappedQuotes = response.data.map((quote) => ({
           id: quote.id,
           quoteId: quote.quote_id,
           companyName: quote.company_name || "",
@@ -60,6 +61,14 @@ const QuoteManagement = () => {
             : "",
           status: quote.status || "Active",
         }));
+
+        // Client-side filtering for company name (API doesn't support this filter)
+        if (searchData.companyName) {
+          const searchTerm = searchData.companyName.toLowerCase();
+          mappedQuotes = mappedQuotes.filter((quote) =>
+            quote.companyName.toLowerCase().includes(searchTerm)
+          );
+        }
 
         setQuotes(mappedQuotes);
 
@@ -203,6 +212,18 @@ const QuoteManagement = () => {
         return;
       }
 
+      // Fetch admin company settings for the "From" section
+      let adminSettings = null;
+      try {
+        const settingsResponse = await settingsApi.getSettings();
+        if (!settingsResponse.error && settingsResponse.data) {
+          adminSettings = settingsResponse.data;
+        }
+      } catch (error) {
+        console.error("Error fetching admin settings:", error);
+        // Continue with defaults if settings fetch fails
+      }
+
       const quoteData = {
         company_name: quoteToDownload.companyName,
         company_address: quoteToDownload.companyAddress,
@@ -214,6 +235,9 @@ const QuoteManagement = () => {
         quote_expires_after: quoteToDownload.quoteExpiresAfter,
         produce_quote_for: quoteToDownload.produceQuoteFor,
         created_at: quoteToDownload.createdDate,
+        // Admin company info for "From" section
+        admin_company_name: adminSettings?.company_name || "Long Term Hire Pty Ltd",
+        admin_company_address: adminSettings?.company_address || "PO Box 4089 MOUNT ELIZA VIC 3930 AUSTRALIA",
         equipmentData: {
           id: "001",
           description: "7 Ton Excavator",
