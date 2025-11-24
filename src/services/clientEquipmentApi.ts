@@ -62,5 +62,45 @@ export const clientEquipmentApi = {
     } catch (error) {
       throw error.response?.data || error.message;
     }
+  },
+
+  // Get quote configuration for specific equipment
+  getQuoteConfig: async (equipmentId: string | number) => {
+    try {
+      const token = localStorage.getItem("clientAuthToken");
+      const response = await api.get(`/v1/api/longtermhire/client/equipment/${equipmentId}/quote-config`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (response.data && !response.data.error) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || "Failed to get quote configuration");
+      }
+    } catch (error: any) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Get specification files for specific equipment
+  getSpecs: async (equipmentId: string | number) => {
+    try {
+      const token = localStorage.getItem("clientAuthToken");
+      const response = await api.get(`/v1/api/longtermhire/client/equipment/${equipmentId}/specs`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (response.data && !response.data.error) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || "Failed to get specifications");
+      }
+    } catch (error: any) {
+      throw error.response?.data || error.message;
+    }
   }
 };

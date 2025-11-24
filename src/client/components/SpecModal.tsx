@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ClipLoader } from "react-spinners";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import { clientEquipmentApi } from "../../services/clientEquipmentApi";
+import { toast } from "react-toastify";
 
 interface SpecFile {
     name: string;
@@ -12,30 +14,39 @@ interface SpecFile {
 interface SpecModalProps {
     isOpen: boolean;
     onClose: () => void;
-    files: SpecFile[] | string; // Can be array or JSON string
+    equipmentId: string | number;
     equipmentName: string;
 }
 
-const SpecModal: React.FC<SpecModalProps> = ({ isOpen, onClose, files, equipmentName }) => {
+const SpecModal: React.FC<SpecModalProps> = ({ isOpen, onClose, equipmentId, equipmentName }) => {
     const [downloading, setDownloading] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [specs, setSpecs] = useState<SpecFile[]>([]);
+    const [error, setError] = useState<string | null>(null);
 
-    if (!isOpen) return null;
-
-    // Parse files if string
-    let parsedFiles: SpecFile[] = [];
-    if (typeof files === "string") {
-        try {
-            parsedFiles = JSON.parse(files);
-        } catch (e) {
-            console.error("Error parsing spec files", e);
-            parsedFiles = [];
+    useEffect(() => {
+        if (isOpen && equipmentId) {
+            fetchSpecs();
         }
-    } else if (Array.isArray(files)) {
-        parsedFiles = files;
-    }
+    }, [isOpen, equipmentId]);
+
+    const fetchSpecs = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await clientEquipmentApi.getSpecs(equipmentId);
+            setSpecs(response.specs_files || []);
+        } catch (error) {
+            console.error("Error fetching specs", error);
+            setError("Failed to load specifications. Please try again.");
+            toast.error("Failed to load specifications");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleDownloadAll = async () => {
-        if (parsedFiles.length === 0) return;
+        if (specs.length === 0) return;
 
         setDownloading(true);
         try {
@@ -43,7 +54,7 @@ const SpecModal: React.FC<SpecModalProps> = ({ isOpen, onClose, files, equipment
             const folder = zip.folder(`${equipmentName.replace(/[^a-z0-9]/gi, '_')}_specs`);
 
             // Fetch all files
-            const promises = parsedFiles.map(async (file) => {
+            const promises = specs.map(async (file) => {
                 try {
                     const response = await fetch(file.url);
                     const blob = await response.blob();
@@ -57,12 +68,16 @@ const SpecModal: React.FC<SpecModalProps> = ({ isOpen, onClose, files, equipment
 
             const content = await zip.generateAsync({ type: "blob" });
             saveAs(content, `${equipmentName}_specifications.zip`);
+            toast.success("Specifications downloaded successfully!");
         } catch (error) {
             console.error("Error creating zip", error);
+            toast.error("Failed to create zip file");
         } finally {
             setDownloading(false);
         }
     };
+
+    if (!isOpen) return null;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
@@ -85,13 +100,28 @@ const SpecModal: React.FC<SpecModalProps> = ({ isOpen, onClose, files, equipment
 
                 {/* Content */}
                 <div className="p-6 overflow-y-auto flex-1">
-                    {parsedFiles.length === 0 ? (
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center py-8">
+                            <ClipLoader color="#FDCE06" size={40} />
+                            <p className="text-[#E5E5E5] mt-4">Loading specifications...</p>
+                        </div>
+                    ) : error ? (
+                        <div className="text-center py-8">
+                            <p className="text-red-400 mb-4">{error}</p>
+                            <button
+                                onClick={fetchSpecs}
+                                className="px-4 py-2 bg-[#FDCE06] text-[#1F1F20] rounded hover:bg-[#E5B800] transition-colors font-bold"
+                            >
+                                Retry
+                            </button>
+                        </div>
+                    ) : specs.length === 0 ? (
                         <div className="text-[#9CA3AF] text-center py-8">
                             No specification documents available.
                         </div>
                     ) : (
                         <div className="grid gap-4">
-                            {parsedFiles.map((file, index) => (
+                            {specs.map((file, index) => (
                                 <div
                                     key={index}
                                     className="bg-[#2A2A2B] border border-[#333333] rounded p-4 flex items-center justify-between hover:border-[#FDCE06] transition-colors"
@@ -131,7 +161,7 @@ const SpecModal: React.FC<SpecModalProps> = ({ isOpen, onClose, files, equipment
                     >
                         Close
                     </button>
-                    {parsedFiles.length > 0 && (
+                    {specs.length > 0 && (
                         <button
                             onClick={handleDownloadAll}
                             disabled={downloading}

@@ -190,17 +190,7 @@ function ClientDashboard() {
         return parseInt(clientUserId || userId || "0");
     };
 
-    // Get user role for a specific company
-    const getUserRole = (companyId) => {
-        try {
-            const companyRoles = JSON.parse(localStorage.getItem("clientCompanyRoles") || "[]");
-            const roleObj = companyRoles.find(r => r.company_id === companyId);
-            return roleObj ? roleObj.role : "member";
-        } catch (e) {
-            console.error("Error parsing company roles:", e);
-            return "member";
-        }
-    };
+
 
     // Group messages by date for date headers
     const groupMessagesByDate = (messages) => {
@@ -784,7 +774,6 @@ function ClientDashboard() {
                 maintenance_periods: item.maintenance_periods,
                 unavailability_due_month: item.unavailability_due_month,
                 discount_info: discountInfo, // Renamed from 'discount' to avoid conflict, though EquipmentCard checks types
-                specs_files: item.specs_files,
             });
 
             return acc;
@@ -1242,7 +1231,6 @@ function ClientDashboard() {
                                             <EquipmentCard
                                                 key={equipment.id}
                                                 equipment={equipment}
-                                                userRole={getUserRole(equipment.company_id)}
                                                 onQuickView={() => {
                                                     setQuickViewEquipment(equipment);
                                                     setQuickViewImageIndex(

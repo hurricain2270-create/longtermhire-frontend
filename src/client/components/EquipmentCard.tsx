@@ -395,7 +395,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
             <SpecModal
                 isOpen={isSpecModalOpen}
                 onClose={() => setIsSpecModalOpen(false)}
-                files={equipment.specs_files || []}
+                equipmentId={equipment.id}
                 equipmentName={equipment.equipment_name || equipment.name}
             />
 

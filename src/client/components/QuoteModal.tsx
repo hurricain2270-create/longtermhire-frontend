@@ -3,6 +3,9 @@ import React, { useState, useEffect } from "react";
 import { PDFViewer } from "@react-pdf/renderer";
 import QuotePDF from "../../components/QuotePDF";
 import { ClipLoader } from "react-spinners";
+import { clientEquipmentApi } from "../../services/clientEquipmentApi";
+import { settingsApi } from "../../services/settingsApi";
+import { toast } from "react-toastify";
 
 interface QuoteModalProps {
     isOpen: boolean;
@@ -13,6 +16,7 @@ interface QuoteModalProps {
 const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) => {
     const [quoteData, setQuoteData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         if (isOpen && equipment) {
@@ -20,12 +24,25 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
         }
     }, [isOpen, equipment]);
 
-    const prepareQuoteData = () => {
+    const prepareQuoteData = async () => {
         setLoading(true);
+        setError(null);
         try {
-            // Get client profile from local storage
-            const clientProfileStr = localStorage.getItem("clientProfile");
-            const clientProfile = clientProfileStr ? JSON.parse(clientProfileStr) : {};
+            // Fetch quote configuration for this equipment
+            const quoteConfig = await clientEquipmentApi.getQuoteConfig(equipment.id);
+
+            // Fetch admin settings for "From" section
+            let adminSettings = null;
+            try {
+                const settingsResponse = await settingsApi.getSettings();
+                if (!settingsResponse.error && settingsResponse.data) {
+                    adminSettings = settingsResponse.data;
+                }
+            } catch (error) {
+                console.error("Error fetching admin settings:", error);
+            }
+
+            // Get client email from localStorage
             const clientEmail = localStorage.getItem("clientEmail") || "";
 
             // Calculate pricing
@@ -35,20 +52,20 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
 
             // Construct quote data
             const data = {
-                company_name: clientProfile.company_name || "Valued Client",
-                company_address: clientProfile.company_address || "",
-                company_email: clientEmail,
-                company_logo: null, // Client logo not typically on quote TO them, but we can add if available
-                gst_percentage: "15", // Default NZ GST
-                terms_of_hire: "Standard Long Term Hire Terms & Conditions apply.",
+                company_name: quoteConfig.company_name || "Valued Client",
+                company_address: quoteConfig.company_address || "",
+                company_email: quoteConfig.company_email || clientEmail,
+                company_logo: quoteConfig.company_logo || null,
+                gst_percentage: quoteConfig.gst_percentage?.toString() || "15",
+                terms_of_hire: quoteConfig.terms_of_hire || "Standard Long Term Hire Terms & Conditions apply.",
                 quote_id: `Q-${Date.now().toString().slice(-6)}`,
-                quote_expires_after: "7",
-                produce_quote_for: "1", // 1 month default?
+                quote_expires_after: quoteConfig.quote_expires_after?.toString() || "7",
+                produce_quote_for: quoteConfig.produce_quote_for?.toString() || "12",
                 created_at: new Date().toISOString().split("T")[0],
 
                 // Admin company info (From)
-                admin_company_name: "Long Term Hire Pty Ltd",
-                admin_company_address: "PO Box 4089 MOUNT ELIZA VIC 3930 AUSTRALIA",
+                admin_company_name: adminSettings?.company_name || "Long Term Hire Pty Ltd",
+                admin_company_address: adminSettings?.company_address || "PO Box 4089 MOUNT ELIZA VIC 3930 AUSTRALIA",
 
                 // Equipment Details
                 equipmentData: {
@@ -63,6 +80,8 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
             setQuoteData(data);
         } catch (error) {
             console.error("Error preparing quote data", error);
+            setError("Failed to load quote configuration. Please try again.");
+            toast.error("Failed to load quote configuration");
         } finally {
             setLoading(false);
         }
@@ -93,7 +112,22 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
                 <div className="flex-1 bg-[#525659] relative">
                     {loading ? (
                         <div className="absolute inset-0 flex items-center justify-center">
-                            <ClipLoader color="#FDCE06" size={50} />
+                            <div className="text-center">
+                                <ClipLoader color="#FDCE06" size={50} />
+                                <p className="text-white mt-4">Loading quote configuration...</p>
+                            </div>
+                        </div>
+                    ) : error ? (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="text-center text-white">
+                                <p className="text-red-400 mb-4">{error}</p>
+                                <button
+                                    onClick={prepareQuoteData}
+                                    className="px-4 py-2 bg-[#FDCE06] text-[#1F1F20] rounded hover:bg-[#E5B800] transition-colors font-bold"
+                                >
+                                    Retry
+                                </button>
+                            </div>
                         </div>
                     ) : quoteData ? (
                         <PDFViewer width="100%" height="100%" className="border-none">
