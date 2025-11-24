@@ -30,14 +30,18 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
     const [totalDiscount, setTotalDiscount] = useState(0);
     const [savingsPerMonth, setSavingsPerMonth] = useState(0);
 
+    // Robust check for discount values
+    const basePrice = parseFloat(equipment.custom_base_price || equipment.base_price) || 0;
+    const discountValue = parseFloat(equipment.discount || equipment.discount_value) || 0;
+    const discountType = equipment.discount_type;
+    const compoundingValue = parseFloat(equipment.compounding_discount || equipment.compounding_discount_value) || 0;
+    const compoundingType = equipment.compounding_discount_type;
+
+    const hasDiscount = discountValue > 0;
+    const hasCompounding = compoundingValue > 0;
+
     // Calculate price based on duration and discounts
     useEffect(() => {
-        const basePrice = parseFloat(equipment.custom_base_price || equipment.base_price) || 0;
-        const discountValue = parseFloat(equipment.discount) || 0;
-        const discountType = equipment.discount_type;
-        const compoundingValue = parseFloat(equipment.compounding_discount) || 0;
-        const compoundingType = equipment.compounding_discount_type;
-
         let totalCost = 0;
         let totalSavings = 0;
         let monthlyAvgSavings = 0;
@@ -53,9 +57,6 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         }
 
         // Calculate compounding effect over duration
-        // Simple model: Price per month = InitialPrice - (Compounding * (Month - 1))
-        // Or if percentage: Price = PreviousMonth * (1 - Compounding)
-
         let currentMonthPrice = initialPrice;
         for (let month = 1; month <= selectedDuration; month++) {
             // Apply compounding discount for months > 1
@@ -76,7 +77,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         setCalculatedPrice(totalCost);
         setTotalDiscount(totalSavings);
         setSavingsPerMonth(monthlyAvgSavings);
-    }, [selectedDuration, equipment]);
+    }, [selectedDuration, equipment, basePrice, discountValue, discountType, compoundingValue, compoundingType]);
 
     const getMainImageSrc = () => {
         if (equipment.content_images) {
@@ -108,87 +109,40 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         return equipment.image_url || equipment.image; // Fallback
     };
 
-    // Calculate days to maintenance
-    const getDaysToMaintenance = () => {
-        if (equipment.maintenance_periods && Array.isArray(equipment.maintenance_periods)) {
-            const today = new Date();
-            // Find the earliest future maintenance start date
-            const upcomingMaintenance = equipment.maintenance_periods
-                .map((p: any) => new Date(p.start_date))
-                .filter((d: Date) => d > today)
-                .sort((a: Date, b: Date) => a.getTime() - b.getTime())[0];
+    // Get availability date string
+    const getAvailabilityText = () => {
+        if (equipment.unavailability_due_month) {
+            // If it's a full date string, format it
+            const date = new Date(equipment.unavailability_due_month);
+            if (!isNaN(date.getTime())) {
+                return `Available ${date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
+            }
+            return `Available ${equipment.unavailability_due_month}`;
+        }
+        // Do not show "Available Now" for available items
+        return null;
+    };
 
-            if (upcomingMaintenance) {
-                const diffTime = upcomingMaintenance.getTime() - today.getTime();
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                return diffDays;
+    // Get maintenance date string
+    const getMaintenanceText = () => {
+        if (equipment.maintenance_periods && Array.isArray(equipment.maintenance_periods) && equipment.maintenance_periods.length > 0) {
+            const today = new Date();
+            // Find current or next maintenance
+            const maintenance = equipment.maintenance_periods
+                .find((p: any) => new Date(p.end_date) >= today);
+
+            if (maintenance) {
+                const startDate = new Date(maintenance.start_date);
+                return `Maintenance ${startDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}`;
             }
         }
         return null;
     };
 
-    // Determine card variant based on equipment status and discount
-    const getCardVariant = () => {
-        const daysToMaintenance = getDaysToMaintenance();
-
-        // Variant 1: Days to Maintenance (upcoming maintenance within 90 days)
-        if (daysToMaintenance !== null && daysToMaintenance > 0 && daysToMaintenance <= 90) {
-            return "days_to_maintenance";
-        }
-
-        // Variant 2: Maintenance/Unavailable (currently unavailable)
-        if (equipment.status === "Maintenance" || equipment.status === "Unavailable" || equipment.status === "Booked") {
-            return "maintenance";
-        }
-
-        const hasDiscount = parseFloat(equipment.discount) > 0;
-        const hasCompounding = parseFloat(equipment.compounding_discount) > 0;
-
-        // Variant 4: Both discount and compounding (strikethrough + slider)
-        if (hasDiscount && hasCompounding) {
-            return "both";
-        }
-
-        // Variant: Compounding only (slider, no strikethrough of base price, but shows savings)
-        if (!hasDiscount && hasCompounding) {
-            return "compounding_only";
-        }
-
-        // Variant 3: Discount only (show strikethrough)
-        if (hasDiscount && !hasCompounding) {
-            return "discount";
-        }
-
-        // Default: simple price display
-        return "simple";
-    };
-
-    const variant = getCardVariant();
-    const basePrice = parseFloat(equipment.custom_base_price || equipment.base_price) || 0;
-    const daysToMaintenance = getDaysToMaintenance();
-
-    // Get maintenance date display
-    const getMaintenanceDate = () => {
-        if (equipment.maintenance_periods && Array.isArray(equipment.maintenance_periods)) {
-            const today = new Date();
-            const nextMaintenance = equipment.maintenance_periods
-                .find((p: any) => new Date(p.end_date) >= today);
-
-            if (nextMaintenance) {
-                const date = new Date(nextMaintenance.start_date);
-                return date.toLocaleDateString('en-US', { day: '2-digit', month: 'short', year: 'numeric' });
-            }
-        }
-        return "Unknown Date";
-    };
-
-    // Calculate discounted price for display (Base Discount Only)
-    const getBaseDiscountedPrice = () => {
-        const discountValue = parseFloat(equipment.discount) || 0;
-        const discountType = equipment.discount_type;
-
-        if (discountValue > 0) {
-            if (discountType === "%") {
+    // Calculate discounted price (Base Discount)
+    const getDiscountedPrice = () => {
+        if (hasDiscount) {
+            if (discountType === "%" || discountType === "percentage") {
                 return basePrice * (1 - discountValue / 100);
             } else {
                 return Math.max(0, basePrice - discountValue);
@@ -196,6 +150,13 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         }
         return basePrice;
     };
+
+    const discountedPrice = getDiscountedPrice();
+    const savings = basePrice - discountedPrice;
+
+    const availabilityText = getAvailabilityText();
+    const maintenanceText = getMaintenanceText();
+    const isUnavailable = equipment.status === "Unavailable" || equipment.status === "Booked" || equipment.status === "Maintenance";
 
     return (
         <div
@@ -248,106 +209,50 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                     }}
                 />
 
-                {/* Pricing Section - Different variants */}
+                {/* Pricing & Status Section */}
                 <div className="mb-4">
-                    {/* Variant 1: Days to Maintenance */}
-                    {variant === "days_to_maintenance" && (
-                        <>
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-[#E5E5E5] text-sm font-semibold">Days to Maintenance</span>
-                                <div className="flex items-center gap-2">
-                                    {/* Calendar icon with number */}
-                                    <div className="relative w-8 h-8 border-2 border-[#FDCE06] flex items-center justify-center bg-[#2A2A2B] rounded">
-                                        <svg className="absolute top-0 left-0 w-full h-2 rounded-t" viewBox="0 0 32 8">
-                                            <rect x="0" y="0" width="32" height="8" fill="#FDCE06" />
-                                        </svg>
-                                        <span className="text-xs font-bold mt-1 text-[#FDCE06]">{daysToMaintenance}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="text-orange-500 text-sm font-semibold">
-                                Maintenance {getMaintenanceDate()}
-                            </div>
-                        </>
-                    )}
-
-                    {/* Variant 2: Maintenance/Unavailable */}
-                    {variant === "maintenance" && (
-                        <>
-                            <div className="text-[#E5E5E5] text-lg font-bold mb-2">
+                    {/* Price Display */}
+                    {hasDiscount ? (
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
+                            <span className="text-[#6B7280] text-lg font-bold line-through">
                                 {formatCurrency(basePrice)}
-                            </div>
-                            <div className="text-orange-500 text-sm font-semibold">
-                                {equipment.status === "Booked" ? "Booked" : "Maintenance"} {getMaintenanceDate()}
-                            </div>
-                        </>
-                    )}
-
-                    {/* Variant 3: Discount only */}
-                    {variant === "discount" && (
-                        <>
-                            <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                <span className="text-[#6B7280] text-lg font-bold line-through">
-                                    {formatCurrency(basePrice)}
-                                </span>
-                                <span className="text-[#E5E5E5] text-lg font-bold">
-                                    {formatCurrency(getBaseDiscountedPrice())}
-                                </span>
-                            </div>
-                            <div className="text-[#10B981] text-sm font-semibold mb-1">
-                                Save {formatCurrency(basePrice - getBaseDiscountedPrice())}
-                            </div>
-                            <div className="text-[#10B981] text-sm font-semibold">
-                                Available Now
-                            </div>
-                        </>
-                    )}
-
-                    {/* Variant 4: Both discount and slider */}
-                    {variant === "both" && (
-                        <>
-                            <div className="flex items-center gap-2 mb-2 flex-wrap">
-                                <span className="text-[#6B7280] text-lg font-bold line-through">
-                                    {formatCurrency(basePrice)}
-                                </span>
-                                <span className="text-[#E5E5E5] text-lg font-bold">
-                                    {formatCurrency(getBaseDiscountedPrice())}
-                                </span>
-                            </div>
-                            <div className="text-[#10B981] text-sm font-semibold mb-1">
-                                Save {formatCurrency(savingsPerMonth)}/month
-                            </div>
-                            <div className="text-[#10B981] text-sm font-semibold mb-3">
-                                Available Now
-                            </div>
-                        </>
-                    )}
-
-                    {/* Variant: Compounding Only */}
-                    {variant === "compounding_only" && (
-                        <>
-                            <div className="text-[#E5E5E5] text-lg font-bold mb-2">
-                                {formatCurrency(basePrice)}
-                            </div>
-                            <div className="text-[#10B981] text-sm font-semibold mb-1">
-                                Save up to {formatCurrency(savingsPerMonth)}/month
-                            </div>
-                            <div className="text-[#10B981] text-sm font-semibold mb-3">
-                                Available Now
-                            </div>
-                        </>
-                    )}
-
-                    {/* Variant 5: Simple */}
-                    {variant === "simple" && (
+                            </span>
+                            <span className="text-[#E5E5E5] text-lg font-bold">
+                                {formatCurrency(discountedPrice)}
+                            </span>
+                            <span className="text-[#10B981] text-sm font-semibold ml-auto">
+                                Save {formatCurrency(savings)}
+                            </span>
+                        </div>
+                    ) : (
                         <div className="text-[#E5E5E5] text-lg font-bold mb-2">
                             {formatCurrency(basePrice)}
                         </div>
                     )}
+
+                    {/* Compounding Savings Text (if applicable) - REMOVED as per user request (already on slider) */}
+
+
+                    {/* Status Lines */}
+                    <div className="flex flex-col gap-1">
+                        {/* Availability Line */}
+                        {availabilityText && (
+                            <div className={`${availabilityText === "Unavailable" ? "text-[#6B7280]" : "text-[#10B981]"} text-sm font-semibold`}>
+                                {availabilityText}
+                            </div>
+                        )}
+
+                        {/* Maintenance Line (if applicable) */}
+                        {maintenanceText && (
+                            <div className="text-orange-500 text-sm font-semibold">
+                                {maintenanceText}
+                            </div>
+                        )}
+                    </div>
                 </div>
 
-                {/* Slider Section - For both and compounding_only */}
-                {(variant === "both" || variant === "compounding_only") && (
+                {/* Slider Section - Only if compounding discount exists */}
+                {hasCompounding && (
                     <div className="mb-4 pb-4 border-t-2 border-[#333333] pt-4">
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-[#E5E5E5] text-sm font-semibold">
@@ -373,40 +278,53 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                                     background: '#333333',
                                 }}
                             />
-                            {/* Custom thumb is handled by CSS injected in ClientDashboard */}
                         </div>
-                        <div className="flex justify-between text-[#9CA3AF] text-xs">
-                            <span>1 month</span>
-                            <span>12 months</span>
-                        </div>
-                        <div className="text-center text-[#E5E5E5] text-sm font-semibold mt-2">
-                            Duration: {selectedDuration} month{selectedDuration > 1 ? 's' : ''}
+                        <div className="flex justify-end">
+                            <span className="text-[#9CA3AF] text-sm">
+                                {selectedDuration} month{selectedDuration > 1 ? 's' : ''}
+                            </span>
                         </div>
                     </div>
                 )}
 
-                {/* Request Button */}
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        if (variant !== "maintenance") {
-                            onRequest(equipment);
-                        }
-                    }}
-                    disabled={variant === "maintenance" || requestLoading}
-                    className={`w-full py-3 rounded font-bold transition-colors mt-auto ${variant === "maintenance"
-                        ? "bg-[#333333] text-[#6B7280] cursor-not-allowed"
-                        : "bg-[#FDCE06] text-[#000000] hover:bg-[#E5B800]"
-                        }`}
-                >
-                    {requestLoading ? (
-                        <ClipLoader size={20} color={variant === "maintenance" ? "#6B7280" : "#000000"} />
-                    ) : variant === "maintenance" ? (
-                        "Unavailable"
-                    ) : (
-                        "Request Quote"
-                    )}
-                </button>
+                {/* Buttons */}
+                <div className="flex gap-2 mt-auto">
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            if (!isUnavailable) {
+                                onRequest(equipment);
+                            }
+                        }}
+                        disabled={isUnavailable || requestLoading}
+                        className={`flex-1 px-3 py-2 border-2 border-[#FDCE06] bg-[#FDCE06] text-[#000000] text-sm font-semibold hover:bg-[#E5B800] hover:border-[#E5B800] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap rounded ${isUnavailable ? "bg-[#333333] border-[#333333] text-[#6B7280]" : ""
+                            }`}
+                    >
+                        {requestLoading ? (
+                            <ClipLoader size={14} color={isUnavailable ? "#6B7280" : "#000000"} />
+                        ) : isUnavailable ? (
+                            "Unavailable"
+                        ) : (
+                            "Request"
+                        )}
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                        }}
+                        className="flex-1 px-3 py-2 border-2 border-[#333333] bg-[#2A2A2B] text-[#E5E5E5] text-sm font-semibold hover:bg-[#333333] transition-colors whitespace-nowrap rounded"
+                    >
+                        Quote
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                        }}
+                        className="flex-1 px-3 py-2 border-2 border-[#333333] bg-[#2A2A2B] text-[#E5E5E5] text-sm font-semibold hover:bg-[#333333] transition-colors whitespace-nowrap rounded"
+                    >
+                        Spec
+                    </button>
+                </div>
             </div>
         </div>
     );

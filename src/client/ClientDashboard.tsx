@@ -756,11 +756,21 @@ function ClientDashboard() {
                 banner_description: item.content?.banner_description || null,
                 price: priceDisplay,
                 base_price: item.base_price,
+                custom_base_price: item.custom_base_price,
                 discounted_price: item.discounted_price,
                 image: mainImage,
                 allImages: allImages,
                 category: item.category_name,
-                discount: discountInfo,
+                // Pass raw discount fields for EquipmentCard logic
+                discount: item.discount,
+                discount_value: item.discount_value,
+                discount_type: item.discount_type,
+                compounding_discount: item.compounding_discount,
+                compounding_discount_value: item.compounding_discount_value,
+                compounding_discount_type: item.compounding_discount_type,
+                maintenance_periods: item.maintenance_periods,
+                unavailability_due_month: item.unavailability_due_month,
+                discount_info: discountInfo, // Renamed from 'discount' to avoid conflict, though EquipmentCard checks types
             });
 
             return acc;
