@@ -28,6 +28,13 @@ export const clientAuthApi = {
           );
         }
 
+        if (response.data.company_roles) {
+          localStorage.setItem(
+            "clientCompanyRoles",
+            JSON.stringify(response.data.company_roles)
+          );
+        }
+
         console.log(
           "Client login successful: Admin tokens cleared, client tokens set"
         );
@@ -65,6 +72,7 @@ export const clientAuthApi = {
       localStorage.removeItem("clientUserId");
       localStorage.removeItem("clientEmail");
       localStorage.removeItem("clientProfile");
+      localStorage.removeItem("clientCompanyRoles");
 
       // Also clear any admin tokens to prevent cross-contamination
       localStorage.removeItem("authToken");
