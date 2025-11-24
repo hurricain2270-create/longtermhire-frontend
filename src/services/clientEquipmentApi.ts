@@ -2,10 +2,18 @@ import api from "./api";
 
 export const clientEquipmentApi = {
   // Get client's assigned equipment
-  getEquipment: async () => {
+  getEquipment: async (categories?: string[]) => {
     try {
       const token = localStorage.getItem("clientAuthToken");
-      const response = await api.get("/v1/api/longtermhire/client/equipment", {
+
+      // Build query params for category filtering
+      let url = "/v1/api/longtermhire/client/equipment";
+      if (categories && categories.length > 0) {
+        const categoryParams = categories.map(c => `categories[]=${encodeURIComponent(c)}`).join('&');
+        url += `?${categoryParams}`;
+      }
+
+      const response = await api.get(url, {
         headers: {
           Authorization: `Bearer ${token}`
         }

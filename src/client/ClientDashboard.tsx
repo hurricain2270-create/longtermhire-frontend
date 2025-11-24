@@ -11,6 +11,8 @@ import { ClipLoader } from "react-spinners";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import EquipmentCard from "./components/EquipmentCard";
+import QuickViewModal from "./components/QuickViewModal";
+import CategoryFilter from "./components/CategoryFilter";
 
 // Add custom CSS for scrollbar hiding and range input styling
 const scrollbarHideStyles = `
@@ -88,6 +90,8 @@ function ClientDashboard() {
     const [shouldPreventAutoScroll, setShouldPreventAutoScroll] = useState(false); // Prevent auto-scroll after load more
     const [hasUnreadFromPolling, setHasUnreadFromPolling] = useState(false); // Track if polling brought unread messages
     const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false); // Track if messages have been initially loaded
+    const [selectedCategories, setSelectedCategories] = useState<string[]>([]); // Track selected categories for filtering
+    const [allCategories, setAllCategories] = useState<string[]>([]); // Track all available categories
     // const [hasMoreMessages, setHasMoreMessages] = useState(true);
     // const [loadingMore, setLoadingMore] = useState(false);
     // const [currentPage, setCurrentPage] = useState(1);
@@ -190,6 +194,18 @@ function ClientDashboard() {
         return parseInt(clientUserId || userId || "0");
     };
 
+    // Get user's role from company_roles in localStorage
+    const getUserRole = () => {
+        try {
+            const companyRoles = JSON.parse(localStorage.getItem("clientCompanyRoles") || "[]");
+            if (companyRoles && companyRoles.length > 0) {
+                return companyRoles[0].role; // Get first company role
+            }
+        } catch (e) {
+            console.error("Error parsing company roles:", e);
+        }
+        return "member"; // Default
+    };
 
 
     // Group messages by date for date headers
@@ -212,6 +228,24 @@ function ClientDashboard() {
         ad_text_destination: "To Sticky Note",
         company_logo: "",
     });
+
+    // Load selected categories from localStorage on mount
+    useEffect(() => {
+        const savedCategories = localStorage.getItem("selectedCategories");
+        if (savedCategories) {
+            try {
+                const parsed = JSON.parse(savedCategories);
+                setSelectedCategories(Array.isArray(parsed) ? parsed : []);
+            } catch (e) {
+                console.error("Error parsing saved categories:", e);
+            }
+        }
+    }, []);
+
+    // Save selected categories to localStorage whenever they change
+    useEffect(() => {
+        localStorage.setItem("selectedCategories", JSON.stringify(selectedCategories));
+    }, [selectedCategories]);
 
     // Load client data and equipment on component mount
     useEffect(() => {
@@ -247,8 +281,9 @@ function ClientDashboard() {
                     // Don't block loading if settings fail
                 }
 
-                // Load equipment from API
-                const equipmentResponse = await clientEquipmentApi.getEquipment();
+                // Load equipment from API (with category filter if selected)
+                const categoriesToFilter = selectedCategories.length > 0 ? selectedCategories : undefined;
+                const equipmentResponse = await clientEquipmentApi.getEquipment(categoriesToFilter);
                 console.log("Equipment API response:", equipmentResponse);
 
                 if (
@@ -257,6 +292,14 @@ function ClientDashboard() {
                     equipmentResponse.data.equipment
                 ) {
                     setEquipment(equipmentResponse.data.equipment);
+
+                    // Extract all unique categories from equipment
+                    const categories = [...new Set(
+                        equipmentResponse.data.equipment
+                            .map((item: any) => item.category_name)
+                            .filter((cat: string) => cat) // Remove empty categories
+                    )];
+                    setAllCategories(categories);
 
                     if (equipmentResponse.data.equipment.length > 0) {
                         const firstEquipment = equipmentResponse.data.equipment[0];
@@ -276,6 +319,14 @@ function ClientDashboard() {
                     // Fallback for old API structure
                     setEquipment(equipmentResponse.equipment);
 
+                    // Extract all unique categories from equipment
+                    const categories = [...new Set(
+                        equipmentResponse.equipment
+                            .map((item: any) => item.category_name)
+                            .filter((cat: string) => cat) // Remove empty categories
+                    )];
+                    setAllCategories(categories);
+
                     if (equipmentResponse.equipment.length > 0) {
                         const firstEquipment = equipmentResponse.equipment[0];
                         setSelectedEquipment(firstEquipment.equipment_name);
@@ -293,6 +344,7 @@ function ClientDashboard() {
                 } else {
                     console.log("No equipment assigned to this client");
                     setEquipment([]);
+                    setAllCategories([]);
                 }
             } catch (error) {
                 console.error("Error loading client data:", error);
@@ -305,7 +357,13 @@ function ClientDashboard() {
         };
 
         loadClientData();
-    }, [navigate]);
+    }, [navigate, selectedCategories]); // Reload when categories change
+
+    // Handle category filter changes
+    const handleCategoryChange = (categories: string[]) => {
+        setSelectedCategories(categories);
+        setLoading(true); // Show loading while fetching filtered equipment
+    };
 
     // Preload images for better performance
     const preloadImages = useCallback((images) => {
@@ -750,7 +808,8 @@ function ClientDashboard() {
             }
 
             acc[category].push({
-                id: item.equipment_id || item.id,
+                id: item.id,
+                equipment_id: item.equipment_id,
                 name: item.equipment_name,
                 status: item.availability === 1 ? "Available" : "Unavailable",
                 description:
@@ -794,6 +853,13 @@ function ClientDashboard() {
             // Force logout even if API call fails
             clientAuthApi.logout();
         }
+    };
+
+    // Handle quick view modal
+    const handleQuickView = (equipment) => {
+        setQuickViewEquipment(equipment);
+        setIsQuickViewOpen(true);
+        setQuickViewImageIndex(0); // Reset to first image
     };
 
     // Handle equipment request
@@ -1207,6 +1273,20 @@ function ClientDashboard() {
                             </div>
                         )}
 
+                        {/* Category Filter */}
+                        {allCategories.length > 0 && (
+                            <div className="mb-6">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-[#9CA3AF] text-sm font-medium">Filter by Category:</span>
+                                    <CategoryFilter
+                                        categories={allCategories}
+                                        selectedCategories={selectedCategories}
+                                        onCategoryChange={handleCategoryChange}
+                                    />
+                                </div>
+                            </div>
+                        )}
+
                         {/* Dynamic Equipment Sections */}
                         {Object.keys(equipmentData).length === 0 ? (
                             <section className="mb-12 lg:mb-16">
@@ -1231,13 +1311,7 @@ function ClientDashboard() {
                                             <EquipmentCard
                                                 key={equipment.id}
                                                 equipment={equipment}
-                                                onQuickView={() => {
-                                                    setQuickViewEquipment(equipment);
-                                                    setQuickViewImageIndex(
-                                                        selectedImages[equipment.id] || 0
-                                                    );
-                                                    setIsQuickViewOpen(true);
-                                                }}
+                                                onQuickView={() => handleQuickView(equipment)}
                                                 onRequest={handleRequestEquipment}
                                                 requestLoading={requestLoading[equipment.id] || false}
                                                 selectedImageIndex={selectedImages[equipment.id] || 0}
@@ -1245,6 +1319,7 @@ function ClientDashboard() {
                                                 formatCurrency={formatCurrency}
                                                 handleImageLoad={handleImageLoad}
                                                 imageObjectFit={imageObjectFit}
+                                                userRole={getUserRole()}
                                             />
                                         ))}
                                     </div>
@@ -2131,201 +2206,12 @@ function ClientDashboard() {
                 theme="dark"
             />
             {/* Quick View Modal */}
-            {
-                isQuickViewOpen && quickViewEquipment && (
-                    <div
-                        className="fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4"
-                        onClick={() => setIsQuickViewOpen(false)}
-                    >
-                        <div
-                            className="bg-[#1F1F20] border border-[#333333] rounded-lg w-full max-w-[90%] lg:h-[600px] h-[650px]  xl:h-[90vh] max-h-[90vh] overflow-hidden flex flex-col"
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className="flex items-center justify-between p-4 border-b border-[#333333]">
-                                <h3 className="text-[#E5E5E5] text-lg font-semibold">
-                                    {quickViewEquipment.name}
-                                </h3>
-                                <button
-                                    onClick={() => setIsQuickViewOpen(false)}
-                                    className="text-[#9CA3AF] hover:text-white"
-                                >
-                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                        <path
-                                            d="M15 5L5 15M5 5L15 15"
-                                            stroke="currentColor"
-                                            strokeWidth="2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                    </svg>
-                                </button>
-                            </div>
-
-                            {/* Image area */}
-                            <div className="relative bg-[#0F0F10] flex-shrink-0">
-                                <div className="w-full lg:mt-10 flex justify-center items-center h-[400px] xl:h-[calc(90vh-300px)] lg:h-[300px]">
-                                    {/* Mobile view with 4:3 aspect ratio */}
-                                    <div className="relative w-full h-full">
-                                        <div className="lg:hidden aspect-[4/3] w-full h-full">
-                                            {quickViewEquipment.allImages &&
-                                                quickViewEquipment.allImages.length > 0 ? (
-                                                quickViewEquipment.allImages.map((img, index) => (
-                                                    <img
-                                                        key={`modal-image-${index}`}
-                                                        src={img.image_url}
-                                                        alt={`${quickViewEquipment.name} - Image ${index + 1}`}
-                                                        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-75 ${index === quickViewImageIndex
-                                                            ? "opacity-100"
-                                                            : "opacity-0"
-                                                            }`}
-                                                        onError={(e) => {
-                                                            e.target.src = "/images/graphview.png";
-                                                        }}
-                                                        onLoad={() => handleImageLoad(img.image_url)}
-                                                    />
-                                                ))
-                                            ) : (
-                                                <img
-                                                    src={quickViewEquipment.image}
-                                                    alt={quickViewEquipment.name}
-                                                    className="absolute inset-0 w-full h-full object-cover"
-                                                    onError={(e) => {
-                                                        e.target.src = "/images/graphview.png";
-                                                    }}
-                                                    onLoad={() => handleImageLoad(quickViewEquipment.image)}
-                                                />
-                                            )}
-                                        </div>
-                                        {/* Desktop view - untouched */}
-                                        <div className="hidden lg:block">
-                                            {quickViewEquipment.allImages &&
-                                                quickViewEquipment.allImages.length > 0 ? (
-                                                quickViewEquipment.allImages.map((img, index) => (
-                                                    <img
-                                                        key={`modal-image-${index}`}
-                                                        src={img.image_url}
-                                                        alt={`${quickViewEquipment.name} - Image ${index + 1}`}
-                                                        className={`max-w-[90%] max-h-[90%] object-contain absolute inset-0 lg:top-7 mx-auto transition-opacity duration-75 ${index === quickViewImageIndex
-                                                            ? "opacity-100"
-                                                            : "opacity-0"
-                                                            }`}
-                                                        onError={(e) => {
-                                                            e.target.src = "/images/graphview.png";
-                                                        }}
-                                                        onLoad={() => handleImageLoad(img.image_url)}
-                                                    />
-                                                ))
-                                            ) : (
-                                                <img
-                                                    src={quickViewEquipment.image}
-                                                    alt={quickViewEquipment.name}
-                                                    className="max-w-[90%] max-h-[90%] object-contain"
-                                                    onError={(e) => {
-                                                        e.target.src = "/images/graphview.png";
-                                                    }}
-                                                    onLoad={() => handleImageLoad(quickViewEquipment.image)}
-                                                />
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {quickViewEquipment.allImages &&
-                                        quickViewEquipment.allImages.length > 1 && (
-                                            <>
-                                                <button
-                                                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
-                                                    onClick={previousImage}
-                                                    aria-label="Previous image"
-                                                >
-                                                    <svg
-                                                        width="16"
-                                                        height="16"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                    >
-                                                        <path
-                                                            d="M15 19l-7-7 7-7"
-                                                            stroke="currentColor"
-                                                            strokeWidth="2"
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                        />
-                                                    </svg>
-                                                </button>
-                                                <button
-                                                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white rounded-full w-8 h-8 flex items-center justify-center transition-all duration-200 hover:scale-110 active:scale-95"
-                                                    onClick={nextImage}
-                                                    aria-label="Next image"
-                                                >
-                                                    <svg
-                                                        width="16"
-                                                        height="16"
-                                                        viewBox="0 0 24 24"
-                                                        fill="none"
-                                                    >
-                                                        <path
-                                                            d="M9 5l7 7-7 7"
-                                                            stroke="currentColor"
-                                                            strokeWidth="2"
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                        />
-                                                    </svg>
-                                                </button>
-
-                                                {/* Image counter indicator */}
-                                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-                                                    {quickViewImageIndex + 1} /{" "}
-                                                    {quickViewEquipment.allImages.length}
-                                                </div>
-                                            </>
-                                        )}
-                                </div>
-                            </div>
-
-                            {/* Content */}
-                            <div className="p-4 space-y-4 flex-1 overflow-y-auto min-h-0 content-end">
-                                <div className="space-y-4">
-                                    <p className="text-[#ADAEBC] text-base lg:text-lg leading-relaxed whitespace-pre-wrap">
-                                        {quickViewEquipment.banner_description ||
-                                            quickViewEquipment.description}
-                                    </p>
-
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[#FFFFFF] text-base lg:text-lg font-semibold">
-                                            Price
-                                        </span>
-                                        <span className="text-[#FDCE06] text-base lg:text-lg font-bold">
-                                            {formatCurrency(quickViewEquipment.base_price || 0)}
-                                        </span>
-                                    </div>
-
-                                    {/* Additional equipment details */}
-                                    <div className="space-y-3 pt-2">
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-[#9CA3AF] text-sm">Status</span>
-                                            <span
-                                                className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusBadgeClass(quickViewEquipment.status)}`}
-                                            >
-                                                {quickViewEquipment.status}
-                                            </span>
-                                        </div>
-
-                                        {quickViewEquipment.category && (
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-[#9CA3AF] text-sm">Category</span>
-                                                <span className="text-[#E5E5E5] text-sm capitalize">
-                                                    {quickViewEquipment.category}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
+            <QuickViewModal
+                isOpen={isQuickViewOpen}
+                onClose={() => setIsQuickViewOpen(false)}
+                equipment={quickViewEquipment}
+                formatCurrency={formatCurrency}
+            />
         </div >
     );
 }

@@ -35,7 +35,24 @@ const SpecModal: React.FC<SpecModalProps> = ({ isOpen, onClose, equipmentId, equ
         setError(null);
         try {
             const response = await clientEquipmentApi.getSpecs(equipmentId);
-            setSpecs(response.specs_files || []);
+
+            // Convert URL strings to file objects with names
+            const specsFiles = response.specs_files || [];
+            const parsedSpecs = specsFiles.map((urlOrObj: any) => {
+                if (typeof urlOrObj === 'string') {
+                    // Extract filename from URL
+                    const urlParts = urlOrObj.split('/');
+                    const filename = urlParts[urlParts.length - 1] || 'document.pdf';
+                    return {
+                        name: decodeURIComponent(filename),
+                        url: urlOrObj
+                    };
+                } else {
+                    return urlOrObj;
+                }
+            });
+
+            setSpecs(parsedSpecs);
         } catch (error) {
             console.error("Error fetching specs", error);
             setError("Failed to load specifications. Please try again.");
@@ -51,14 +68,16 @@ const SpecModal: React.FC<SpecModalProps> = ({ isOpen, onClose, equipmentId, equ
         setDownloading(true);
         try {
             const zip = new JSZip();
-            const folder = zip.folder(`${equipmentName.replace(/[^a-z0-9]/gi, '_')}_specs`);
+            const folderName = equipmentName ? `${equipmentName.replace(/[^a-z0-9]/gi, '_')}_specs` : 'specifications';
+            const folder = zip.folder(folderName);
 
             // Fetch all files
-            const promises = specs.map(async (file) => {
+            const promises = specs.map(async (file, index) => {
                 try {
                     const response = await fetch(file.url);
                     const blob = await response.blob();
-                    folder?.file(file.name, blob);
+                    const fileName = file.name || `document_${index + 1}.pdf`;
+                    folder?.file(fileName, blob);
                 } catch (e) {
                     console.error(`Failed to download ${file.name}`, e);
                 }
@@ -67,7 +86,8 @@ const SpecModal: React.FC<SpecModalProps> = ({ isOpen, onClose, equipmentId, equ
             await Promise.all(promises);
 
             const content = await zip.generateAsync({ type: "blob" });
-            saveAs(content, `${equipmentName}_specifications.zip`);
+            const zipName = equipmentName ? `${equipmentName}_specifications.zip` : 'specifications.zip';
+            saveAs(content, zipName);
             toast.success("Specifications downloaded successfully!");
         } catch (error) {
             console.error("Error creating zip", error);

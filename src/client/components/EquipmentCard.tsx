@@ -186,7 +186,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                 onClick={onQuickView}
             >
                 {/* Image Section */}
-                <div className="border-b-2 border-[#333333] p-6">
+                <div className="border-b-2 border-[#333333] p-6 space-y-3">
                     <div className="w-full h-[160px] bg-[#2A2A2B] flex items-center justify-center relative rounded">
                         {/* Placeholder X pattern */}
                         <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
@@ -206,6 +206,69 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                             }}
                         />
                     </div>
+
+                    {/* Thumbnail Carousel */}
+                    {(() => {
+                        let images = [];
+
+                        // Try allImages first (from API)
+                        if (equipment.allImages && Array.isArray(equipment.allImages) && equipment.allImages.length > 0) {
+                            images = equipment.allImages;
+                        }
+                        // Fallback to content.images
+                        else if (equipment.content?.images && Array.isArray(equipment.content.images) && equipment.content.images.length > 0) {
+                            images = equipment.content.images;
+                        }
+                        // Fallback to content_images (string format)
+                        else if (equipment.content_images) {
+                            if (typeof equipment.content_images === 'string') {
+                                try {
+                                    if (equipment.content_images.includes('|||')) {
+                                        images = equipment.content_images.split('|||').map((s: string) => JSON.parse(s));
+                                    } else {
+                                        try {
+                                            const parsed = JSON.parse(equipment.content_images);
+                                            images = Array.isArray(parsed) ? parsed : [parsed];
+                                        } catch (e) {
+                                            images = [{ image_url: equipment.content_images }];
+                                        }
+                                    }
+                                } catch (e) {
+                                    console.error("Error parsing images", e);
+                                }
+                            } else if (Array.isArray(equipment.content_images)) {
+                                images = equipment.content_images;
+                            }
+                        }
+
+                        return images.length > 1 && (
+                            <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                                {images.map((img: any, index: number) => (
+                                    <button
+                                        key={index}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onImageSelect(equipment.id, index);
+                                        }}
+                                        className={`flex-shrink-0 w-12 h-12 rounded border-2 transition-all overflow-hidden ${
+                                            index === selectedImageIndex
+                                                ? "border-[#FDCE06] ring-1 ring-[#FDCE06]/50"
+                                                : "border-[#333333] hover:border-[#9CA3AF]"
+                                        }`}
+                                    >
+                                        <img
+                                            src={img.image_url}
+                                            alt={`Thumbnail ${index + 1}`}
+                                            className="w-full h-full object-cover"
+                                            onError={(e: any) => {
+                                                e.target.style.display = "none";
+                                            }}
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+                        );
+                    })()}
                 </div>
 
                 {/* Content Section */}
@@ -242,11 +305,20 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                                             <span className="text-[#E5E5E5] text-sm">
                                                 {maintenanceInfo.isActive ? "Maintenance Active" : "Days to Maintenance"}
                                             </span>
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#E5E5E5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                                                <line x1="16" y1="2" x2="16" y2="6"></line>
-                                                <line x1="8" y1="2" x2="8" y2="6"></line>
-                                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                                            {/* Calendar Icon */}
+                                            <svg width="24" height="24" viewBox="0 0 48 48" fill="none">
+                                                {/* Calendar top red section */}
+                                                <rect x="6" y="8" width="36" height="12" rx="2" fill="#E53E3E"/>
+                                                {/* Calendar white section */}
+                                                <rect x="6" y="20" width="36" height="22" rx="2" fill="#FFFFFF"/>
+                                                {/* Calendar binding rings */}
+                                                <rect x="12" y="4" width="4" height="8" rx="2" fill="#4A5568"/>
+                                                <rect x="22" y="4" width="4" height="8" rx="2" fill="#4A5568"/>
+                                                <rect x="32" y="4" width="4" height="8" rx="2" fill="#4A5568"/>
+                                                {/* "DAYS LEFT" text */}
+                                                <text x="24" y="16" fontSize="5" fill="#FFFFFF" textAnchor="middle" fontWeight="bold">DAYS LEFT</text>
+                                                {/* Number - Days count */}
+                                                <text x="24" y="35" fontSize="14" fill="#2D3748" textAnchor="middle" fontWeight="bold">{maintenanceInfo.daysUntil}</text>
                                             </svg>
                                         </div>
                                         <div className="text-[#FDCE06] text-lg font-bold">
@@ -255,7 +327,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                                     </div>
                                 ) : (
                                     <div className="text-[#9CA3AF] text-sm italic">
-                                        No scheduled maintenance
+
                                     </div>
                                 )}
 

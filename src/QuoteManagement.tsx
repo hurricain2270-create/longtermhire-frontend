@@ -123,19 +123,11 @@ const QuoteManagement = () => {
 
   const handleSaveQuote = async (quoteData) => {
     try {
-      // Transform camelCase data to snake_case for backend
-      const payload = {
-        company_name: quoteData.companyName,
-        company_email: quoteData.companyEmail,
-        company_address: quoteData.companyAddress || "",
-        company_logo: quoteData.companyLogo || null,
-        quote_expires_after: parseInt(quoteData.quoteExpiresAfter) || 7,
-        produce_quote_for: parseInt(quoteData.produceQuoteFor) || 12,
-        gst_percentage: parseFloat(quoteData.gstPercentage) || 15,
-        terms_of_hire: quoteData.termsOfHire || "",
-      };
+      console.log("📦 Received quote data in QuoteManagement:", quoteData);
 
-      const response = await quoteApi.createQuote(payload);
+      // AddQuoteModal now sends data in snake_case with company_id
+      // Just pass it through directly
+      const response = await quoteApi.createQuote(quoteData);
 
       if (!response.error) {
         toast.success("Quote created successfully!");

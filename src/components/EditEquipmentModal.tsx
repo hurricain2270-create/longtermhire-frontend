@@ -32,8 +32,7 @@ const EditEquipmentModal = ({
         basePrice: equipment.base_price || "",
         minimumDuration: equipment.minimum_duration || "3 Months",
         position: equipment.position || "",
-        availability:
-          equipment.availability === 1 || equipment.availability === true,
+        availability: equipment.availability,
         description: equipment.description || "",
       });
     }
@@ -230,20 +229,6 @@ const EditEquipmentModal = ({
           </div>
 
           {/* Availability */}
-          <div>
-            <label className="flex items-center space-x-3">
-              <input
-                type="checkbox"
-                name="availability"
-                checked={formData.availability}
-                onChange={handleInputChange}
-                className="w-4 h-4 text-[#FDCE06] bg-[#1A1A1A] border-[#333333] rounded focus:ring-[#FDCE06] focus:ring-2"
-              />
-              <span className="text-[#E5E5E5] font-[Inter] font-medium text-[14px] leading-[1.21em]">
-                Available for rent
-              </span>
-            </label>
-          </div>
 
           {/* Action Buttons */}
           <div className="flex gap-4 pt-6">

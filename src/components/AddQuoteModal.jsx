@@ -1,12 +1,14 @@
 // @ts-nocheck
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { PDFViewer } from "@react-pdf/renderer";
 import QuotePDF from "./QuotePDF";
 import { equipmentApi } from "../services/equipmentApi";
+import { quoteApi } from "../services/quoteApi";
 
 const AddQuoteModal = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({
+    companyId: "",
     companyLogo: null,
     companyName: "",
     companyAddress: "",
@@ -17,7 +19,51 @@ const AddQuoteModal = ({ isOpen, onClose, onSave }) => {
     termsOfHire: "",
   });
 
+  const [companies, setCompanies] = useState([]);
+  const [loadingCompanies, setLoadingCompanies] = useState(false);
+
   const [logoPreview, setLogoPreview] = useState(null);
+
+  // Fetch companies on mount
+  useEffect(() => {
+    if (isOpen) {
+      fetchCompanies();
+    }
+  }, [isOpen]);
+
+  const fetchCompanies = async () => {
+    setLoadingCompanies(true);
+    try {
+      const response = await quoteApi.getCompanies();
+      if (!response.error) {
+        setCompanies(response.data || []);
+      }
+    } catch (error) {
+      console.error("Error fetching companies:", error);
+      toast.error("Failed to load companies");
+    } finally {
+      setLoadingCompanies(false);
+    }
+  };
+
+  const handleCompanySelect = (e) => {
+    const companyId = e.target.value;
+    setFormData((prev) => ({ ...prev, companyId }));
+
+    if (companyId) {
+      const selectedCompany = companies.find(c => c.id.toString() === companyId);
+      if (selectedCompany) {
+        setFormData((prev) => ({
+          ...prev,
+          companyName: selectedCompany.company_name || "",
+          companyAddress: selectedCompany.company_address || "",
+          companyEmail: selectedCompany.owner_email || "",
+          companyLogo: selectedCompany.company_logo || null,
+        }));
+        setLogoPreview(selectedCompany.company_logo || null);
+      }
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -55,17 +101,36 @@ const AddQuoteModal = ({ isOpen, onClose, onSave }) => {
 
   const handleSubmit = () => {
     // Validation
+    if (!formData.companyId) {
+      toast.error("Please select a company");
+      return;
+    }
     if (!formData.companyName || !formData.companyEmail) {
       toast.error("Please fill in all required fields");
       return;
     }
 
-    onSave(formData);
+    // Prepare data with company_id
+    const quoteData = {
+      company_id: parseInt(formData.companyId),
+      company_name: formData.companyName,
+      company_address: formData.companyAddress,
+      company_email: formData.companyEmail,
+      company_logo: formData.companyLogo,
+      quote_expires_after: parseInt(formData.quoteExpiresAfter),
+      produce_quote_for: parseInt(formData.produceQuoteFor),
+      gst_percentage: parseFloat(formData.gstPercentage),
+      terms_of_hire: formData.termsOfHire,
+    };
+
+    console.log("📋 Quote Data being sent:", quoteData);
+    onSave(quoteData);
     handleClose();
   };
 
   const handleClose = () => {
     setFormData({
+      companyId: "",
       companyLogo: null,
       companyName: "",
       companyAddress: "",
@@ -114,6 +179,26 @@ const AddQuoteModal = ({ isOpen, onClose, onSave }) => {
               <h3 className="text-[#E5E5E5] font-[Inter] font-semibold text-lg mb-4">
                 Your Company Details
               </h3>
+
+              {/* Company Dropdown */}
+              <div className="mb-4">
+                <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
+                  Select Company *
+                </label>
+                <select
+                  value={formData.companyId}
+                  onChange={handleCompanySelect}
+                  disabled={loadingCompanies}
+                  className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-3 py-2 outline-none focus:border-[#FDCE06] transition-colors"
+                >
+                  <option value="">Select a company...</option>
+                  {companies.map((company) => (
+                    <option key={company.id} value={company.id}>
+                      {company.company_name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               {/* Company Logo */}
               <div className="mb-4">

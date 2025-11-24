@@ -100,4 +100,18 @@ export const quoteApi = {
       throw error.response?.data || error.message;
     }
   },
+
+  /**
+   * Get all companies for dropdown
+   */
+  getCompanies: async () => {
+    try {
+      const response = await api.get(
+        "/v1/api/longtermhire/super_admin/companies/list"
+      );
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
 };
