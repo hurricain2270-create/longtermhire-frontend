@@ -46,9 +46,13 @@ export const uploadImage = async (file) => {
 /**
  * Validate image file before upload
  * @param {File} file - The file to validate
- * @returns {boolean} - True if valid, throws error if invalid
+ * @param {Object} options - Validation options
+ * @param {number} options.maxSize - Maximum file size in bytes (default: 10MB)
+ * @param {number} options.minAspectRatio - Minimum aspect ratio (width/height)
+ * @param {number} options.maxAspectRatio - Maximum aspect ratio (width/height)
+ * @returns {Promise<boolean>} - True if valid, throws error if invalid
  */
-export const validateImageFile = (file) => {
+export const validateImageFile = async (file, options = {}) => {
   if (!file) {
     throw new Error("Please select a file");
   }
@@ -57,12 +61,48 @@ export const validateImageFile = (file) => {
     throw new Error("Please select a valid image file (JPG, PNG, GIF, etc.)");
   }
 
-  const maxSize = 10 * 1024 * 1024; // 10MB
+  const maxSize = options.maxSize || 10 * 1024 * 1024; // 10MB default
   if (file.size > maxSize) {
     throw new Error("Image file size must be less than 10MB");
   }
 
+  // Validate aspect ratio if specified
+  if (options.minAspectRatio !== undefined || options.maxAspectRatio !== undefined) {
+    const aspectRatio = await getImageAspectRatio(file);
+    if (options.minAspectRatio !== undefined && aspectRatio < options.minAspectRatio) {
+      throw new Error(`Image aspect ratio must be at least ${options.minAspectRatio}:1. Current: ${aspectRatio.toFixed(2)}:1`);
+    }
+    if (options.maxAspectRatio !== undefined && aspectRatio > options.maxAspectRatio) {
+      throw new Error(`Image aspect ratio must be at most ${options.maxAspectRatio}:1. Current: ${aspectRatio.toFixed(2)}:1`);
+    }
+  }
+
   return true;
+};
+
+/**
+ * Get image aspect ratio (width/height)
+ * @param {File} file - The image file
+ * @returns {Promise<number>} - Aspect ratio
+ */
+export const getImageAspectRatio = (file) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const aspectRatio = img.width / img.height;
+      resolve(aspectRatio);
+    };
+    
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Failed to load image"));
+    };
+    
+    img.src = url;
+  });
 };
 
 /**

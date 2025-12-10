@@ -123,4 +123,24 @@ export const clientAuthApi = {
       profile: JSON.parse(localStorage.getItem("clientProfile") || "null"),
     };
   },
+
+  // Get company settings (ad_text, logo, etc.)
+  getCompanySettings: async () => {
+    try {
+      const token = localStorage.getItem("clientAuthToken");
+      const response = await api.get("/v1/api/longtermhire/client/company-settings", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.data && !response.data.error) {
+        return response.data.data;
+      } else {
+        throw new Error(response.data.message || "Failed to get company settings");
+      }
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
 };

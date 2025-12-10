@@ -31,18 +31,21 @@ const Chat = () => {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [filePreview, setFilePreview] = useState<string | null>(null);
     const [uploadingFile, setUploadingFile] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
 
     // Refs for scroll management and file input
     const messagesEndRef = useRef(null);
     const lastMessageCountRef = useRef(0);
     const lastConversationIdRef = useRef(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const dropZoneRef = useRef<HTMLDivElement>(null);
 
     // Use the chat hook for real-time functionality
     const {
         conversations,
         messages,
-        loading,
+        loading, // For conversations list
+        loadingMessages, // For messages
         hasMoreMessages,
         loadingMore,
         currentPage,
@@ -214,12 +217,32 @@ const Chat = () => {
         shouldScrollOnNextLoad,
     ]);
 
-    // Load conversations on component mount
+    // Load conversations and clients on component mount (only once)
     useEffect(() => {
         loadConversations();
         loadClients();
         loadClientStatus();
     }, [loadConversations]);
+    
+    // Set up periodic refresh of conversations to update unread counts
+    // Use a separate effect to avoid reloading clients unnecessarily
+    useEffect(() => {
+        const refreshInterval = setInterval(() => {
+            // Only refresh conversations, not clients (to avoid unnecessary re-renders)
+            loadConversations(false); // Don't show loading spinner on background refresh
+        }, 5000); // Refresh every 5 seconds
+        
+        return () => clearInterval(refreshInterval);
+    }, [loadConversations]);
+    
+    // Separate effect for client status refresh (less frequent)
+    useEffect(() => {
+        const statusInterval = setInterval(() => {
+            loadClientStatus();
+        }, 10000); // Refresh client status every 10 seconds (less frequent)
+        
+        return () => clearInterval(statusInterval);
+    }, []);
 
     // Load clients for new conversation
     const loadClients = async () => {
@@ -267,14 +290,13 @@ const Chat = () => {
         setShowSidebar(false);
     };
 
-    // Handle file selection
-    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
+    // Handle file selection (from input or drag & drop)
+    const processFile = (file: File) => {
         if (!file) return;
 
-        // Check file size (max 10MB)
-        if (file.size > 10 * 1024 * 1024) {
-            alert("File size must be less than 10MB");
+        // Check file size (max 50MB)
+        if (file.size > 50 * 1024 * 1024) {
+            alert("File size must be less than 50MB");
             return;
         }
 
@@ -289,6 +311,46 @@ const Chat = () => {
             reader.readAsDataURL(file);
         } else {
             setFilePreview(null);
+        }
+    };
+
+    // Handle file selection from input
+    const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            processFile(file);
+        }
+    };
+
+    // Handle drag and drop
+    const handleDragEnter = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(true);
+    };
+
+    const handleDragLeave = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        // Only set dragging to false if we're leaving the drop zone
+        if (dropZoneRef.current && !dropZoneRef.current.contains(e.relatedTarget as Node)) {
+            setIsDragging(false);
+        }
+    };
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setIsDragging(false);
+
+        const files = e.dataTransfer.files;
+        if (files && files.length > 0) {
+            processFile(files[0]); // Only process first file
         }
     };
 
@@ -839,14 +901,14 @@ const Chat = () => {
                                                                         href={message.attachment_url}
                                                                         target="_blank"
                                                                         rel="noopener noreferrer"
-                                                                        className="flex items-center gap-2 p-2 bg-[#333333] rounded-lg hover:bg-[#404040] transition-colors"
+                                                                        className="flex items-center gap-2 p-3 bg-[#292A2B] border border-[#333333] rounded-lg hover:bg-[#333333] hover:border-[#FDCE06] transition-colors"
                                                                     >
                                                                         <svg
                                                                             width="20"
                                                                             height="20"
                                                                             viewBox="0 0 24 24"
                                                                             fill="none"
-                                                                            stroke="currentColor"
+                                                                            stroke="#FDCE06"
                                                                             strokeWidth="2"
                                                                             className="flex-shrink-0"
                                                                         >
@@ -854,12 +916,14 @@ const Chat = () => {
                                                                             <polyline points="13 2 13 9 20 9" />
                                                                         </svg>
                                                                         <div className="flex-1 min-w-0">
-                                                                            <p className="text-sm font-medium truncate">
+                                                                            <p className="text-sm font-medium text-[#E5E5E5] truncate">
                                                                                 {message.attachment_name || "Download File"}
                                                                             </p>
                                                                             {message.attachment_size && (
-                                                                                <p className="text-xs opacity-70">
-                                                                                    {(message.attachment_size / 1024).toFixed(2)} KB
+                                                                                <p className="text-xs text-[#ADAEBC] mt-0.5">
+                                                                                    {message.attachment_size > 1024 * 1024 
+                                                                                        ? `${(message.attachment_size / (1024 * 1024)).toFixed(2)} MB`
+                                                                                        : `${(message.attachment_size / 1024).toFixed(2)} KB`}
                                                                                 </p>
                                                                             )}
                                                                         </div>
@@ -868,7 +932,7 @@ const Chat = () => {
                                                                             height="16"
                                                                             viewBox="0 0 24 24"
                                                                             fill="none"
-                                                                            stroke="currentColor"
+                                                                            stroke="#FDCE06"
                                                                             strokeWidth="2"
                                                                             className="flex-shrink-0"
                                                                         >
@@ -952,7 +1016,35 @@ const Chat = () => {
                         </div>
 
                         {/* Message Input */}
-                        <div className="bg-[#1F1F20] border-t border-[#333333] p-3 sm:p-4">
+                        <div 
+                            ref={dropZoneRef}
+                            className={`bg-[#1F1F20] border-t border-[#333333] p-3 sm:p-4 relative ${isDragging ? 'border-[#FDCE06] border-2 border-dashed' : ''}`}
+                            onDragEnter={handleDragEnter}
+                            onDragOver={handleDragOver}
+                            onDragLeave={handleDragLeave}
+                            onDrop={handleDrop}
+                        >
+                            {/* Drag and Drop Overlay */}
+                            {isDragging && (
+                                <div className="absolute inset-0 bg-[#1F1F20] bg-opacity-95 border-2 border-dashed border-[#FDCE06] rounded-lg flex items-center justify-center z-10">
+                                    <div className="text-center">
+                                        <svg
+                                            width="48"
+                                            height="48"
+                                            viewBox="0 0 24 24"
+                                            fill="none"
+                                            stroke="#FDCE06"
+                                            strokeWidth="2"
+                                            className="mx-auto mb-2"
+                                        >
+                                            <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48" />
+                                        </svg>
+                                        <p className="text-[#FDCE06] font-medium text-lg">Drop file here to upload</p>
+                                        <p className="text-[#9CA3AF] text-sm mt-1">Max file size: 50MB</p>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* File Preview */}
                             {selectedFile && (
                                 <div className="mb-3 p-3 bg-[#292A2B] rounded-lg border border-[#333333]">
@@ -985,7 +1077,9 @@ const Chat = () => {
                                                     {selectedFile.name}
                                                 </p>
                                                 <p className="text-[#9CA3AF] text-xs">
-                                                    {(selectedFile.size / 1024).toFixed(2)} KB
+                                                    {selectedFile.size > 1024 * 1024 
+                                                        ? `${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB`
+                                                        : `${(selectedFile.size / 1024).toFixed(2)} KB`}
                                                 </p>
                                             </div>
                                         </div>

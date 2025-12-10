@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import SimpleRichTextEditor from "./components/SimpleRichTextEditor";
 import { companyApi } from "./services/companyApi";
 import { calculateEquipmentPrice, formatPrice, formatDiscount } from "./utils/pricingCalculator";
@@ -24,6 +25,8 @@ const CompanyDetails = () => {
   const [assignedEquipment, setAssignedEquipment] = useState([]);
 
   const [showAddTeamMemberModal, setShowAddTeamMemberModal] = useState(false);
+  const [showTeamMemberDetailsModal, setShowTeamMemberDetailsModal] = useState(false);
+  const [selectedTeamMember, setSelectedTeamMember] = useState(null);
   const [showDiscountModal, setShowDiscountModal] = useState(false);
   const [applyingDiscount, setApplyingDiscount] = useState(false);
   const [bulkDiscount, setBulkDiscount] = useState("");
@@ -495,7 +498,13 @@ const CompanyDetails = () => {
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex gap-2 items-center justify-center">
-                          <button className="text-[#FDCE06] font-[Inter] font-medium text-sm hover:underline">
+                          <button 
+                            onClick={() => {
+                              setSelectedTeamMember(member);
+                              setShowTeamMemberDetailsModal(true);
+                            }}
+                            className="text-[#FDCE06] font-[Inter] font-medium text-sm hover:underline"
+                          >
                             Details
                           </button>
                           <button
@@ -883,6 +892,88 @@ const CompanyDetails = () => {
         </div>
       )}
 
+      {/* Team Member Details Modal */}
+      {showTeamMemberDetailsModal && selectedTeamMember && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-[#1F1F20] border border-[#333333] rounded-lg p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-[#E5E5E5] font-[Inter] font-semibold text-xl">
+                Team Member Details
+              </h3>
+              <button
+                onClick={() => {
+                  setShowTeamMemberDetailsModal(false);
+                  setSelectedTeamMember(null);
+                }}
+                className="text-[#9CA3AF] hover:text-[#E5E5E5] transition-colors"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-[#9CA3AF] font-[Inter] text-sm mb-2">
+                  Employee Name
+                </label>
+                <div className="bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-2">
+                  {selectedTeamMember.name}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[#9CA3AF] font-[Inter] text-sm mb-2">
+                  Email
+                </label>
+                <div className="bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-2">
+                  {selectedTeamMember.email}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[#9CA3AF] font-[Inter] text-sm mb-2">
+                  Phone
+                </label>
+                <div className="bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-2">
+                  {selectedTeamMember.phone}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[#9CA3AF] font-[Inter] text-sm mb-2">
+                  Role
+                </label>
+                <div className="bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-2">
+                  {selectedTeamMember.role}
+                </div>
+              </div>
+
+              <div className="flex justify-end mt-6">
+                <button
+                  onClick={() => {
+                    setShowTeamMemberDetailsModal(false);
+                    setSelectedTeamMember(null);
+                  }}
+                  className="bg-[#FDCE06] text-[#1F1F20] py-2 px-6 rounded-md font-[Inter] font-bold text-sm hover:bg-[#E5B800] transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Discount Modal */}
       {showDiscountModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -1007,6 +1098,20 @@ const CompanyDetails = () => {
           </div>
         </div>
       )}
+
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
     </div>
   );
 };

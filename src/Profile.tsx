@@ -119,9 +119,18 @@ const Profile = () => {
     setSuccess("");
   };
 
-  const handleCompanyLogoChange = (e) => {
+  const handleCompanyLogoChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
+    if (!file) return;
+
+    try {
+      // Validate aspect ratio for logos (specific requirement: 16:9 to 3.5:1)
+      const { validateImageFile } = await import("./utils/uploadUtils");
+      await validateImageFile(file, {
+        minAspectRatio: 16/9, // Minimum 16:9 (1.78:1)
+        maxAspectRatio: 3.5, // Maximum 3.5:1 (allows 32:9 ultrawide and similar)
+      });
+
       setFormData((prev) => ({
         ...prev,
         companyLogo: file,
@@ -134,6 +143,11 @@ const Profile = () => {
       reader.readAsDataURL(file);
       setError("");
       setSuccess("");
+    } catch (error) {
+      console.error("Logo validation error:", error);
+      setError(error.message || "Invalid logo file. Please check aspect ratio and file size.");
+      // Clear the file input
+      e.target.value = "";
     }
   };
 

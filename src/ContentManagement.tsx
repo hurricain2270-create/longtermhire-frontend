@@ -13,6 +13,7 @@ import { useNavigate } from "react-router";
 const ContentManagement = () => {
   const [searchData, setSearchData] = useState({
     contentId: "",
+    equipmentId: "", // Use equipmentId for ID search
     equipmentName: "",
   });
 
@@ -67,9 +68,11 @@ const ContentManagement = () => {
   const [debouncedSearchData, setDebouncedSearchData] = useState(searchData);
 
   // Fetch content data from API with pagination and search
-  const fetchContent = async (page = 1, searchFilters = {}) => {
+  const fetchContent = async (page = 1, searchFilters = {}, showFullLoading = true) => {
     try {
-      setLoading(true);
+      if (showFullLoading) {
+        setLoading(true);
+      }
       setError(null);
       const data = await contentApi.getContent(page, 200, searchFilters);
       setContentData(data.data || []);
@@ -84,7 +87,9 @@ const ContentManagement = () => {
       setError("Failed to load content");
       toast.error("Failed to load content");
     } finally {
-      setLoading(false);
+      if (showFullLoading) {
+        setLoading(false);
+      }
     }
   };
 
@@ -105,7 +110,7 @@ const ContentManagement = () => {
   // Fetch data when debounced search changes
   useEffect(() => {
     setCurrentPage(1);
-    fetchContent(1, debouncedSearchData);
+    fetchContent(1, debouncedSearchData, false); // Don't show full page loading on search
   }, [debouncedSearchData]);
 
   // Add content handlers
@@ -216,12 +221,12 @@ const ContentManagement = () => {
           {/* Equipment ID Field */}
           <div className="flex flex-col">
             <label className="text-[#9CA3AF] font-[Inter] font-medium text-sm leading-[1.21em] mb-2">
-              Content ID
+              Equipment ID
             </label>
             <input
               type="text"
-              name="contentId"
-              value={searchData.contentId}
+              name="equipmentId"
+              value={searchData.equipmentId}
               onChange={handleInputChange}
               onKeyPress={handleKeyPress}
               className="bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-3 py-3 outline-none focus:border-[#FDCE06] transition-colors h-[42px]"
@@ -279,7 +284,7 @@ const ContentManagement = () => {
             <thead className="bg-[#292A2B]">
               <tr>
                 <th className="text-left text-[#E5E5E5] font-[Inter] font-bold text-sm px-3 py-3">
-                  Content ID
+                  Equipment ID
                   <span className="inline-block w-2 h-3.5 ml-1">
                     <svg
                       width="8.75"
@@ -399,7 +404,7 @@ const ContentManagement = () => {
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan="6" className="text-center py-8">
+                  <td colSpan="5" className="text-center py-8">
                     <div className="text-red-500">
                       <p>{error}</p>
                       <button
@@ -413,7 +418,7 @@ const ContentManagement = () => {
                 </tr>
               ) : contentData.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="text-center py-8">
+                  <td colSpan="5" className="text-center py-8">
                     <div className="text-[#9CA3AF]">
                       <p>No content found</p>
                       <button
@@ -454,7 +459,7 @@ const ContentManagement = () => {
                             index === 0 || index === 4 ? "9.9px" : "10.4px",
                         }}
                       >
-                        {item.id}
+                        {item.equipment_id || "N/A"}
                       </div>
                     </td>
                     <td

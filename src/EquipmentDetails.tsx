@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import SimpleRichTextEditor from "./components/SimpleRichTextEditor";
 import { equipmentApi } from "./services/equipmentApi";
 
@@ -42,7 +43,10 @@ const EquipmentDetails = () => {
         const equipment = response.data;
         // Parse minimum_duration (format: "3 Months" -> "3")
         const minDuration = equipment.minimum_duration
-          ? equipment.minimum_duration.toString().replace(/\s*Months?/i, "").trim()
+          ? equipment.minimum_duration
+              .toString()
+              .replace(/\s*Months?/i, "")
+              .trim()
           : "3";
 
         setFormData({
@@ -53,12 +57,18 @@ const EquipmentDetails = () => {
           basePrice: equipment.base_price?.toString() || "",
           minimumDuration: minDuration,
           description: equipment.description || "",
-          availability: equipment.availability === 1 || equipment.availability === true,
-          availabilityMonth: equipment.unavailability_due_month || equipment.availability_month || getNextMonth(),
+          availability:
+            equipment.availability === 1 || equipment.availability === true,
+          availabilityMonth:
+            equipment.unavailability_due_month ||
+            equipment.availability_month ||
+            getNextMonth(),
           availableFrom: equipment.available_from || "",
           availableTo: equipment.available_to || "",
           maintenancePeriods: equipment.maintenance_periods || [],
-          specsFiles: equipment.specs_files ? JSON.parse(equipment.specs_files) : [],
+          specsFiles: equipment.specs_files
+            ? JSON.parse(equipment.specs_files)
+            : [],
         });
       } else {
         toast.error(response?.message || "Failed to load equipment details");
@@ -105,7 +115,7 @@ const EquipmentDetails = () => {
   const getNextMonth = () => {
     const date = new Date();
     date.setMonth(date.getMonth() + 1);
-    return date.toLocaleString('default', { month: 'long', year: 'numeric' });
+    return date.toLocaleString("default", { month: "long", year: "numeric" });
   };
 
   const getNext12Months = () => {
@@ -113,7 +123,9 @@ const EquipmentDetails = () => {
     const date = new Date();
     for (let i = 0; i < 12; i++) {
       date.setMonth(date.getMonth() + 1);
-      months.push(date.toLocaleString('default', { month: 'long', year: 'numeric' }));
+      months.push(
+        date.toLocaleString("default", { month: "long", year: "numeric" })
+      );
     }
     return months;
   };
@@ -197,7 +209,9 @@ const EquipmentDetails = () => {
         unavailability_due_month: formData.availabilityMonth || getNextMonth(),
         available_from: null, // Deprecated
         available_to: null, // Deprecated
-        maintenance_periods: formData.maintenancePeriods.filter(p => p.start_date && p.end_date),
+        maintenance_periods: formData.maintenancePeriods.filter(
+          (p) => p.start_date && p.end_date
+        ),
         specs_files: formData.specsFiles || [],
       };
 
@@ -297,8 +311,9 @@ const EquipmentDetails = () => {
               </label>
               <div
                 onClick={handleAvailabilityToggle}
-                className={`rounded-full transition-colors cursor-pointer ${formData.availability ? "bg-[#4CAF50]" : "bg-[#4A5568]"
-                  }`}
+                className={`rounded-full transition-colors cursor-pointer ${
+                  formData.availability ? "bg-[#4CAF50]" : "bg-[#4A5568]"
+                }`}
                 style={{ width: "50px", height: "26px", position: "relative" }}
               >
                 <div
@@ -324,8 +339,11 @@ const EquipmentDetails = () => {
               value={formData.availabilityMonth}
               onChange={handleInputChange}
               disabled={formData.availability}
-              className={`w-48 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-2 outline-none transition-colors ${formData.availability ? "opacity-50 cursor-not-allowed" : "focus:border-[#FDCE06]"
-                }`}
+              className={`w-48 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-2 outline-none transition-colors ${
+                formData.availability
+                  ? "opacity-50 cursor-not-allowed"
+                  : "focus:border-[#FDCE06]"
+              }`}
             >
               {getNext12Months().map((month) => (
                 <option key={month} value={month}>
@@ -352,13 +370,24 @@ const EquipmentDetails = () => {
 
             <div className="space-y-3">
               {formData.maintenancePeriods.map((period, index) => (
-                <div key={index} className="flex flex-wrap items-center gap-3 bg-[#292A2B] p-3 rounded-md border border-[#333333]">
+                <div
+                  key={index}
+                  className="flex flex-wrap items-center gap-3 bg-[#292A2B] p-3 rounded-md border border-[#333333]"
+                >
                   <div className="flex items-center gap-2">
                     <label className="text-[#9CA3AF] text-sm">From</label>
                     <input
                       type="date"
-                      value={period.start_date ? period.start_date.split('T')[0] : ""}
-                      onChange={(e) => handleMaintenancePeriodChange(index, "start_date", e.target.value)}
+                      value={
+                        period.start_date ? period.start_date.split("T")[0] : ""
+                      }
+                      onChange={(e) =>
+                        handleMaintenancePeriodChange(
+                          index,
+                          "start_date",
+                          e.target.value
+                        )
+                      }
                       className="bg-[#1F1F20] border border-[#333333] rounded-md text-[#E5E5E5] px-3 py-2 text-sm outline-none focus:border-[#FDCE06] transition-colors"
                     />
                   </div>
@@ -367,8 +396,16 @@ const EquipmentDetails = () => {
                     <label className="text-[#9CA3AF] text-sm">To</label>
                     <input
                       type="date"
-                      value={period.end_date ? period.end_date.split('T')[0] : ""}
-                      onChange={(e) => handleMaintenancePeriodChange(index, "end_date", e.target.value)}
+                      value={
+                        period.end_date ? period.end_date.split("T")[0] : ""
+                      }
+                      onChange={(e) =>
+                        handleMaintenancePeriodChange(
+                          index,
+                          "end_date",
+                          e.target.value
+                        )
+                      }
                       className="bg-[#1F1F20] border border-[#333333] rounded-md text-[#E5E5E5] px-3 py-2 text-sm outline-none focus:border-[#FDCE06] transition-colors"
                     />
                     <button
@@ -408,7 +445,9 @@ const EquipmentDetails = () => {
             Minimum Hire Duration
           </h3>
           <div className="flex items-center gap-3">
-            <label className="text-[#E5E5E5] font-[Inter] text-sm">Months</label>
+            <label className="text-[#E5E5E5] font-[Inter] text-sm">
+              Months
+            </label>
             <div className="relative flex items-center">
               <input
                 type="number"
@@ -476,9 +515,9 @@ const EquipmentDetails = () => {
             <button
               type="button"
               onClick={() => {
-                const input = document.createElement('input');
-                input.type = 'file';
-                input.accept = '.pdf';
+                const input = document.createElement("input");
+                input.type = "file";
+                input.accept = ".pdf";
                 input.click();
               }}
               className="p-2 bg-[#333333] hover:bg-[#404040] border border-[#333333] rounded-md transition-colors"
@@ -502,7 +541,7 @@ const EquipmentDetails = () => {
             {/* Upload Specification Document */}
             <div>
               <label className="block text-[#E5E5E5] font-[Inter] text-sm mb-2">
-                Upload Specification Document
+                Upload Specification Documents
               </label>
               <div className="flex items-center gap-2">
                 <input
@@ -517,20 +556,10 @@ const EquipmentDetails = () => {
                   className="flex-1 bg-[#292A2B] border border-[#333333] rounded-md text-[#9CA3AF] px-4 py-2 text-sm cursor-pointer hover:border-[#FDCE06] transition-colors flex items-center justify-between"
                 >
                   <span className="truncate max-w-[200px]">
-                    {formData.specsFile ? formData.specsFile.split("/").pop() : "Upload PDF"}
+                    {formData.specsFile
+                      ? formData.specsFile.split("/").pop()
+                      : "Upload PDF"}
                   </span>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                  </svg>
                 </label>
                 {formData.specsFile && (
                   <a
@@ -560,7 +589,10 @@ const EquipmentDetails = () => {
             {formData.specsFiles && formData.specsFiles.length > 0 && (
               <div className="space-y-2 mt-4">
                 {formData.specsFiles.map((url, index) => (
-                  <div key={index} className="flex items-center justify-between bg-[#292A2B] border border-[#333333] rounded-md p-3">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between bg-[#292A2B] border border-[#333333] rounded-md p-3"
+                  >
                     <div className="flex items-center gap-3 overflow-hidden">
                       <svg
                         width="20"
@@ -623,8 +655,6 @@ const EquipmentDetails = () => {
                 ))}
               </div>
             )}
-
-
           </div>
         </div>
 
@@ -646,6 +676,20 @@ const EquipmentDetails = () => {
           </button>
         </div>
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
     </div>
   );
 };

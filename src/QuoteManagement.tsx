@@ -38,8 +38,11 @@ const QuoteManagement = () => {
       setLoading(true);
 
       // Only use quote_id for API filtering (company_name not supported by backend)
+      // Note: Backend should support partial matching for quote_id
       const filters = {};
-      if (searchData.quoteId) filters.quote_id = searchData.quoteId;
+      if (searchData.quoteId && searchData.quoteId.trim()) {
+        filters.quote_id = searchData.quoteId.trim();
+      }
 
       const response = await quoteApi.getQuotes(pagination.page, pagination.limit, filters);
 

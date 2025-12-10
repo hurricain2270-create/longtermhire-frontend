@@ -87,12 +87,41 @@ const ClientManagement = () => {
   // Fetch data when debounced search changes
   useEffect(() => {
     setCurrentPage(1);
-    loadInitialData(1, debouncedSearchData);
+    // Only load client data, skip expensive assignment loading during search
+    const loadClientsOnly = async () => {
+      try {
+        const clientsRes = await clientApi.getClients(1, 200, debouncedSearchData);
+        const clientsData = clientsRes.data || [];
+        setClients(clientsData);
+        
+        if (clientsRes.pagination) {
+          setPagination(clientsRes.pagination);
+          setCurrentPage(clientsRes.pagination.page);
+        }
+        
+        // Only load assignments if we have a small number of clients (not searching)
+        const isSearching = debouncedSearchData.clientId || debouncedSearchData.clientName || debouncedSearchData.companyName;
+        if (!isSearching || clientsData.length <= 10) {
+          await loadClientAssignments(clientsData, equipment);
+        } else {
+          // Clear assignments during search to avoid expensive operations
+          setClientEquipment({});
+          setClientPricing({});
+        }
+      } catch (error) {
+        console.error("Error loading clients:", error);
+        toast.error("Error loading clients. Please try again.");
+      }
+    };
+    
+    loadClientsOnly();
   }, [debouncedSearchData]);
 
-  const loadInitialData = async (page = 1, searchFilters = {}) => {
+  const loadInitialData = async (page = 1, searchFilters = {}, showFullLoading = true) => {
     try {
-      setLoading(true);
+      if (showFullLoading) {
+        setLoading(true);
+      }
       const [clientsRes, equipmentRes, pricingRes] = await Promise.all([
         clientApi.getClients(page, 200, searchFilters),
         equipmentApi.getEquipment(1, 1000),
@@ -117,7 +146,9 @@ const ClientManagement = () => {
       console.error("Error loading data:", error);
       toast.error("Error loading data. Please try again.");
     } finally {
-      setLoading(false);
+      if (showFullLoading) {
+        setLoading(false);
+      }
     }
   };
 

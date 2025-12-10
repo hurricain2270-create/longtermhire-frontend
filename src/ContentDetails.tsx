@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import SimpleRichTextEditor from "./components/SimpleRichTextEditor";
 import ImageManager from "./components/ImageManager";
 import { contentApi } from "./services/contentApi";
@@ -40,22 +41,27 @@ const ContentDetails = () => {
       if (response && !response.error) {
         const content = response.data;
         setFormData({
-          equipmentId: content.content_equipment_id || content.equipment_id || "",
+          equipmentId:
+            content.content_equipment_id || content.equipment_id || "",
           equipmentName: content.equipment_name || "",
           categoryId: content.category_id || "",
           categoryName: content.category_name || "",
           description: content.description || "",
           images: content.images || [],
-          specsFiles: content.specs_files ? JSON.parse(content.specs_files) : [],
+          specsFiles: content.specs_files
+            ? JSON.parse(content.specs_files)
+            : [],
         });
 
         // Set existing images if available
         if (content.images && Array.isArray(content.images)) {
-          setImages(content.images.map(img => ({
-            ...img,
-            url: img.image_url, // Ensure url property exists for ImageManager
-            is_main: img.is_main === 1 || img.is_main === true
-          })));
+          setImages(
+            content.images.map((img) => ({
+              ...img,
+              url: img.image_url, // Ensure url property exists for ImageManager
+              is_main: img.is_main === 1 || img.is_main === true,
+            }))
+          );
         }
       } else {
         toast.error(response?.message || "Failed to load content details");
@@ -283,20 +289,6 @@ const ContentDetails = () => {
                     className="hidden"
                   />
                 </label>
-                <button className="p-2 text-[#9CA3AF] hover:text-[#FDCE06] transition-colors">
-                  <svg
-                    width="20"
-                    height="20"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="12" y1="8" x2="12" y2="12" />
-                    <line x1="12" y1="16" x2="12.01" y2="16" />
-                  </svg>
-                </button>
               </div>
             </div>
 
@@ -307,7 +299,10 @@ const ContentDetails = () => {
                   Documents
                 </label>
                 {formData.specsFiles.map((url, index) => (
-                  <div key={index} className="flex items-center justify-between bg-[#292A2B] border border-[#333333] rounded-md p-3">
+                  <div
+                    key={index}
+                    className="flex items-center justify-between bg-[#292A2B] border border-[#333333] rounded-md p-3"
+                  >
                     <div className="flex items-center gap-3 overflow-hidden">
                       <svg
                         width="20"
@@ -412,6 +407,20 @@ const ContentDetails = () => {
           </div>
         </div>
       </div>
+
+      {/* Toast Container */}
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
     </div>
   );
 };

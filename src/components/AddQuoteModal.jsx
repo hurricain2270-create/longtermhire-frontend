@@ -5,6 +5,7 @@ import { PDFViewer } from "@react-pdf/renderer";
 import QuotePDF from "./QuotePDF";
 import { equipmentApi } from "../services/equipmentApi";
 import { quoteApi } from "../services/quoteApi";
+import SimpleRichTextEditor from "./SimpleRichTextEditor";
 
 const AddQuoteModal = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({
@@ -78,6 +79,13 @@ const AddQuoteModal = ({ isOpen, onClose, onSave }) => {
     if (!file) return;
 
     try {
+      // Validate aspect ratio for logos (specific requirement: 16:9 to 3.5:1)
+      const { validateImageFile } = await import("../utils/uploadUtils");
+      await validateImageFile(file, {
+        minAspectRatio: 16/9, // Minimum 16:9 (1.78:1)
+        maxAspectRatio: 3.5, // Maximum 3.5:1 (allows 32:9 ultrawide and similar)
+      });
+
       toast.info("Uploading logo...");
 
       // Upload to S3 using the same API as equipment
@@ -95,7 +103,7 @@ const AddQuoteModal = ({ isOpen, onClose, onSave }) => {
       }
     } catch (error) {
       console.error("Error uploading logo:", error);
-      toast.error("Failed to upload logo");
+      toast.error(error.message || "Failed to upload logo");
     }
   };
 
@@ -352,13 +360,10 @@ const AddQuoteModal = ({ isOpen, onClose, onSave }) => {
                 <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
                   Terms of Hire
                 </label>
-                <textarea
-                  name="termsOfHire"
+                <SimpleRichTextEditor
                   value={formData.termsOfHire}
-                  onChange={handleInputChange}
-                  rows={3}
-                  className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-3 py-2 outline-none focus:border-[#FDCE06] transition-colors resize-none"
-                  placeholder="Enter terms of hire"
+                  onChange={(html) => setFormData((prev) => ({ ...prev, termsOfHire: html }))}
+                  height={150}
                 />
               </div>
             </div>

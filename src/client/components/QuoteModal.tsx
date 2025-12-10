@@ -29,7 +29,23 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
         setError(null);
         try {
             // Fetch quote configuration for this equipment
-            const quoteConfig = await clientEquipmentApi.getQuoteConfig(equipment.id);
+            let quoteConfig = null;
+            try {
+                quoteConfig = await clientEquipmentApi.getQuoteConfig(equipment.id);
+            } catch (quoteError: any) {
+                console.warn("Quote config API not available, using defaults:", quoteError);
+                // Use default values if API fails
+                quoteConfig = {
+                    company_name: "Valued Client",
+                    company_address: "",
+                    company_email: "",
+                    company_logo: null,
+                    gst_percentage: "15",
+                    terms_of_hire: "Standard Long Term Hire Terms & Conditions apply.",
+                    quote_expires_after: "7",
+                    produce_quote_for: "12"
+                };
+            }
 
             // Fetch admin settings for "From" section
             let adminSettings = null;

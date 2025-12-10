@@ -151,15 +151,18 @@ export const useClientChat = () => {
     [hasMoreMessages, loadingMore, currentPage, loadMessages]
   );
 
-  // Send a message
+  // Send a message (with optional attachment)
   const sendMessage = useCallback(
-    async (toUserId, message) => {
+    async (toUserId, message, attachmentData = null) => {
       try {
-        const response = await chatApi.sendMessage({
+        const messageData = {
           to_user_id: toUserId,
-          message: message,
-          message_type: "text",
-        });
+          message: message || (attachmentData ? `Sent a file: ${attachmentData.attachment_name}` : ""),
+          message_type: attachmentData ? attachmentData.attachment_type : "text",
+          ...(attachmentData || {}),
+        };
+
+        const response = await chatApi.sendMessage(messageData);
 
         if (!response.error) {
           // Add message to local state immediately for better UX
@@ -172,10 +175,11 @@ export const useClientChat = () => {
             id: response.data.id,
             from_user_id: currentUserId, // Use current user ID instead of response data
             to_user_id: toUserId,
-            message: message,
-            message_type: "text",
+            message: messageData.message,
+            message_type: messageData.message_type,
             created_at: new Date().toISOString(),
             from_user_name: "You",
+            ...(attachmentData || {}),
           };
 
           setMessages((prev) => {

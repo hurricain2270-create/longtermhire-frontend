@@ -4,7 +4,8 @@ import { chatApi } from "../services/chatApi";
 export const useChat = (onNewMessagesFromPolling) => {
   const [conversations, setConversations] = useState([]);
   const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // For loading conversations list
+  const [loadingMessages, setLoadingMessages] = useState(false); // For loading messages
   const [error, setError] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [hasMoreMessages, setHasMoreMessages] = useState(true);
@@ -16,12 +17,35 @@ export const useChat = (onNewMessagesFromPolling) => {
   const lastMessageTimestamp = useRef(0);
 
   // Load conversations
-  const loadConversations = useCallback(async () => {
+  const loadConversations = useCallback(async (showLoading = true) => {
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
       const response = await chatApi.getConversations();
       if (!response.error) {
-        setConversations(response.data);
+        // Use functional update to prevent unnecessary re-renders
+        setConversations((prevConversations) => {
+          // Only update if data actually changed (by comparing IDs)
+          const newIds = new Set((response.data || []).map(c => c.id));
+          const prevIds = new Set((prevConversations || []).map(c => c.id));
+          
+          // Check if arrays are different
+          if (newIds.size !== prevIds.size || 
+              ![...newIds].every(id => prevIds.has(id)) ||
+              ![...prevIds].every(id => newIds.has(id))) {
+            return response.data;
+          }
+          
+          // If same IDs, update unread counts only (smooth update)
+          return (prevConversations || []).map(prevConv => {
+            const newConv = (response.data || []).find(c => c.id === prevConv.id);
+            if (newConv && newConv.unread_count !== prevConv.unread_count) {
+              return { ...prevConv, unread_count: newConv.unread_count };
+            }
+            return prevConv;
+          });
+        });
       } else {
         setError(response.message);
       }
@@ -29,7 +53,9 @@ export const useChat = (onNewMessagesFromPolling) => {
       setError("Failed to load conversations");
       console.error("Load conversations error:", err);
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -37,7 +63,7 @@ export const useChat = (onNewMessagesFromPolling) => {
   const loadMessages = useCallback(async (conversationId, page = 1) => {
     try {
       if (page === 1) {
-        setLoading(true);
+        setLoadingMessages(true); // Use separate loading state for messages
         setCurrentPage(1);
       } else {
         setLoadingMore(true);
@@ -75,7 +101,7 @@ export const useChat = (onNewMessagesFromPolling) => {
       setError("Failed to load messages");
       console.error("Load messages error:", err);
     } finally {
-      setLoading(false);
+      setLoadingMessages(false); // Use separate loading state for messages
       setLoadingMore(false);
     }
   }, []);
@@ -226,8 +252,11 @@ export const useChat = (onNewMessagesFromPolling) => {
                 latestMessage.created_at
               ).getTime();
 
-              // Refresh conversations to update unread counts
-              loadConversations();
+              // Refresh conversations to update unread counts (without showing loading)
+              // Use a small delay to avoid race conditions
+              setTimeout(() => {
+                loadConversations(false); // Don't show loading spinner on background refresh
+              }, 100);
             }
           }
         } catch (err) {
@@ -271,7 +300,8 @@ export const useChat = (onNewMessagesFromPolling) => {
     // State
     conversations,
     messages,
-    loading,
+    loading, // For conversations list
+    loadingMessages, // For messages
     error,
     isConnected,
     hasMoreMessages,

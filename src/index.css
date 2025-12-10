@@ -4,6 +4,9 @@
 @tailwind utilities;
 @theme {
   --font-inter: "Inter", sans-serif;
+  --font-kalam: "Kalam", cursive;
+  --font-caveat: "Caveat", cursive;
+  --font-dancing-script: "Dancing Script", cursive;
 }
 
 @layer base {

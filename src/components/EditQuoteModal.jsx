@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import { PDFViewer } from "@react-pdf/renderer";
 import QuotePDF from "./QuotePDF";
 import { equipmentApi } from "../services/equipmentApi";
+import SimpleRichTextEditor from "./SimpleRichTextEditor";
 
 const EditQuoteModal = ({ isOpen, onClose, onSave, quote }) => {
   const [formData, setFormData] = useState({
@@ -54,6 +55,13 @@ const EditQuoteModal = ({ isOpen, onClose, onSave, quote }) => {
     if (!file) return;
 
     try {
+      // Validate aspect ratio for logos (specific requirement: 16:9 to 3.5:1)
+      const { validateImageFile } = await import("../utils/uploadUtils");
+      await validateImageFile(file, {
+        minAspectRatio: 16 / 9, // Minimum 16:9 (1.78:1)
+        maxAspectRatio: 3.5, // Maximum 3.5:1 (allows 32:9 ultrawide and similar)
+      });
+
       toast.info("Uploading logo...");
 
       // Upload to S3 using the same API as equipment
@@ -71,7 +79,7 @@ const EditQuoteModal = ({ isOpen, onClose, onSave, quote }) => {
       }
     } catch (error) {
       console.error("Error uploading logo:", error);
-      toast.error("Failed to upload logo");
+      toast.error(error.message || "Failed to upload logo");
     }
   };
 
@@ -278,13 +286,12 @@ const EditQuoteModal = ({ isOpen, onClose, onSave, quote }) => {
                 <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
                   Terms of Hire
                 </label>
-                <textarea
-                  name="termsOfHire"
+                <SimpleRichTextEditor
                   value={formData.termsOfHire}
-                  onChange={handleInputChange}
-                  rows={3}
-                  className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-3 py-2 outline-none focus:border-[#FDCE06] transition-colors resize-none"
-                  placeholder="Enter terms of hire"
+                  onChange={(html) =>
+                    setFormData((prev) => ({ ...prev, termsOfHire: html }))
+                  }
+                  height={150}
                 />
               </div>
             </div>
@@ -294,20 +301,28 @@ const EditQuoteModal = ({ isOpen, onClose, onSave, quote }) => {
               <h3 className="text-[#E5E5E5] font-[Inter] font-semibold text-lg mb-4">
                 Preview
               </h3>
-              <div className="bg-white rounded-lg overflow-hidden" style={{ height: '600px' }}>
+              <div
+                className="bg-white rounded-lg overflow-hidden"
+                style={{ height: "600px" }}
+              >
                 <PDFViewer width="100%" height="100%" showToolbar={false}>
                   <QuotePDF
                     quoteData={{
                       company_name: formData.companyName || "Your Company",
-                      company_address: formData.companyAddress || "Your Address",
-                      company_email: formData.companyEmail || "email@company.com",
+                      company_address:
+                        formData.companyAddress || "Your Address",
+                      company_email:
+                        formData.companyEmail || "email@company.com",
                       company_logo: logoPreview,
                       gst_percentage: formData.gstPercentage || "15",
-                      terms_of_hire: formData.termsOfHire || "Terms and conditions will appear here",
+                      terms_of_hire:
+                        formData.termsOfHire ||
+                        "Terms and conditions will appear here",
                       quote_id: quote?.quoteId || "PREVIEW",
                       quote_expires_after: formData.quoteExpiresAfter || "3",
                       produce_quote_for: formData.produceQuoteFor || "8",
-                      created_at: quote?.createdDate || new Date().toISOString(),
+                      created_at:
+                        quote?.createdDate || new Date().toISOString(),
                       equipmentData: {
                         id: "001",
                         description: "7 Ton Excavator",
