@@ -67,11 +67,11 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
     // Use dynamic compounding_discount_value instead of hardcoded 1%
     const compoundingDiscount = compoundingValue > 0 ? compoundingValue : 0; // Default to 0 if not set
     const compoundingDiscountType = compoundingType || "percentage"; // Default to percentage
-    
+
     // Calculate compounding effect over duration (starting from month 1)
     let standardCompoundingCost = 0;
     let currentMonthPrice = basePrice;
-    
+
     for (let month = 1; month <= selectedDuration; month++) {
       standardCompoundingCost += currentMonthPrice;
       // Apply compounding discount for next month (if compounding exists)
@@ -100,7 +100,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
 
     setCalculatedPrice(finalCost);
     setTotalDiscount(totalSavings);
-    setSavingsPerMonth(monthlyAvgSavings);
+    setSavingsPerMonth(totalSavings); // Display Total Savings INSTEAD of Average
   }, [
     selectedDuration,
     equipment,
@@ -151,11 +151,11 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
   // Get availability date string (only show for unavailable equipment)
   const getAvailabilityText = () => {
     // Only show availability text if equipment is unavailable
-    const isUnavailable = 
-      equipment.status === "Unavailable" || 
-      equipment.status === "Booked" || 
+    const isUnavailable =
+      equipment.status === "Unavailable" ||
+      equipment.status === "Booked" ||
       equipment.availability === 0;
-    
+
     if (!isUnavailable) {
       return null; // Don't show "Available" for available equipment
     }
@@ -163,17 +163,17 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
     if (equipment.unavailability_due_month) {
       // Try to parse the date
       let date = new Date(equipment.unavailability_due_month);
-      
+
       // If invalid date, use next month instead
       if (isNaN(date.getTime())) {
         const nextMonth = new Date();
         nextMonth.setMonth(nextMonth.getMonth() + 1);
         date = nextMonth;
       }
-      
+
       return `Available ${date.toLocaleDateString("en-US", { month: "long", year: "numeric" })}`;
     }
-    
+
     // If no date provided but equipment is unavailable, show next month
     const nextMonth = new Date();
     nextMonth.setMonth(nextMonth.getMonth() + 1);
@@ -331,11 +331,10 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                         e.stopPropagation();
                         onImageSelect(equipment.id, index);
                       }}
-                      className={`flex-shrink-0 w-12 h-12 rounded border-2 transition-all overflow-hidden ${
-                        index === selectedImageIndex
-                          ? "border-[#FDCE06] ring-1 ring-[#FDCE06]/50"
-                          : "border-[#333333] hover:border-[#9CA3AF]"
-                      }`}
+                      className={`flex-shrink-0 w-12 h-12 rounded border-2 transition-all overflow-hidden ${index === selectedImageIndex
+                        ? "border-[#FDCE06] ring-1 ring-[#FDCE06]/50"
+                        : "border-[#333333] hover:border-[#9CA3AF]"
+                        }`}
                     >
                       <img
                         src={img.image_url}
@@ -522,6 +521,13 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                       {maintenanceInfo.text}
                     </div>
                   )}
+
+                  {/* Compounding Discount Label */}
+                  {hasCompounding && (
+                    <div className="text-[#10B981] text-sm font-semibold">
+                      Save {compoundingType === "%" || compoundingType === "percentage" ? `${compoundingValue}%` : formatCurrency(compoundingValue)}/month
+                    </div>
+                  )}
                 </div>
               </>
             )}
@@ -532,7 +538,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
             <div className="mb-4 pb-4 border-t-2 border-[#333333] pt-4">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-[#E5E5E5] text-sm font-semibold">
-                  Savings per month:
+                  Total Savings:
                 </span>
                 <span className="text-[#10B981] text-sm font-bold">
                   -{formatCurrency(savingsPerMonth)}
@@ -573,11 +579,10 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                 }
               }}
               disabled={isUnavailable || requestLoading}
-              className={`flex-1 px-3 py-2 border-2 border-[#FDCE06] bg-[#FDCE06] text-[#000000] text-sm font-semibold hover:bg-[#E5B800] hover:border-[#E5B800] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap rounded ${
-                isUnavailable
-                  ? "bg-[#333333] border-[#333333] text-[#6B7280]"
-                  : ""
-              }`}
+              className={`flex-1 px-3 py-2 border-2 border-[#FDCE06] bg-[#FDCE06] text-[#000000] text-sm font-semibold hover:bg-[#E5B800] hover:border-[#E5B800] transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap rounded ${isUnavailable
+                ? "bg-[#333333] border-[#333333] text-[#6B7280]"
+                : ""
+                }`}
             >
               {requestLoading ? (
                 <ClipLoader
@@ -614,10 +619,10 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
             </button>
           </div>
         </div>
-      </div>
+      </div >
 
       {/* Modals */}
-      <SpecModal
+      < SpecModal
         isOpen={isSpecModalOpen}
         onClose={() => setIsSpecModalOpen(false)}
         equipmentId={equipment.equipment_id || equipment.id}

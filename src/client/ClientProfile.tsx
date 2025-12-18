@@ -11,6 +11,7 @@ function ClientProfile() {
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
+    companyName: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -41,6 +42,7 @@ function ClientProfile() {
           setFormData({
             fullName: clientProfile?.client_name || user?.username || "",
             email: user?.email || "",
+            companyName: clientProfile?.company_name || "",
           });
         }
       } catch (error) {
@@ -197,9 +199,20 @@ function ClientProfile() {
                   readOnly
                   className="w-full sm:max-w-md border border-[#333333] rounded-md bg-[#1A1A1A] text-[#9CA3AF] px-4 py-3 outline-none cursor-not-allowed"
                 />
-                {/* <p className="text-[#6B7280] text-xs mt-1">
-                  Email cannot be changed for security reasons
-                </p> */}
+              </div>
+
+              {/* Company Name Field (Read-only) */}
+              <div className="w-full">
+                <label className="block text-[#9CA3AF] mb-2 text-sm font-medium">
+                  Company Name
+                </label>
+                <input
+                  type="text"
+                  name="companyName"
+                  value={formData.companyName}
+                  readOnly
+                  className="w-full sm:max-w-md border border-[#333333] rounded-md bg-[#1A1A1A] text-[#9CA3AF] px-4 py-3 outline-none cursor-not-allowed"
+                />
               </div>
 
               {/* Success/Error Messages */}
@@ -219,11 +232,10 @@ function ClientProfile() {
                 <button
                   onClick={handleSaveChanges}
                   disabled={saving}
-                  className={`rounded-md font-bold px-6 py-3 border-none cursor-pointer transition-colors flex items-center gap-2 ${
-                    saving
-                      ? "bg-[#9CA3AF] text-[#666] cursor-not-allowed"
-                      : "bg-[#FDCE06] text-[#1F1F20] hover:bg-[#E5B800]"
-                  }`}
+                  className={`rounded-md font-bold px-6 py-3 border-none cursor-pointer transition-colors flex items-center gap-2 ${saving
+                    ? "bg-[#9CA3AF] text-[#666] cursor-not-allowed"
+                    : "bg-[#FDCE06] text-[#1F1F20] hover:bg-[#E5B800]"
+                    }`}
                 >
                   {saving ? (
                     <>

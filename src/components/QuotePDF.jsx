@@ -8,6 +8,7 @@ import {
   StyleSheet,
   Image,
 } from "@react-pdf/renderer";
+import { calculateMonthlyPrices } from "../utils/pricingCalculator";
 
 // Define styles
 const styles = StyleSheet.create({
@@ -206,24 +207,37 @@ const QuotePDF = ({ quoteData }) => {
 
   // Generate monthly pricing with compounding discounts
   const equipmentItems = [];
-  let currentPrice = equipmentData.basePrice;
-  let accumulativeTotal = 0;
 
-  for (let month = 1; month <= numberOfMonths; month++) {
-    const discountPercent = equipmentData.discount * month;
-    const discountedPrice = equipmentData.basePrice * (1 - discountPercent / 100);
-    accumulativeTotal += discountedPrice;
+  // Use robust check for values
+  const basePrice = parseFloat(equipmentData.basePrice || equipmentData.custom_base_price || 0);
+  const discount = parseFloat(equipmentData.discount || equipmentData.discount_value || 0);
+  const discountType = equipmentData.discount_type || '%';
+  const compoundingDiscount = parseFloat(equipmentData.compounding_discount || equipmentData.compounding_discount_value || 0);
+  const compoundingDiscountType = equipmentData.compounding_discount_type || '%';
 
+  const schedule = calculateMonthlyPrices(
+    basePrice,
+    discount,
+    discountType,
+    compoundingDiscount,
+    compoundingDiscountType,
+    numberOfMonths
+  );
+
+  // Map schedule to equipmentItems format
+  schedule.forEach(item => {
     equipmentItems.push({
       id: equipmentData.id,
-      description: equipmentData.description,
-      month: month,
-      unitPrice: equipmentData.basePrice,
-      discount: discountPercent.toFixed(2),
-      price: discountedPrice.toFixed(2),
-      total: accumulativeTotal.toFixed(2),
+      description: equipmentData.description || equipmentData.name,
+      month: item.month,
+      unitPrice: item.unitPrice.toFixed(2),
+      discount: item.discountType === '%' ? `${item.discount.toFixed(2)}%` : `$${item.discount.toFixed(2)}`,
+      price: item.price.toFixed(2),
+      total: item.cumulativeTotal.toFixed(2),
     });
-  }
+  });
+
+  const accumulativeTotal = schedule.length > 0 ? schedule[schedule.length - 1].cumulativeTotal : 0;
 
   // Calculate totals
   const subtotal = accumulativeTotal;
