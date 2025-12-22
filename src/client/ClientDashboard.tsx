@@ -14,6 +14,7 @@ import "react-toastify/dist/ReactToastify.css";
 import EquipmentCard from "./components/EquipmentCard";
 import QuickViewModal from "./components/QuickViewModal";
 import CategoryFilter from "./components/CategoryFilter";
+import { calculateMonthlyPrices } from "../utils/pricingCalculator";
 
 // Add custom CSS for scrollbar hiding and range input styling
 const scrollbarHideStyles = `
@@ -222,7 +223,7 @@ function ClientDashboard() {
   const groupMessagesByDate = (messages) => {
     const groups = {};
     messages.forEach((message) => {
-      const date = new Date(message.created_at).toDateString();
+      const date = new Date(message.created_at).toLocaleDateString("en-AU");
       if (!groups[date]) {
         groups[date] = [];
       }
@@ -234,8 +235,8 @@ function ClientDashboard() {
   const messageGroups = groupMessagesByDate(messages);
 
   const [companySettings, setCompanySettings] = useState({
-    ad_text: "",
-    ad_text_destination: "To Sticky Note",
+    header_ad_text: "",
+    sticky_ad_text: "",
     company_logo: "",
   });
 
@@ -284,15 +285,15 @@ function ClientDashboard() {
           const settingsResponse = await clientAuthApi.getCompanySettings();
           console.log("Company settings response:", settingsResponse);
           if (settingsResponse) {
+            console.log("Company settings:", settingsResponse);
             setCompanySettings({
-              ad_text: settingsResponse.ad_text || "",
-              ad_text_destination:
-                settingsResponse.ad_text_destination || "To Sticky Note",
+              header_ad_text: settingsResponse.header_ad_text || "",
+              sticky_ad_text: settingsResponse.sticky_ad_text || "",
               company_logo: settingsResponse.company_logo || "",
             });
             console.log("Company settings loaded:", {
-              ad_text: settingsResponse.ad_text,
-              ad_text_destination: settingsResponse.ad_text_destination,
+              header_ad_text: settingsResponse.header_ad_text,
+              sticky_ad_text: settingsResponse.sticky_ad_text,
               company_logo: settingsResponse.company_logo,
             });
           }
@@ -528,8 +529,8 @@ function ClientDashboard() {
       if (container) {
         const isNearBottom =
           container.scrollHeight -
-            container.scrollTop -
-            container.clientHeight <
+          container.scrollTop -
+          container.clientHeight <
           100;
 
         if (force || isNearBottom) {
@@ -791,21 +792,21 @@ function ClientDashboard() {
       const hasDiscount = item.discount_type && item.discount_value;
       const discountInfo = hasDiscount
         ? {
-            has_discount: true,
-            discount_type: item.discount_type,
-            discount_value: item.discount_value,
-            original_price: item.base_price,
-            discounted_price: null, // Will be calculated dynamically
-            pricing_package: item.pricing_package,
-          }
+          has_discount: true,
+          discount_type: item.discount_type,
+          discount_value: item.discount_value,
+          original_price: item.base_price,
+          discounted_price: null, // Will be calculated dynamically
+          pricing_package: item.pricing_package,
+        }
         : {
-            has_discount: false,
-            discount_type: null,
-            discount_value: null,
-            original_price: item.base_price,
-            discounted_price: null,
-            pricing_package: null,
-          };
+          has_discount: false,
+          discount_type: null,
+          discount_value: null,
+          original_price: item.base_price,
+          discounted_price: null,
+          pricing_package: null,
+        };
 
       // Handle multiple images - get all images and determine main display image
       let allImages = [];
@@ -983,36 +984,27 @@ function ClientDashboard() {
 
     if (!selectedEquipmentData) return 0;
 
-    const { discount_type, discount_value, base_price } = selectedEquipmentData;
+    const basePrice = selectedEquipmentData.custom_base_price || selectedEquipmentData.base_price || 0;
+    const discountValue = selectedEquipmentData.discount_value || selectedEquipmentData.discount || 0;
+    const discountType = selectedEquipmentData.discount_type;
+    const compoundingValue = selectedEquipmentData.compounding_discount_value || selectedEquipmentData.compounding_discount || 0;
+    const compoundingType = selectedEquipmentData.compounding_discount_type;
     const selectedDurationMonths = getSelectedDurationMonths();
 
-    // STANDARD 1% compounding discount for ALL hires (hardcoded)
-    let standardCompoundingCost = 0;
-    let currentMonthPrice = base_price;
+    const result = calculateMonthlyPrices(
+      basePrice,
+      discountValue,
+      discountType,
+      compoundingValue,
+      compoundingType,
+      selectedDurationMonths
+    );
 
-    for (let month = 1; month <= selectedDurationMonths; month++) {
-      standardCompoundingCost += currentMonthPrice;
-      // Next month's price is discounted by 1% from current month's price
-      currentMonthPrice = currentMonthPrice * 0.99; // 1% discount = 99% of previous price
-    }
-
-    // Calculate standard discount (difference between simple multiplication and compounding)
-    const simpleTotalCost = base_price * selectedDurationMonths;
-    const standardDiscount = simpleTotalCost - standardCompoundingCost;
-
-    // Add any additional pricing package discount
-    let packageDiscount = 0;
-    if (discount_type && discount_value) {
-      if (discount_type === "fixed") {
-        packageDiscount = discount_value;
-      } else if (discount_type === "percentage") {
-        // Percentage discount applied to the standard compounding cost
-        packageDiscount = standardCompoundingCost * (discount_value / 100);
-      }
-    }
-
-    return parseFloat((standardDiscount + packageDiscount).toFixed(2));
+    const finalResult = result[result.length - 1];
+    const undiscountedTotal = basePrice * selectedDurationMonths;
+    return parseFloat((undiscountedTotal - finalResult.cumulativeTotal).toFixed(2));
   }, [equipment, selectedEquipment, selectedDuration]);
+
 
   // Memoized final price calculation
   const finalPrice = useMemo(() => {
@@ -1020,34 +1012,28 @@ function ClientDashboard() {
       (item) => item.equipment_name === selectedEquipment
     );
 
-    if (!selectedEquipmentData?.base_price) return 0;
+    if (!selectedEquipmentData) return 0;
 
-    const { discount_type, discount_value, base_price } = selectedEquipmentData;
+    const basePrice = selectedEquipmentData.custom_base_price || selectedEquipmentData.base_price || 0;
+    const discountValue = selectedEquipmentData.discount_value || selectedEquipmentData.discount || 0;
+    const discountType = selectedEquipmentData.discount_type;
+    const compoundingValue = selectedEquipmentData.compounding_discount_value || selectedEquipmentData.compounding_discount || 0;
+    const compoundingType = selectedEquipmentData.compounding_discount_type;
     const selectedDurationMonths = getSelectedDurationMonths();
 
-    // STANDARD 1% compounding discount for ALL hires (hardcoded)
-    let standardCompoundingCost = 0;
-    let currentMonthPrice = base_price;
+    const result = calculateMonthlyPrices(
+      basePrice,
+      discountValue,
+      discountType,
+      compoundingValue,
+      compoundingType,
+      selectedDurationMonths
+    );
 
-    for (let month = 1; month <= selectedDurationMonths; month++) {
-      standardCompoundingCost += currentMonthPrice;
-      // Next month's price is discounted by 1% from current month's price
-      currentMonthPrice = currentMonthPrice * 0.99; // 1% discount = 99% of previous price
-    }
-
-    // Apply any additional pricing package discount on top of the standard compounding cost
-    let finalCost = standardCompoundingCost;
-    if (discount_type && discount_value) {
-      if (discount_type === "fixed") {
-        finalCost = standardCompoundingCost - discount_value;
-      } else if (discount_type === "percentage") {
-        // Percentage discount applied to the standard compounding cost
-        finalCost = standardCompoundingCost * (1 - discount_value / 100);
-      }
-    }
-
-    return parseFloat(Math.max(0, finalCost).toFixed(2));
+    const finalResult = result[result.length - 1];
+    return parseFloat(finalResult.cumulativeTotal.toFixed(2));
   }, [equipment, selectedEquipment, selectedDuration]);
+
 
   // Memoized discount percentage calculation
   const discountPercentage = useMemo(() => {
@@ -1055,29 +1041,17 @@ function ClientDashboard() {
       (item) => item.equipment_name === selectedEquipment
     );
 
-    if (!selectedEquipmentData?.base_price) return 0;
+    if (!selectedEquipmentData) return 0;
 
+    const basePrice = selectedEquipmentData.custom_base_price || selectedEquipmentData.base_price || 0;
     const selectedDurationMonths = getSelectedDurationMonths();
-    const basePrice = selectedEquipmentData.base_price;
+    const undiscountedTotal = basePrice * selectedDurationMonths;
 
-    // Calculate the effective percentage discount from the standard 1% compounding
-    const simpleTotalCost = basePrice * selectedDurationMonths;
+    if (undiscountedTotal === 0) return 0;
 
-    // Calculate standard compounding cost
-    let standardCompoundingCost = 0;
-    let currentMonthPrice = basePrice;
+    return parseFloat(((undiscountedTotal - finalPrice) / undiscountedTotal * 100).toFixed(2));
+  }, [equipment, selectedEquipment, selectedDuration, finalPrice]);
 
-    for (let month = 1; month <= selectedDurationMonths; month++) {
-      standardCompoundingCost += currentMonthPrice;
-      currentMonthPrice = currentMonthPrice * 0.99;
-    }
-
-    const standardDiscount = simpleTotalCost - standardCompoundingCost;
-    const standardDiscountPercentage =
-      (standardDiscount / simpleTotalCost) * 100;
-
-    return parseFloat(standardDiscountPercentage.toFixed(2));
-  }, [equipment, selectedEquipment, selectedDuration]);
 
   // Handle image selection for equipment
   const handleImageSelect = (equipmentId, imageIndex) => {
@@ -1126,32 +1100,29 @@ function ClientDashboard() {
       (item) => item.equipment_name === selectedEquipment
     );
 
-    if (!selectedEquipmentData?.base_price) return [];
+    if (!selectedEquipmentData) return [];
 
-    const { discount_type, discount_value, base_price } = selectedEquipmentData;
+    const basePrice = selectedEquipmentData.custom_base_price || selectedEquipmentData.base_price || 0;
+    const discountValue = selectedEquipmentData.discount_value || selectedEquipmentData.discount || 0;
+    const discountType = selectedEquipmentData.discount_type;
+    const compoundingValue = selectedEquipmentData.compounding_discount_value || selectedEquipmentData.compounding_discount || 0;
+    const compoundingType = selectedEquipmentData.compounding_discount_type;
     const selectedDurationMonths = getSelectedDurationMonths();
 
-    if (discount_type === "percentage" && discount_value) {
-      const breakdown = [];
-      let currentMonthPrice = base_price;
+    const result = calculateMonthlyPrices(
+      basePrice,
+      discountValue,
+      discountType,
+      compoundingValue,
+      compoundingType,
+      selectedDurationMonths
+    );
 
-      for (let month = 1; month <= selectedDurationMonths; month++) {
-        breakdown.push({
-          month,
-          price: parseFloat(currentMonthPrice.toFixed(2)),
-          discount:
-            month === 1
-              ? 0
-              : parseFloat((base_price - currentMonthPrice).toFixed(2)),
-        });
-        // Next month's price is discounted from current month's price
-        currentMonthPrice = currentMonthPrice * (1 - discount_value / 100);
-      }
-
-      return breakdown;
-    }
-
-    return [];
+    return result.map((item, index) => ({
+      month: item.month,
+      price: parseFloat(item.price.toFixed(2)),
+      discount: parseFloat((basePrice - item.price).toFixed(2))
+    }));
   };
 
   // Process selected file
@@ -1276,7 +1247,7 @@ function ClientDashboard() {
       const success = await sendMessage(
         adminUserId,
         messageText.trim() ||
-          (selectedFile ? `Sent a file: ${selectedFile.name}` : ""),
+        (selectedFile ? `Sent a file: ${selectedFile.name}` : ""),
         attachmentData
       );
 
@@ -1393,23 +1364,19 @@ function ClientDashboard() {
         {/* Main Content */}
         <main className="flex-1 px-4 sm:px-8 lg:px-20 pb-[100px] py-6 lg:py-8 lg:max-w-[866px] xl:max-w-full">
           <div className="max-w-full lg:max-w-[810px]">
-            {/* Ad Space Banner */}
-            {companySettings.ad_text &&
-              companySettings.ad_text_destination === "To Ad Space" && (
-                <div className="mb-8 lg:mb-12">
-                  <div className="bg-[#1F1F20] border-2 border-[#333333] rounded-lg p-6 text-center">
-                    <div className="text-[#9CA3AF] text-sm mb-2 font-semibold">
-                      Ad Space
-                    </div>
-                    <div
-                      className="text-[#E5E5E5] text-base"
-                      dangerouslySetInnerHTML={{
-                        __html: companySettings.ad_text,
-                      }}
-                    />
-                  </div>
+            {/* Header Ad Banner */}
+            {companySettings.header_ad_text && (
+              <div className="mb-8 lg:mb-12">
+                <div className="bg-[#1F1F20] border-2 border-[#333333] rounded-lg p-6">
+                  <div
+                    className="text-[#E5E5E5] text-base"
+                    dangerouslySetInnerHTML={{
+                      __html: companySettings.header_ad_text,
+                    }}
+                  />
                 </div>
-              )}
+              </div>
+            )}
 
             {/* Category Filter */}
             {allCategories.length > 0 && (
@@ -1474,11 +1441,10 @@ function ClientDashboard() {
           <div className="space-y-6 lg:space-y-8 lg:flex lg:flex-col lg:justify-between h-full">
             {/* Sticky Note */}
             <div
-              className={`w-full lg:w-[378px] lg:fixed ${
-                scrollTop > 150
-                  ? "lg:top-[20px] right-4"
-                  : "lg:top-[150px] right-4"
-              } transition-all duration-300 ease-in-out`}
+              className={`w-full lg:w-[378px] lg:fixed ${scrollTop > 150
+                ? "lg:top-[20px] right-4"
+                : "lg:top-[150px] right-4"
+                } transition-all duration-300 ease-in-out`}
             >
               <div className="bg-[#FDE047] border-2 border-[#EAB308] rounded-lg p-6 relative shadow-lg">
                 {/* Red comment label */}
@@ -1498,7 +1464,7 @@ function ClientDashboard() {
                   dangerouslySetInnerHTML={{
                     __html:
                       companySettings.ad_text &&
-                      companySettings.ad_text_destination === "To Sticky Note"
+                        companySettings.ad_text_destination === "To Sticky Note"
                         ? companySettings.ad_text
                         : "<p>Welcome to LongtermHire!</p><p>Browse our equipment and request quotes.</p>",
                   }}
@@ -1623,20 +1589,18 @@ function ClientDashboard() {
                                 return (
                                   <div
                                     key={message.id}
-                                    className={`flex ${
-                                      isCurrentUser
-                                        ? "justify-end"
-                                        : "justify-start"
-                                    }`}
+                                    className={`flex ${isCurrentUser
+                                      ? "justify-end"
+                                      : "justify-start"
+                                      }`}
                                   >
                                     <div
-                                      className={`max-w-[280px] mb-5 rounded-lg p-3 ${
-                                        isEquipmentRequest
-                                          ? "bg-[#FDCE06] text-[#000000] border-2 border-[#E5B800]"
-                                          : isCurrentUser
-                                            ? "bg-[#FDCE06] text-[#000000]"
-                                            : "bg-[#292A2B] text-[#E5E5E5]"
-                                      }`}
+                                      className={`max-w-[280px] mb-5 rounded-lg p-3 ${isEquipmentRequest
+                                        ? "bg-[#FDCE06] text-[#000000] border-2 border-[#E5B800]"
+                                        : isCurrentUser
+                                          ? "bg-[#FDCE06] text-[#000000]"
+                                          : "bg-[#292A2B] text-[#E5E5E5]"
+                                        }`}
                                     >
                                       {isEquipmentRequest && (
                                         <div className="mb-2">
@@ -1915,18 +1879,16 @@ function ClientDashboard() {
                       return (
                         <div
                           key={message.id}
-                          className={`flex ${
-                            isCurrentUser ? "justify-end" : "justify-start"
-                          }`}
+                          className={`flex ${isCurrentUser ? "justify-end" : "justify-start"
+                            }`}
                         >
                           <div
-                            className={`max-w-[80%] rounded-lg p-3 ${
-                              isEquipmentRequest
-                                ? "bg-[#FDCE06] text-[#000000] border-2 border-[#E5B800]"
-                                : isCurrentUser
-                                  ? "bg-[#FDCE06] text-[#000000]"
-                                  : "bg-[#292A2B] text-[#E5E5E5]"
-                            }`}
+                            className={`max-w-[80%] rounded-lg p-3 ${isEquipmentRequest
+                              ? "bg-[#FDCE06] text-[#000000] border-2 border-[#E5B800]"
+                              : isCurrentUser
+                                ? "bg-[#FDCE06] text-[#000000]"
+                                : "bg-[#292A2B] text-[#E5E5E5]"
+                              }`}
                           >
                             {isEquipmentRequest && (
                               <div className="mb-2">
@@ -2195,13 +2157,12 @@ function ClientDashboard() {
                           className={`flex ${isCurrentUser ? "justify-end" : "justify-start"}`}
                         >
                           <div
-                            className={`max-w-[80%] rounded-lg mt-4 p-3 ${
-                              isEquipmentRequest
-                                ? "bg-[#FDCE06] text-[#000000] border-2 border-[#E5B800]"
-                                : isCurrentUser
-                                  ? "bg-[#FDCE06] text-[#000000]"
-                                  : "bg-[#292A2B] text-[#E5E5E5]"
-                            }`}
+                            className={`max-w-[80%] rounded-lg mt-4 p-3 ${isEquipmentRequest
+                              ? "bg-[#FDCE06] text-[#000000] border-2 border-[#E5B800]"
+                              : isCurrentUser
+                                ? "bg-[#FDCE06] text-[#000000]"
+                                : "bg-[#292A2B] text-[#E5E5E5]"
+                              }`}
                           >
                             {isEquipmentRequest && (
                               <div className="mb-1">
@@ -2391,9 +2352,8 @@ function ClientDashboard() {
 
               <div
                 ref={dropZoneRef}
-                className={`flex items-center bg-[#2A2A2B] border border-[#444444] rounded-lg px-3 py-2 relative ${
-                  isDragging ? "border-[#FDCE06] border-2 border-dashed" : ""
-                }`}
+                className={`flex items-center bg-[#2A2A2B] border border-[#444444] rounded-lg px-3 py-2 relative ${isDragging ? "border-[#FDCE06] border-2 border-dashed" : ""
+                  }`}
                 onDragEnter={handleDragEnter}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
@@ -2497,6 +2457,35 @@ function ClientDashboard() {
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sticky Note Ad */}
+      {companySettings.sticky_ad_text && (
+        <div className="fixed bottom-4 right-4 z-50 max-w-sm">
+          <div className="bg-[#FDCE06] border-2 border-[#E5B800] rounded-lg p-4 shadow-2xl relative">
+            {/* Close Button */}
+            <button
+              onClick={() => setCompanySettings({ ...companySettings, sticky_ad_text: "" })}
+              className="absolute top-2 right-2 text-[#1F1F20] hover:text-[#000000] transition-colors"
+            >
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path
+                  d="M15 5L5 15M5 5L15 15"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+            {/* Sticky Note Content */}
+            <div
+              className="text-[#1F1F20] text-sm pr-6"
+              dangerouslySetInnerHTML={{
+                __html: companySettings.sticky_ad_text,
+              }}
+            />
           </div>
         </div>
       )}

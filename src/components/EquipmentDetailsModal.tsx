@@ -193,15 +193,14 @@ function EquipmentDetailsModal({ isOpen, onClose, equipment, onEdit }) {
                     </label>
                     <div className="bg-[#292A2B] border border-[#333333] rounded-md px-3 py-2">
                       <span
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                          equipment.availability === 1 ||
-                          equipment.status === "Available"
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${equipment.availability === 1 ||
+                            equipment.status === "Available"
                             ? "bg-[rgba(34,197,94,0.2)] text-[#22C55E]"
                             : "bg-[rgba(239,68,68,0.2)] text-[#EF4444]"
-                        }`}
+                          }`}
                       >
                         {equipment.availability === 1 ||
-                        equipment.status === "Available"
+                          equipment.status === "Available"
                           ? "Available"
                           : "Unavailable"}
                       </span>
@@ -214,7 +213,7 @@ function EquipmentDetailsModal({ isOpen, onClose, equipment, onEdit }) {
                     </label>
                     <div className="bg-[#292A2B] border border-[#333333] rounded-md px-3 py-2 text-[#E5E5E5]">
                       {equipment.created_at
-                        ? new Date(equipment.created_at).toLocaleDateString()
+                        ? new Date(equipment.created_at).toLocaleDateString("en-AU")
                         : "N/A"}
                     </div>
                   </div>

@@ -141,228 +141,264 @@ const EquipmentPopover = ({
         boxShadow: "0 10px 25px rgba(0, 0, 0, 0.5)",
         minWidth: "320px",
         maxWidth: "360px",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
-      {/* Header */}
-      <div style={{ marginBottom: "20px" }}>
+      {loading ? (
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
+            flexDirection: "column",
             alignItems: "center",
-            marginBottom: "12px",
-          }}
-        >
-          <h3
-            style={{
-              margin: 0,
-              color: "#E5E5E5",
-              fontSize: "18px",
-              fontWeight: 600,
-              fontFamily: "Inter, sans-serif",
-            }}
-          >
-            Select Equipment
-          </h3>
-        </div>
-        <div
-          style={{
-            fontSize: "12px",
+            justifyContent: "center",
+            padding: "40px",
             color: "#9CA3AF",
-            fontFamily: "Inter, sans-serif",
           }}
         >
-          {localSelected.length} of {equipmentOptions.length} equipment selected
-        </div>
-        <div
-          style={{ display: "flex", gap: "8px" }}
-          className="whitespace-nowrap"
-        >
-          <button
-            onClick={handleSelectAll}
-            className="whitespace-nowrap text-[12px]"
+          <div
             style={{
-              padding: "4px 8px",
-              backgroundColor: "transparent",
-              border: "1px solid #FDCE06",
-              borderRadius: "4px",
-              color: "#FDCE06",
-              fontSize: "12px",
-              fontWeight: 500,
-              fontFamily: "Inter, sans-serif",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
+              width: "24px",
+              height: "24px",
+              border: "2px solid #333333",
+              borderTop: "2px solid #FDCE06",
+              borderRadius: "50%",
+              marginBottom: "12px",
+              animation: "spin 1s linear infinite",
             }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = "#FDCE06";
-              e.target.style.color = "#1F1F20";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = "transparent";
-              e.target.style.color = "#FDCE06";
-            }}
-          >
-            Select All
-          </button>
-          <button
-            className="whitespace-nowrap text-[12px]"
-            onClick={handleDeselectAll}
-            style={{
-              padding: "4px 8px",
-              backgroundColor: "transparent",
-              border: "1px solid #9CA3AF",
-              borderRadius: "4px",
-              color: "#9CA3AF",
-              fontSize: "12px",
-              fontWeight: 500,
-              fontFamily: "Inter, sans-serif",
-              cursor: "pointer",
-              transition: "all 0.2s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.backgroundColor = "#9CA3AF";
-              e.target.style.color = "#1F1F20";
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.backgroundColor = "transparent";
-              e.target.style.color = "#9CA3AF";
-            }}
-          >
-            Deselect All
-          </button>
+          />
+          <span>Loading equipment list...</span>
+          <style>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
         </div>
-      </div>
-
-      {/* Equipment Categories */}
-      <div
-        style={{ marginBottom: "24px", maxHeight: "300px", overflowY: "auto" }}
-      >
-        {Object.entries(equipmentCategories).map(([category, items]) => (
-          <div key={category} style={{ marginBottom: "20px" }}>
-            <h4
+      ) : (
+        <>
+          {/* Header */}
+          <div style={{ marginBottom: "20px" }}>
+            <div
               style={{
-                margin: "0 0 12px 0",
-                color: "#FDCE06",
-                fontSize: "16px",
-                fontWeight: 600,
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "12px",
+              }}
+            >
+              <h3
+                style={{
+                  margin: 0,
+                  color: "#E5E5E5",
+                  fontSize: "18px",
+                  fontWeight: 600,
+                  fontFamily: "Inter, sans-serif",
+                }}
+              >
+                Select Equipment
+              </h3>
+            </div>
+            <div
+              style={{
+                fontSize: "12px",
+                color: "#9CA3AF",
                 fontFamily: "Inter, sans-serif",
               }}
             >
-              {category}
-            </h4>
+              {localSelected.length} of {equipmentOptions.length} equipment selected
+            </div>
             <div
-              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+              style={{ display: "flex", gap: "8px" }}
+              className="whitespace-nowrap"
             >
-              {items.map((equipment) => (
-                <label
-                  key={equipment.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "12px",
-                    cursor: "pointer",
-                    padding: "8px 0",
-                    transition: "all 0.2s ease",
-                    opacity: equipment.available ? 1 : 0.6,
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={localSelected.includes(equipment.id)}
-                    onChange={() => handleEquipmentToggle(equipment.id)}
-                    style={{
-                      width: "16px",
-                      height: "16px",
-                      accentColor: "#FDCE06",
-                      cursor: "pointer",
-                    }}
-                  />
-                  <span
-                    style={{
-                      color: "#E5E5E5",
-                      fontSize: "14px",
-                      fontFamily: "Inter, sans-serif",
-                      userSelect: "none",
-                    }}
-                  >
-                    {equipment.name}
-                    {!equipment.available && " (Unavailable)"}
-                    {localSelected.includes(equipment.id) && (
-                      <span
-                        style={{
-                          color: "#FDCE06",
-                          marginLeft: "8px",
-                          fontSize: "12px",
-                        }}
-                      >
-                        (Assigned)
-                      </span>
-                    )}
-                  </span>
-                </label>
-              ))}
+              <button
+                onClick={handleSelectAll}
+                className="whitespace-nowrap text-[12px]"
+                style={{
+                  padding: "4px 8px",
+                  backgroundColor: "transparent",
+                  border: "1px solid #FDCE06",
+                  borderRadius: "4px",
+                  color: "#FDCE06",
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  fontFamily: "Inter, sans-serif",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = "#FDCE06";
+                  e.target.style.color = "#1F1F20";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = "transparent";
+                  e.target.style.color = "#FDCE06";
+                }}
+              >
+                Select All
+              </button>
+              <button
+                className="whitespace-nowrap text-[12px]"
+                onClick={handleDeselectAll}
+                style={{
+                  padding: "4px 8px",
+                  backgroundColor: "transparent",
+                  border: "1px solid #9CA3AF",
+                  borderRadius: "4px",
+                  color: "#9CA3AF",
+                  fontSize: "12px",
+                  fontWeight: 500,
+                  fontFamily: "Inter, sans-serif",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = "#9CA3AF";
+                  e.target.style.color = "#1F1F20";
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = "transparent";
+                  e.target.style.color = "#9CA3AF";
+                }}
+              >
+                Deselect All
+              </button>
             </div>
           </div>
-        ))}
-      </div>
 
-      {/* Action Buttons */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "flex-end",
-          gap: "12px",
-          borderTop: "1px solid #333333",
-          paddingTop: "6px",
-        }}
-      >
-        <button
-          onClick={handleCancel}
-          style={{
-            padding: "8px 16px",
-            backgroundColor: "transparent",
-            border: "1px solid #333333",
-            borderRadius: "6px",
-            color: "#E5E5E5",
-            fontSize: "14px",
-            fontWeight: 500,
-            fontFamily: "Inter, sans-serif",
-            cursor: "pointer",
-            transition: "all 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = "#333333";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = "transparent";
-          }}
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleApply}
-          style={{
-            padding: "8px 16px",
-            backgroundColor: "#FDCE06",
-            border: "none",
-            borderRadius: "6px",
-            color: "#1F1F20",
-            fontSize: "14px",
-            fontWeight: 500,
-            fontFamily: "Inter, sans-serif",
-            cursor: "pointer",
-            transition: "background-color 0.2s ease",
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = "#E5B800";
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = "#FDCE06";
-          }}
-        >
-          Apply ({localSelected.length})
-        </button>
-      </div>
+          {/* Equipment Categories */}
+          <div
+            style={{ marginBottom: "24px", maxHeight: "300px", overflowY: "auto" }}
+          >
+            {Object.entries(equipmentCategories).map(([category, items]) => (
+              <div key={category} style={{ marginBottom: "20px" }}>
+                <h4
+                  style={{
+                    margin: "0 0 12px 0",
+                    color: "#FDCE06",
+                    fontSize: "16px",
+                    fontWeight: 600,
+                    fontFamily: "Inter, sans-serif",
+                  }}
+                >
+                  {category}
+                </h4>
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+                >
+                  {items.map((equipment) => (
+                    <label
+                      key={equipment.id}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
+                        cursor: "pointer",
+                        padding: "8px 0",
+                        transition: "all 0.2s ease",
+                        opacity: equipment.available ? 1 : 0.6,
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={localSelected.includes(equipment.id)}
+                        onChange={() => handleEquipmentToggle(equipment.id)}
+                        style={{
+                          width: "16px",
+                          height: "16px",
+                          accentColor: "#FDCE06",
+                          cursor: "pointer",
+                        }}
+                      />
+                      <span
+                        style={{
+                          color: "#E5E5E5",
+                          fontSize: "14px",
+                          fontFamily: "Inter, sans-serif",
+                          userSelect: "none",
+                        }}
+                      >
+                        {equipment.name}
+                        {!equipment.available && " (Unavailable)"}
+                        {localSelected.includes(equipment.id) && (
+                          <span
+                            style={{
+                              color: "#FDCE06",
+                              marginLeft: "8px",
+                              fontSize: "12px",
+                            }}
+                          >
+                            (Assigned)
+                          </span>
+                        )}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Action Buttons */}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "flex-end",
+              gap: "12px",
+              borderTop: "1px solid #333333",
+              paddingTop: "6px",
+            }}
+          >
+            <button
+              onClick={handleCancel}
+              style={{
+                padding: "8px 16px",
+                backgroundColor: "transparent",
+                border: "1px solid #333333",
+                borderRadius: "6px",
+                color: "#E5E5E5",
+                fontSize: "14px",
+                fontWeight: 500,
+                fontFamily: "Inter, sans-serif",
+                cursor: "pointer",
+                transition: "all 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = "#333333";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = "transparent";
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleApply}
+              style={{
+                padding: "8px 16px",
+                backgroundColor: "#FDCE06",
+                border: "none",
+                borderRadius: "6px",
+                color: "#1F1F20",
+                fontSize: "14px",
+                fontWeight: 500,
+                fontFamily: "Inter, sans-serif",
+                cursor: "pointer",
+                transition: "background-color 0.2s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.backgroundColor = "#E5B800";
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.backgroundColor = "#FDCE06";
+              }}
+            >
+              Apply ({localSelected.length})
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 };

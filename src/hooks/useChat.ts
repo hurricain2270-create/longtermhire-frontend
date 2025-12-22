@@ -29,14 +29,14 @@ export const useChat = (onNewMessagesFromPolling) => {
           // Only update if data actually changed (by comparing IDs)
           const newIds = new Set((response.data || []).map(c => c.id));
           const prevIds = new Set((prevConversations || []).map(c => c.id));
-          
+
           // Check if arrays are different
-          if (newIds.size !== prevIds.size || 
-              ![...newIds].every(id => prevIds.has(id)) ||
-              ![...prevIds].every(id => newIds.has(id))) {
+          if (newIds.size !== prevIds.size ||
+            ![...newIds].every(id => prevIds.has(id)) ||
+            ![...prevIds].every(id => newIds.has(id))) {
             return response.data;
           }
-          
+
           // If same IDs, update unread counts only (smooth update)
           return (prevConversations || []).map(prevConv => {
             const newConv = (response.data || []).find(c => c.id === prevConv.id);
@@ -132,6 +132,10 @@ export const useChat = (onNewMessagesFromPolling) => {
             message_type: messageData.message_type || "text",
             created_at: new Date().toISOString(),
             from_user_name: "You",
+            attachment_url: messageData.attachment_url || null,
+            attachment_name: messageData.attachment_name || null,
+            attachment_size: messageData.attachment_size || null,
+            attachment_type: messageData.attachment_type || null,
           };
 
           setMessages((prev) => {

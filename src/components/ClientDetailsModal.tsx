@@ -171,7 +171,7 @@ function ClientDetailsModal({
                     </label>
                     <div className="bg-[#292A2B] border border-[#333333] rounded-md px-3 py-2 text-[#E5E5E5]">
                       {client.created_at
-                        ? new Date(client.created_at).toLocaleDateString()
+                        ? new Date(client.created_at).toLocaleDateString("en-AU")
                         : "N/A"}
                     </div>
                   </div>
@@ -182,7 +182,7 @@ function ClientDetailsModal({
                     </label>
                     <div className="bg-[#292A2B] border border-[#333333] rounded-md px-3 py-2 text-[#E5E5E5]">
                       {client.updated_at
-                        ? new Date(client.updated_at).toLocaleDateString()
+                        ? new Date(client.updated_at).toLocaleDateString("en-AU")
                         : "N/A"}
                     </div>
                   </div>
@@ -221,47 +221,6 @@ function ClientDetailsModal({
                   ) : (
                     <div className="text-[#9CA3AF] text-center py-8">
                       No equipment assigned
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Pricing Package */}
-              <div>
-                <h3 className="text-[#E5E5E5] font-[Inter] font-semibold text-lg mb-4">
-                  Pricing Package
-                </h3>
-                <div className="bg-[#292A2B] border border-[#333333] rounded-md px-3 py-3 text-[#E5E5E5] min-h-[100px]">
-                  {clientPricing && clientPricing.length > 0 ? (
-                    <div className="space-y-2">
-                      {clientPricing.map((pricing, index) => (
-                        <div
-                          key={index}
-                          className="flex justify-between items-center py-1 border-b border-[#333333] last:border-b-0"
-                        >
-                          <div className="flex-1">
-                            <span>
-                              {pricing.package_name ||
-                                pricing.name ||
-                                "Unknown Package"}
-                            </span>
-                            <div className="text-[#FDCE06] text-sm">
-                              {pricing.description || "N/A"}
-                            </div>
-                          </div>
-                          <button
-                            onClick={handleRemovePricing}
-                            className="text-red-400 hover:text-red-300 text-sm font-medium transition-colors ml-3"
-                            title="Remove pricing package"
-                          >
-                            Remove
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-[#9CA3AF] text-center py-8">
-                      No pricing package assigned
                     </div>
                   )}
                 </div>
@@ -331,13 +290,12 @@ function ClientDetailsModal({
                     </label>
                     <div className="bg-[#292A2B] border border-[#333333] rounded-md px-3 py-2 text-[#E5E5E5]">
                       <span
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                          client.status === "active"
-                            ? "bg-green-100 text-green-800"
-                            : client.status === "inactive"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-gray-100 text-gray-800"
-                        }`}
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${client.status === "active"
+                          ? "bg-green-100 text-green-800"
+                          : client.status === "inactive"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100 text-gray-800"
+                          }`}
                       >
                         {client.status || "Active"}
                       </span>

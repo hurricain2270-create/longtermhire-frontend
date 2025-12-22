@@ -10,18 +10,17 @@ const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
     companyName: "",
     email: "",
     phone: "",
+    address: "",
     userName: "",
     password: "",
     equipment: [],
-    pricing: "",
   });
 
   const [availableEquipment, setAvailableEquipment] = useState([]);
-  const [availablePricing, setAvailablePricing] = useState([]);
   const [dataLoading, setDataLoading] = useState(false);
   const [showEquipmentDropdown, setShowEquipmentDropdown] = useState(false);
 
-  // Load equipment and pricing data when modal opens
+  // Load equipment data when modal opens
   useEffect(() => {
     const loadData = async () => {
       if (isOpen) {
@@ -30,10 +29,6 @@ const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
           // Load equipment
           const equipmentResponse = await equipmentApi.getEquipment(1, 1000);
           setAvailableEquipment(equipmentResponse.data || []);
-
-          // Load pricing packages
-          const pricingResponse = await pricingApi.getPricingPackages();
-          setAvailablePricing(pricingResponse.data || []);
         } catch (error) {
           console.error("Error loading data:", error);
         } finally {
@@ -127,10 +122,10 @@ const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
       company_name: formData.companyName,
       email: formData.email,
       phone: formData.phone,
+      address: formData.address,
       username: formData.userName,
       password: formData.password,
       equipment: formData.equipment,
-      pricing: formData.pricing,
     };
 
     try {
@@ -141,10 +136,10 @@ const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
         companyName: "",
         email: "",
         phone: "",
+        address: "",
         userName: "",
         password: "",
         equipment: [],
-        pricing: "",
       });
     } catch (error) {
       // Error handling is done in parent component
@@ -160,10 +155,10 @@ const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
       companyName: "",
       email: "",
       phone: "",
+      address: "",
       userName: "",
       password: "",
       equipment: [],
-      pricing: "",
     });
   };
 
@@ -172,446 +167,199 @@ const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
       isOpen={isOpen}
       onClose={onClose}
       title="Add Client"
-      width="672px"
-      height="1069px"
+      width="680px"
     >
-      <form onSubmit={handleSubmit}>
-        <div
-          className="space-y-6"
-          style={{
-            width: "606px",
-          }}
-        >
-          {/* Client Name Field */}
-          <div
-            style={{
-              width: "606px",
-              height: "74px",
-            }}
-          >
-            <div
-              style={{
-                width: "606px",
-                height: "20px",
-                marginBottom: "8px",
-              }}
-            >
-              <label
-                className="text-[#9CA3AF]"
-                style={{
-                  fontFamily: "Inter",
-                  fontWeight: 500,
-                  fontSize: "14px",
-                  lineHeight: "17px",
-                }}
-              >
+      <form onSubmit={handleSubmit} className="p-1">
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+            {/* Client Name Field */}
+            <div>
+              <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
                 Client Name
               </label>
+              <input
+                type="text"
+                name="clientName"
+                value={formData.clientName}
+                onChange={handleInputChange}
+                required
+                className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors font-[Inter] text-base"
+              />
             </div>
-            <input
-              type="text"
-              name="clientName"
-              value={formData.clientName}
-              onChange={handleInputChange}
-              required
-              className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors"
-              style={{
-                width: "606px",
-                height: "46px",
-                fontFamily: "Inter",
-                fontWeight: 400,
-                fontSize: "16px",
-                lineHeight: "19px",
-              }}
-            />
-          </div>
 
-          {/* Company Name Field */}
-          <div
-            style={{
-              width: "606px",
-              height: "74px",
-            }}
-          >
-            <div
-              style={{
-                width: "606px",
-                height: "20px",
-                marginBottom: "8px",
-              }}
-            >
-              <label
-                className="text-[#9CA3AF]"
-                style={{
-                  fontFamily: "Inter",
-                  fontWeight: 500,
-                  fontSize: "14px",
-                  lineHeight: "17px",
-                }}
-              >
+            {/* Company Name Field */}
+            <div>
+              <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
                 Company Name
               </label>
+              <input
+                type="text"
+                name="companyName"
+                value={formData.companyName}
+                onChange={handleInputChange}
+                required
+                className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors font-[Inter] text-base"
+              />
             </div>
-            <input
-              type="text"
-              name="companyName"
-              value={formData.companyName}
-              onChange={handleInputChange}
-              required
-              className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors"
-              style={{
-                width: "606px",
-                height: "46px",
-                fontFamily: "Inter",
-                fontWeight: 400,
-                fontSize: "16px",
-                lineHeight: "19px",
-              }}
-            />
-          </div>
 
-          {/* Email Field */}
-          <div
-            style={{
-              width: "606px",
-              height: "74px",
-            }}
-          >
-            <div
-              style={{
-                width: "606px",
-                height: "20px",
-                marginBottom: "8px",
-              }}
-            >
-              <label
-                className="text-[#9CA3AF]"
-                style={{
-                  fontFamily: "Inter",
-                  fontWeight: 500,
-                  fontSize: "14px",
-                  lineHeight: "17px",
-                }}
-              >
+            {/* Email Field */}
+            <div>
+              <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
                 Email
               </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+                className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors font-[Inter] text-base"
+              />
             </div>
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              required
-              className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors"
-              style={{
-                width: "606px",
-                height: "46px",
-                fontFamily: "Inter",
-                fontWeight: 400,
-                fontSize: "16px",
-                lineHeight: "19px",
-              }}
-            />
-          </div>
 
-          {/* Phone Field */}
-          <div
-            style={{
-              width: "606px",
-              height: "74px",
-            }}
-          >
-            <div
-              style={{
-                width: "606px",
-                height: "20px",
-                marginBottom: "8px",
-              }}
-            >
-              <label
-                className="text-[#9CA3AF]"
-                style={{
-                  fontFamily: "Inter",
-                  fontWeight: 500,
-                  fontSize: "14px",
-                  lineHeight: "17px",
-                }}
-              >
+            {/* Phone Field */}
+            <div>
+              <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
                 Phone
               </label>
+              <input
+                type="text"
+                inputMode="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                required
+                className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors font-[Inter] text-base"
+              />
             </div>
-            <input
-              type="text"
-              inputMode="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleInputChange}
-              required
-              className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors"
-              style={{
-                width: "606px",
-                height: "46px",
-                fontFamily: "Inter",
-                fontWeight: 400,
-                fontSize: "16px",
-                lineHeight: "19px",
-              }}
-            />
-          </div>
 
-          {/* User Name Field */}
-          <div
-            style={{
-              width: "606px",
-              height: "74px",
-            }}
-          >
-            <div
-              style={{
-                width: "606px",
-                height: "20px",
-                marginBottom: "8px",
-              }}
-            >
-              <label
-                className="text-[#9CA3AF]"
-                style={{
-                  fontFamily: "Inter",
-                  fontWeight: 500,
-                  fontSize: "14px",
-                  lineHeight: "17px",
-                }}
-              >
+            {/* User Name Field */}
+            <div>
+              <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
                 User Name
               </label>
+              <input
+                type="text"
+                name="userName"
+                value={formData.userName}
+                onChange={handleInputChange}
+                required
+                className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors font-[Inter] text-base"
+              />
             </div>
+
+            {/* Password Field */}
+            <div>
+              <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
+                Password
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                required
+                className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors font-[Inter] text-base"
+              />
+            </div>
+          </div>
+
+          {/* Address Field (Full Width) */}
+          <div>
+            <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
+              Address
+            </label>
             <input
               type="text"
-              name="userName"
-              value={formData.userName}
+              name="address"
+              value={formData.address}
               onChange={handleInputChange}
               required
-              className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors"
-              style={{
-                width: "606px",
-                height: "46px",
-                fontFamily: "Inter",
-                fontWeight: 400,
-                fontSize: "16px",
-                lineHeight: "19px",
-              }}
+              className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors font-[Inter] text-base"
             />
           </div>
 
-          {/* Password Field */}
-          {/* <div
-            style={{
-              width: "606px",
-              height: "74px",
-            }}
-            className="hidden"
-          >
-            <div
-              style={{
-                width: "606px",
-                height: "20px",
-                marginBottom: "8px",
-              }}
-              className=""
-            >
-              <label
-                className="text-[#9CA3AF]"
-                style={{
-                  fontFamily: "Inter",
-                  fontWeight: 500,
-                  fontSize: "14px",
-                  lineHeight: "17px",
-                }}
-              >
-                Password
-              </label>
-            </div>
-            <input
-              type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleInputChange}
-              required
-              className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors"
-              style={{
-                width: "606px",
-                height: "46px",
-                fontFamily: "Inter",
-                fontWeight: 400,
-                fontSize: "16px",
-                lineHeight: "19px",
-              }}
-            />
-          </div> */}
-
-          {/* Equipment Field */}
-          <div
-            style={{
-              width: "606px",
-              height: "74px",
-            }}
-          >
-            <div
-              style={{
-                width: "606px",
-                height: "20px",
-                marginBottom: "8px",
-              }}
-            >
-              <label
-                className="text-[#9CA3AF]"
-                style={{
-                  fontFamily: "Inter",
-                  fontWeight: 500,
-                  fontSize: "14px",
-                  lineHeight: "17px",
-                }}
-              >
-                Equipment
-              </label>
-            </div>
+          {/* Equipment Field (Full Width) */}
+          <div>
+            <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
+              Equipment
+            </label>
             <div className="relative equipment-dropdown">
               <button
                 type="button"
-                className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 text-left outline-none hover:border-[#FDCE06] transition-colors flex items-center justify-between"
-                style={{
-                  width: "606px",
-                  height: "46px",
-                  fontFamily: "Inter",
-                  fontWeight: 400,
-                  fontSize: "16px",
-                  lineHeight: "19px",
-                }}
+                className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 text-left outline-none hover:border-[#FDCE06] transition-colors flex items-center justify-between font-[Inter] text-base"
                 onClick={() => setShowEquipmentDropdown(!showEquipmentDropdown)}
               >
-                <span className="text-[#E5E5E5]">
+                <span>
                   {dataLoading
                     ? "Loading equipment..."
                     : getSelectedEquipmentNames()}
                 </span>
-                <div className="w-4 h-4 text-[#E5E5E5]">
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    className={`transform transition-transform ${
-                      showEquipmentDropdown ? "rotate-180" : ""
-                    }`}
-                  >
-                    <path d="M4 6l4 4 4-4" />
-                  </svg>
-                </div>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className={`transform transition-transform ${showEquipmentDropdown ? "rotate-180" : ""}`}
+                >
+                  <path d="M4 6l4 4 4-4" />
+                </svg>
               </button>
 
               {/* Equipment Dropdown */}
               {showEquipmentDropdown && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-[#292A2B] border border-[#333333] rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-[#1F1F20] border border-[#333333] rounded-md shadow-2xl z-50 max-h-60 overflow-y-auto custom-scrollbar">
                   {availableEquipment.length > 0 ? (
                     <>
-                      {/* Select All / Deselect All Buttons */}
-                      <div className="px-4 py-3 border-b border-[#333333]">
-                        <div className="flex justify-between items-center">
-                          <span className="text-[#9CA3AF] text-xs">
-                            {formData.equipment.length} of{" "}
-                            {availableEquipment.length} equipment selected
-                          </span>
-                          <div
-                            style={{ display: "flex", gap: "8px" }}
-                            className="whitespace-nowrap"
+                      <div className="px-4 py-3 border-b border-[#333333] flex justify-between items-center sticky top-0 bg-[#1F1F20] z-10">
+                        <span className="text-[#9CA3AF] text-xs">
+                          {formData.equipment.length} selected
+                        </span>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={handleSelectAll}
+                            className="text-[11px] px-2 py-1 border border-[#FDCE06] text-[#FDCE06] rounded hover:bg-[#FDCE06] hover:text-[#1F1F20] transition-colors"
                           >
-                            <button
-                              type="button"
-                              onClick={handleSelectAll}
-                              className="whitespace-nowrap text-[12px]"
-                              style={{
-                                padding: "4px 8px",
-                                backgroundColor: "transparent",
-                                border: "1px solid #FDCE06",
-                                borderRadius: "4px",
-                                color: "#FDCE06",
-                                fontSize: "12px",
-                                fontWeight: 500,
-                                fontFamily: "Inter, sans-serif",
-                                cursor: "pointer",
-                                transition: "all 0.2s ease",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.backgroundColor = "#FDCE06";
-                                e.target.style.color = "#1F1F20";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.backgroundColor = "transparent";
-                                e.target.style.color = "#FDCE06";
-                              }}
-                            >
-                              Select All
-                            </button>
-                            <button
-                              type="button"
-                              className="whitespace-nowrap text-[12px]"
-                              onClick={handleDeselectAll}
-                              style={{
-                                padding: "4px 8px",
-                                backgroundColor: "transparent",
-                                border: "1px solid #9CA3AF",
-                                borderRadius: "4px",
-                                color: "#9CA3AF",
-                                fontSize: "12px",
-                                fontWeight: 500,
-                                fontFamily: "Inter, sans-serif",
-                                cursor: "pointer",
-                                transition: "all 0.2s ease",
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.backgroundColor = "#9CA3AF";
-                                e.target.style.color = "#1F1F20";
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.backgroundColor = "transparent";
-                                e.target.style.color = "#9CA3AF";
-                              }}
-                            >
-                              Deselect All
-                            </button>
-                          </div>
+                            All
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleDeselectAll}
+                            className="text-[11px] px-2 py-1 border border-[#9CA3AF] text-[#9CA3AF] rounded hover:bg-[#9CA3AF] hover:text-[#1F1F20] transition-colors"
+                          >
+                            None
+                          </button>
                         </div>
                       </div>
 
-                      {/* Equipment List */}
                       {availableEquipment.map((equipment) => (
                         <div
                           key={equipment.id}
-                          className="flex items-center px-4 py-3 hover:bg-[#333333] cursor-pointer"
+                          className="flex items-center px-4 py-3 hover:bg-[#292A2B] cursor-pointer transition-colors"
                           onClick={() => handleEquipmentToggle(equipment.id)}
                         >
                           <input
                             type="checkbox"
                             checked={formData.equipment.includes(equipment.id)}
-                            onChange={() => {}} // Handled by parent onClick
-                            className="mr-3 w-4 h-4 text-[#FDCE06] bg-[#292A2B] border-[#333333] rounded focus:ring-[#FDCE06] focus:ring-2"
+                            readOnly
+                            className="mr-3 w-4 h-4 rounded accent-[#FDCE06]"
                           />
                           <div className="flex-1">
-                            <div className="text-[#E5E5E5] font-medium">
+                            <div className="text-[#E5E5E5] text-sm font-medium">
                               {equipment.equipment_name}
                             </div>
-                            <div className="text-[#9CA3AF] text-sm">
-                              {equipment.category_name} - $
-                              {equipment.base_price}
+                            <div className="text-[#9CA3AF] text-xs">
+                              {equipment.category_name} • ${equipment.base_price}
                             </div>
                           </div>
                         </div>
                       ))}
                     </>
                   ) : (
-                    <div className="px-4 py-3 text-[#9CA3AF]">
+                    <div className="px-4 py-3 text-[#9CA3AF] text-center">
                       {dataLoading ? "Loading..." : "No equipment available"}
                     </div>
                   )}
@@ -620,126 +368,22 @@ const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
             </div>
           </div>
 
-          {/* Pricing Field */}
-          <div
-            style={{
-              width: "606px",
-              height: "74px",
-            }}
-          >
-            <div
-              style={{
-                width: "606px",
-                height: "20px",
-                marginBottom: "8px",
-              }}
-            >
-              <label
-                className="text-[#9CA3AF]"
-                style={{
-                  fontFamily: "Inter",
-                  fontWeight: 500,
-                  fontSize: "14px",
-                  lineHeight: "17px",
-                }}
-              >
-                Pricing
-              </label>
-            </div>
-            <div className="relative">
-              <select
-                name="pricing"
-                value={formData.pricing}
-                onChange={handleInputChange}
-                className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors appearance-none"
-                style={{
-                  width: "606px",
-                  height: "46px",
-                  fontFamily: "Inter",
-                  fontWeight: 400,
-                  fontSize: "16px",
-                  lineHeight: "19px",
-                }}
-              >
-                <option value="" className="text-[#E5E5E5]">
-                  {dataLoading
-                    ? "Loading pricing..."
-                    : "Select pricing package"}
-                </option>
-                {availablePricing.map((pricing) => (
-                  <option
-                    key={pricing.id}
-                    value={pricing.id}
-                    className="text-[#E5E5E5]"
-                  >
-                    {pricing.package_name} -{" "}
-                    {pricing.discount_type === 0
-                      ? `${pricing.discount_value}% off`
-                      : `$${pricing.discount_value} off`}
-                  </option>
-                ))}
-              </select>
-              {/* Custom dropdown arrow */}
-              <div
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 pointer-events-none"
-                style={{
-                  width: "30px",
-                  height: "30px",
-                }}
-              >
-                <svg
-                  width="15"
-                  height="9"
-                  viewBox="0 0 15 9"
-                  fill="none"
-                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
-                >
-                  <path d="M7.5 9L0 0H15L7.5 9Z" fill="#E5E5E5" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
           {/* Action Buttons */}
-          <div
-            className="flex justify-end gap-4"
-            style={{
-              width: "606px",
-              height: "60px",
-              marginTop: "24px",
-            }}
-          >
+          <div className="flex justify-end gap-3 pt-4">
             <button
               type="button"
               onClick={handleCancel}
-              className="bg-[#333333] rounded-md text-[#FFFFFF] hover:bg-[#404040] transition-colors"
-              style={{
-                width: "102.375px",
-                height: "44px",
-                fontFamily: "Inter",
-                fontWeight: 700,
-                fontSize: "16px",
-                lineHeight: "19px",
-              }}
+              className="h-11 px-6 bg-[#333333] rounded-md text-white hover:bg-[#404040] transition-all font-[Inter] font-bold text-sm"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className={`rounded-md text-[#1F1F20] transition-colors flex items-center justify-center gap-2 ${
-                loading
-                  ? "bg-[#9CA3AF] cursor-not-allowed"
-                  : "bg-[#FDCE06] hover:bg-[#E5B800]"
-              }`}
-              style={{
-                width: "135.1875px",
-                height: "44px",
-                fontFamily: "Inter",
-                fontWeight: 700,
-                fontSize: "16px",
-                lineHeight: "19px",
-              }}
+              className={`h-11 px-8 rounded-md text-[#1F1F20] font-bold text-sm transition-all flex items-center justify-center gap-2 ${loading
+                ? "bg-[#9CA3AF] cursor-not-allowed"
+                : "bg-[#FDCE06] hover:bg-[#E5B800] shadow-lg shadow-[#FDCE06]/10"
+                }`}
             >
               {loading ? (
                 <>

@@ -260,9 +260,7 @@ const QuotePDF = ({ quoteData }) => {
             {quoteData?.company_logo ? (
               <Image src={quoteData.company_logo} style={styles.logo} />
             ) : (
-              <View style={styles.logoPlaceholder}>
-                <Text style={{ fontSize: 10, color: "#999" }}>LOGO</Text>
-              </View>
+              <Image src="/login-logo.png" style={styles.logo} />
             )}
           </View>
           <Text style={styles.title}>Quote</Text>
@@ -291,7 +289,7 @@ const QuotePDF = ({ quoteData }) => {
                   <Text style={styles.labelText}>
                     Date Issued:{" "}
                     <Text style={styles.valueText}>
-                      {quoteData?.created_at ? new Date(quoteData.created_at).toLocaleDateString() : new Date().toLocaleDateString()}
+                      {quoteData?.created_at ? new Date(quoteData.created_at).toLocaleDateString("en-AU") : new Date().toLocaleDateString("en-AU")}
                     </Text>
                   </Text>
                 </View>
@@ -303,7 +301,7 @@ const QuotePDF = ({ quoteData }) => {
                         const createdDate = quoteData?.created_at ? new Date(quoteData.created_at) : new Date();
                         const expiryDate = new Date(createdDate);
                         expiryDate.setDate(expiryDate.getDate() + parseInt(quoteData?.quote_expires_after || 7));
-                        return expiryDate.toLocaleDateString();
+                        return expiryDate.toLocaleDateString("en-AU");
                       })()}
                     </Text>
                   </Text>
@@ -370,7 +368,7 @@ const QuotePDF = ({ quoteData }) => {
                   ${parseFloat(item.unitPrice).toFixed(2)}
                 </Text>
                 <Text style={[styles.tableCol, styles.col5]}>
-                  {item.discount}%
+                  {item.discount}
                 </Text>
                 <Text style={[styles.tableCol, styles.col6]}>
                   ${parseFloat(item.price).toFixed(2)}

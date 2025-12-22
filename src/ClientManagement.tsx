@@ -7,12 +7,9 @@ import AddClientModal from "./components/AddClientModal";
 import EditClientModal from "./components/EditClientModal";
 import ClientDetailsModal from "./components/ClientDetailsModal";
 import EquipmentPopover from "./components/EquipmentPopover";
-import PricingPopover from "./components/PricingPopover";
-import CustomPackageModal from "./components/CustomPackageModal";
 
 import { clientApi } from "./services/clientApi";
 import { equipmentApi } from "./services/equipmentApi";
-import { pricingApi } from "./services/pricingApi";
 import { useNavigate } from "react-router";
 
 const ClientManagement = () => {
@@ -49,30 +46,29 @@ const ClientManagement = () => {
     anchorEl: null,
   });
 
-  // Pricing popover state
-  const [pricingPopover, setPricingPopover] = useState({
-    isOpen: false,
-    clientId: null,
-    anchorEl: null,
-  });
-  const [customPackageModal, setCustomPackageModal] = useState({
-    isOpen: false,
-    clientId: null,
-  });
-
   // API data states
   const [clients, setClients] = useState([]);
   const [equipment, setEquipment] = useState([]);
-  const [pricingPackages, setPricingPackages] = useState([]);
+
+  // Track equipment assignments per client
+  const [clientEquipment, setClientEquipment] = useState({});
 
   // Loading states
   const [loading, setLoading] = useState(true);
   const [inviteLoading, setInviteLoading] = useState(false);
   const [assignmentLoading, setAssignmentLoading] = useState(false);
 
-  // Load data on component mount
+  // Load equipment master list in background
   useEffect(() => {
-    loadInitialData();
+    const loadEquipment = async () => {
+      try {
+        const response = await equipmentApi.getEquipment(1, 1000);
+        setEquipment(response.data || []);
+      } catch (error) {
+        console.error("Error loading equipment master list:", error);
+      }
+    };
+    loadEquipment();
   }, []);
 
   // Debounced search effect
@@ -87,52 +83,21 @@ const ClientManagement = () => {
   // Fetch data when debounced search changes
   useEffect(() => {
     setCurrentPage(1);
-    // Only load client data, skip expensive assignment loading during search
-    const loadClientsOnly = async () => {
-      try {
-        const clientsRes = await clientApi.getClients(1, 200, debouncedSearchData);
-        const clientsData = clientsRes.data || [];
-        setClients(clientsData);
-        
-        if (clientsRes.pagination) {
-          setPagination(clientsRes.pagination);
-          setCurrentPage(clientsRes.pagination.page);
-        }
-        
-        // Only load assignments if we have a small number of clients (not searching)
-        const isSearching = debouncedSearchData.clientId || debouncedSearchData.clientName || debouncedSearchData.companyName;
-        if (!isSearching || clientsData.length <= 10) {
-          await loadClientAssignments(clientsData, equipment);
-        } else {
-          // Clear assignments during search to avoid expensive operations
-          setClientEquipment({});
-          setClientPricing({});
-        }
-      } catch (error) {
-        console.error("Error loading clients:", error);
-        toast.error("Error loading clients. Please try again.");
-      }
-    };
-    
-    loadClientsOnly();
+    loadInitialData(1, debouncedSearchData, true);
   }, [debouncedSearchData]);
 
-  const loadInitialData = async (page = 1, searchFilters = {}, showFullLoading = true) => {
+  const loadInitialData = async (
+    page = 1,
+    searchFilters = {},
+    showFullLoading = true
+  ) => {
     try {
       if (showFullLoading) {
         setLoading(true);
       }
-      const [clientsRes, equipmentRes, pricingRes] = await Promise.all([
-        clientApi.getClients(page, 200, searchFilters),
-        equipmentApi.getEquipment(1, 1000),
-        pricingApi.getPricingPackages(),
-      ]);
-      console.log(clientsRes, equipmentRes, pricingRes);
+      const clientsRes = await clientApi.getClients(page, 200, searchFilters);
       const clientsData = clientsRes.data || [];
-      const equipmentData = equipmentRes.data || [];
       setClients(clientsData);
-      setEquipment(equipmentData);
-      setPricingPackages(pricingRes.data || []);
 
       // Update pagination info
       if (clientsRes.pagination) {
@@ -140,8 +105,8 @@ const ClientManagement = () => {
         setCurrentPage(clientsRes.pagination.page);
       }
 
-      // Load assignments for each client (pass equipmentData to ensure it's available)
-      await loadClientAssignments(clientsData, equipmentData);
+      // Load assignments from pre-loaded data
+      await loadClientAssignments(clientsData);
     } catch (error) {
       console.error("Error loading data:", error);
       toast.error("Error loading data. Please try again.");
@@ -152,82 +117,24 @@ const ClientManagement = () => {
     }
   };
 
-  console.log("Equipment:", equipment);
-  console.log("Clients:", clients);
-  console.log("Pricing Packages:", pricingPackages);
-
-  // Load equipment and pricing assignments for all clients
-  const loadClientAssignments = async (
-    clientsData,
-    equipmentData = equipment
-  ) => {
+  // Load equipment assignments for all clients
+  const loadClientAssignments = (clientsData) => {
     try {
       const equipmentAssignments = {};
-      const pricingAssignments = {};
 
-      for (const client of clientsData) {
-        try {
-          // Load equipment assignments
-          const equipmentRes = await clientApi.getClientEquipment(
-            client.user_id
-          );
-          console.log(equipmentRes);
-          if (equipmentRes.data && equipmentRes.data.length > 0) {
-            // Use the equipment data directly from API response (it already has names)
-            const clientEquipmentDetails = equipmentRes.data.map(
-              (assignment) => ({
-                id: assignment.equipment_id,
-                equipment_id: assignment.equipment_id,
-                equipment_name: assignment.equipment_name,
-                category_name: assignment.category_name,
-                availability: assignment.availability,
-              })
-            );
-            equipmentAssignments[client.user_id] = clientEquipmentDetails;
+      if (Array.isArray(clientsData)) {
+        clientsData.forEach(client => {
+          if (client.equipment && Array.isArray(client.equipment)) {
+            equipmentAssignments[client.user_id] = client.equipment;
           }
-
-          // Load pricing assignments based on API response structure
-          if (client.has_custom_discounts === 1) {
-            // Client has custom discounts
-            pricingAssignments[client.user_id] = [
-              {
-                name: "Custom Pricing",
-                description: "Equipment-specific custom discounts applied",
-                package_id: "custom",
-                type: "custom",
-              },
-            ];
-          } else if (client.pricing_package_name) {
-            // Client has a pricing package assigned
-            const fullPackage = pricingPackages.find(
-              (pkg) => pkg.name === client.pricing_package_name
-            );
-            const pricingInfo = fullPackage || {
-              name: client.pricing_package_name,
-              description: `Package: ${client.pricing_package_name}`,
-              package_id: client.pricing_package_id || "Unknown",
-            };
-
-            pricingAssignments[client.user_id] = [pricingInfo];
-          }
-          // If neither custom discounts nor package, no pricing assignment is shown
-        } catch (error) {
-          console.error(
-            `Error loading assignments for client ${client.user_id}:`,
-            error
-          );
-          // Continue with other clients even if one fails
-        }
+        });
       }
 
       setClientEquipment(equipmentAssignments);
-      setClientPricing(pricingAssignments);
     } catch (error) {
-      console.error("Error loading client assignments:", error);
+      console.error("Error processing client equipment:", error);
     }
   };
-
-  console.log("Equipment data:", equipment);
 
   const handleInviteClient = async (clientData) => {
     try {
@@ -275,47 +182,6 @@ const ClientManagement = () => {
     }
   };
 
-  const handleAssignPricing = async (clientUserId, pricingPackageId) => {
-    try {
-      setAssignmentLoading(true);
-      await clientApi.assignPricing(clientUserId, pricingPackageId);
-      toast.success("Pricing package assigned successfully!");
-
-      // Update local state instead of full reload
-      const selectedPackage = pricingPackages.find(
-        (pkg) => pkg.id === pricingPackageId
-      );
-      if (selectedPackage) {
-        // Update clients state
-        setClients((prevClients) =>
-          prevClients.map((client) =>
-            client.user_id === clientUserId
-              ? {
-                  ...client,
-                  pricing_package_name: selectedPackage.name,
-                  pricing_package_id: selectedPackage.id,
-                  has_custom_discounts: 0, // Reset custom discounts when package is assigned
-                }
-              : client
-          )
-        );
-
-        // Update pricing assignments state
-        setClientPricing((prev) => ({
-          ...prev,
-          [clientUserId]: [selectedPackage],
-        }));
-      }
-    } catch (error) {
-      console.error("Error assigning pricing:", error);
-      toast.error(
-        error.message || "Error assigning pricing. Please try again."
-      );
-    } finally {
-      setAssignmentLoading(false);
-    }
-  };
-
   // Get all available equipment options from API data
   const getAllEquipmentOptions = () => {
     return equipment.map((item) => ({
@@ -326,24 +192,21 @@ const ClientManagement = () => {
     }));
   };
 
-  // Track selected equipment per client
-  const [clientEquipment, setClientEquipment] = useState({});
-
-  // Track pricing assignments per client
-  const [clientPricing, setClientPricing] = useState({});
-  console.log("Client Pricing Data:", clientPricing);
-
   // Helper function to get assigned equipment names
   const getAssignedEquipmentNames = (clientUserId) => {
-    const assignedIds = clientEquipment[clientUserId] || [];
-    return assignedIds
-      .map((id) => {
-        const equipmentItem = equipment.find((eq) => eq.id === id);
+    const assignedEquipment = clientEquipment[clientUserId] || [];
+    return assignedEquipment
+      .map((item) => {
+        // Handle both simple IDs and full objects from consolidated API
+        if (typeof item === 'object') {
+          return item.equipment_name || item.name || `Equipment ${item.equipment_id || item.id}`;
+        }
+        const equipmentItem = equipment.find((eq) => eq.id === item);
         return equipmentItem
           ? String(equipmentItem.equipment_name)
-          : `Equipment ${id}`;
+          : `Equipment ${item}`;
       })
-      .filter(Boolean); // Remove any undefined/null values
+      .filter(Boolean);
   };
 
   const handleInputChange = (e) => {
@@ -447,102 +310,6 @@ const ClientManagement = () => {
     }
     setEquipmentPopover({ isOpen: false, clientId: null, anchorEl: null });
   };
-
-  // Pricing assignment handlers
-  const handlePricingClick = (clientUserId, event) => {
-    setPricingPopover({
-      isOpen: true,
-      clientId: clientUserId,
-      anchorEl: event.currentTarget,
-    });
-  };
-
-  const handleCustomPackageClick = () => {
-    // Close popover and open custom modal
-    setCustomPackageModal({
-      isOpen: true,
-      clientId: pricingPopover.clientId,
-    });
-    setPricingPopover({ isOpen: false, clientId: null, anchorEl: null });
-  };
-
-  const handleCustomPackageSave = async (customPackage) => {
-    if (customPackageModal.clientId) {
-      try {
-        // Get the assigned equipment for this client
-        const clientEquipmentData =
-          clientEquipment[customPackageModal.clientId] || [];
-
-        if (clientEquipmentData.length === 0) {
-          toast.error(
-            "Please assign equipment to this client first before applying custom discounts."
-          );
-          return;
-        }
-
-        // Apply custom discount to selected equipment only
-        const discountPromises = customPackage.selectedEquipment.map(
-          (equipmentId) =>
-            clientApi.assignEquipmentDiscount(
-              customPackageModal.clientId,
-              equipmentId,
-              customPackage
-            )
-        );
-
-        await Promise.all(discountPromises);
-        toast.success(
-          "Custom discount applied to all assigned equipment successfully!"
-        );
-
-        // Update local state instead of full reload
-        setClients((prevClients) =>
-          prevClients.map((client) =>
-            client.user_id === customPackageModal.clientId
-              ? {
-                  ...client,
-                  has_custom_discounts: 1,
-                  pricing_package_name: null, // Clear package when custom is applied
-                  pricing_package_id: null,
-                }
-              : client
-          )
-        );
-
-        // Update pricing assignments state
-        setClientPricing((prev) => ({
-          ...prev,
-          [customPackageModal.clientId]: [
-            {
-              name: "Custom Pricing",
-              description: "Equipment-specific custom discounts applied",
-              package_id: "custom",
-              type: "custom",
-            },
-          ],
-        }));
-      } catch (error) {
-        console.error("Error applying custom discount:", error);
-        toast.error("Error applying custom discount. Please try again.");
-      }
-    }
-    // Close custom modal
-    setCustomPackageModal({ isOpen: false, clientId: null });
-  };
-
-  const handlePricingSelect = async (selectedPackageId) => {
-    if (pricingPopover.clientId) {
-      try {
-        await handleAssignPricing(pricingPopover.clientId, selectedPackageId);
-      } catch (error) {
-        console.error("Error applying pricing assignment:", error);
-      }
-    }
-    // Always close the popover
-    setPricingPopover({ isOpen: false, clientId: null, anchorEl: null });
-  };
-
-  // Removed static clientData - now using API data from 'clients' state
 
   // Show loading spinner while data is loading
   if (loading) {
@@ -688,11 +455,10 @@ const ClientManagement = () => {
                 clients.map((client, index) => (
                   <tr
                     key={client.id}
-                    className={`${
-                      index < clients.length - 1
-                        ? "border-b border-[#333333]"
-                        : ""
-                    } hover:bg-[#292A2B] transition-colors`}
+                    className={`${index < clients.length - 1
+                      ? "border-b border-[#333333]"
+                      : ""
+                      } hover:bg-[#292A2B] transition-colors`}
                   >
                     <td className="text-[#E5E5E5] font-[Inter] font-normal text-[14px] leading-[1.21em] px-4 py-4">
                       {client.id}
@@ -714,23 +480,20 @@ const ClientManagement = () => {
                           }
                           title={
                             clientEquipment[client.user_id]?.length > 0
-                              ? `Assigned Equipment: ${
-                                  getAssignedEquipmentNames(
-                                    client.user_id
-                                  ).join(", ") || "Loading..."
-                                }`
+                              ? `Assigned Equipment: ${getAssignedEquipmentNames(
+                                client.user_id
+                              ).join(", ") || "Loading..."
+                              }`
                               : "Click to assign equipment"
                           }
-                          className={`border rounded-md font-[Inter] font-normal text-[12px] leading-[1.25em] line-clamp-2 px-3 py-1 flex items-center gap-2 transition-colors ${
-                            clientEquipment[client.user_id]?.length > 0
-                              ? "bg-[#FDCE06] border-[#FDCE06] text-[#1F1F20]"
-                              : "bg-[#292A2B] border-[#333333] text-[#E5E5E5] hover:border-[#FDCE06]"
-                          }`}
+                          className={`border rounded-md font-[Inter] font-normal text-[12px] leading-[1.25em] line-clamp-2 px-3 py-1 flex items-center gap-2 transition-colors ${clientEquipment[client.user_id]?.length > 0
+                            ? "bg-[#FDCE06] border-[#FDCE06] text-[#1F1F20]"
+                            : "bg-[#292A2B] border-[#333333] text-[#E5E5E5] hover:border-[#FDCE06]"
+                            }`}
                         >
                           {clientEquipment[client.user_id]?.length > 0
-                            ? `Assigned (${
-                                clientEquipment[client.user_id].length
-                              })`
+                            ? `Assigned (${clientEquipment[client.user_id].length
+                            })`
                             : "Assign"}
                           <svg
                             width="12"
@@ -808,11 +571,10 @@ const ClientManagement = () => {
                     <button
                       key={pageNum}
                       onClick={() => handlePageChange(pageNum)}
-                      className={`px-3 py-2 border rounded-md font-[Inter] font-medium text-[14px] transition-colors ${
-                        pageNum === pagination.page
-                          ? "bg-[#FDCE06] border-[#FDCE06] text-[#1A1A1A]"
-                          : "bg-[#292A2B] border-[#333333] text-[#E5E5E5] hover:bg-[#333333]"
-                      }`}
+                      className={`px-3 py-2 border rounded-md font-[Inter] font-medium text-[14px] transition-colors ${pageNum === pagination.page
+                        ? "bg-[#FDCE06] border-[#FDCE06] text-[#1A1A1A]"
+                        : "bg-[#292A2B] border-[#333333] text-[#E5E5E5] hover:bg-[#333333]"
+                        }`}
                     >
                       {pageNum}
                     </button>
@@ -863,9 +625,6 @@ const ClientManagement = () => {
         clientEquipment={
           selectedClient ? clientEquipment[selectedClient.user_id] || [] : []
         }
-        clientPricing={
-          selectedClient ? clientPricing[selectedClient.user_id] || [] : []
-        }
       />
 
       {/* Equipment Popover */}
@@ -879,40 +638,12 @@ const ClientManagement = () => {
         selectedEquipment={
           equipmentPopover.clientId
             ? (clientEquipment[equipmentPopover.clientId] || []).map(
-                (eq) => eq.equipment_id || eq.id
-              )
+              (eq) => eq.equipment_id || eq.id
+            )
             : []
         }
         equipmentOptions={getAllEquipmentOptions()}
         loading={assignmentLoading}
-      />
-
-      {/* Pricing Popover */}
-      <PricingPopover
-        isOpen={pricingPopover.isOpen}
-        onClose={() =>
-          setPricingPopover({ isOpen: false, clientId: null, anchorEl: null })
-        }
-        onSelect={handlePricingSelect}
-        onCustomPackageClick={handleCustomPackageClick}
-        referenceElement={pricingPopover.anchorEl}
-        equipmentOptions={getAllEquipmentOptions()}
-        pricingPackages={pricingPackages}
-        loading={assignmentLoading}
-      />
-
-      {/* Custom Package Modal */}
-      <CustomPackageModal
-        isOpen={customPackageModal.isOpen}
-        onClose={() => setCustomPackageModal({ isOpen: false, clientId: null })}
-        onSave={handleCustomPackageSave}
-        clientId={customPackageModal.clientId}
-        clientEquipment={
-          customPackageModal.clientId &&
-          clientEquipment[customPackageModal.clientId]
-            ? clientEquipment[customPackageModal.clientId]
-            : []
-        }
       />
 
       {/* Toast Container */}

@@ -62,7 +62,7 @@ const EquipmentQuickViewModal = ({
                 const diff = start.getTime() - today.getTime();
                 const days = Math.ceil(diff / (1000 * 3600 * 24));
                 setMaintenanceInfo({
-                    text: `Maintenance ${start.toLocaleDateString("en-US", {
+                    text: `Maintenance ${start.toLocaleDateString("en-AU", {
                         day: "2-digit",
                         month: "long",
                         year: "numeric",

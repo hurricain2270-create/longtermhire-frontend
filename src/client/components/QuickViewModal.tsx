@@ -105,12 +105,12 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({
         const startDate = new Date(maintenance.start_date);
         const endDate = new Date(maintenance.end_date);
         return {
-          start: startDate.toLocaleDateString("en-US", {
+          start: startDate.toLocaleDateString("en-AU", {
             day: "2-digit",
             month: "long",
             year: "numeric",
           }),
-          end: endDate.toLocaleDateString("en-US", {
+          end: endDate.toLocaleDateString("en-AU", {
             day: "2-digit",
             month: "long",
             year: "numeric",
@@ -323,11 +323,10 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({
                     <button
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
-                      className={`flex-shrink-0 w-10 h-10 rounded border transition-all overflow-hidden ${
-                        index === currentImageIndex
+                      className={`flex-shrink-0 w-10 h-10 rounded border transition-all overflow-hidden ${index === currentImageIndex
                           ? "border-[#FDCE06] ring-1 ring-[#FDCE06]"
                           : "border-[#333333] hover:border-[#9CA3AF]"
-                      }`}
+                        }`}
                     >
                       <img
                         src={img.image_url}

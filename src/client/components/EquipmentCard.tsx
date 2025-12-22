@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ClipLoader } from "react-spinners";
 import SpecModal from "./SpecModal";
 import QuoteModal from "./QuoteModal";
+import { calculateMonthlyPrices } from "../../utils/pricingCalculator";
 
 interface EquipmentCardProps {
   equipment: any;
@@ -55,56 +56,32 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
   const hasDiscount = discountValue > 0;
   const hasCompounding = compoundingValue > 0;
 
-  // Calculate price based on duration and discounts (conforming to old logic)
+  // Calculate price based on duration and discounts using centralized pricing calculator
   useEffect(() => {
     if (isSupervisor) return; // Skip calculation for supervisor
 
-    let totalCost = 0;
-    let totalSavings = 0;
-    let monthlyAvgSavings = 0;
+    // Use centralized pricing calculator for consistency
+    const result = calculateMonthlyPrices(
+      basePrice,
+      discountValue,
+      discountType,
+      compoundingValue,
+      compoundingType,
+      selectedDuration
+    );
 
-    // OLD LOGIC: Apply compounding FIRST (from month 1), then package discount on total
-    // Use dynamic compounding_discount_value instead of hardcoded 1%
-    const compoundingDiscount = compoundingValue > 0 ? compoundingValue : 0; // Default to 0 if not set
-    const compoundingDiscountType = compoundingType || "percentage"; // Default to percentage
-
-    // Calculate compounding effect over duration (starting from month 1)
-    let standardCompoundingCost = 0;
-    let currentMonthPrice = basePrice;
-
-    for (let month = 1; month <= selectedDuration; month++) {
-      standardCompoundingCost += currentMonthPrice;
-      // Apply compounding discount for next month (if compounding exists)
-      if (compoundingDiscount > 0) {
-        if (compoundingDiscountType === "%" || compoundingDiscountType === "percentage") {
-          currentMonthPrice = currentMonthPrice * (1 - compoundingDiscount / 100);
-        } else {
-          currentMonthPrice = Math.max(0, currentMonthPrice - compoundingDiscount);
-        }
-      }
-    }
-
-    // THEN apply package discount (base discount) on top of the compounding total
-    let finalCost = standardCompoundingCost;
-    if (discountValue > 0) {
-      if (discountType === "%" || discountType === "percentage") {
-        finalCost = standardCompoundingCost * (1 - discountValue / 100);
-      } else {
-        finalCost = Math.max(0, standardCompoundingCost - discountValue);
-      }
-    }
-
+    const finalResult = result[result.length - 1];
+    const finalPrice = finalResult.cumulativeTotal;
     const undiscountedTotal = basePrice * selectedDuration;
-    totalSavings = undiscountedTotal - finalCost;
-    monthlyAvgSavings = totalSavings / selectedDuration;
+    const totalSavings = undiscountedTotal - finalPrice;
+    const monthlyAvgSavings = totalSavings / selectedDuration;
 
-    setCalculatedPrice(finalCost);
+    setCalculatedPrice(finalPrice);
     setTotalDiscount(totalSavings);
-    setSavingsPerMonth(totalSavings); // Display Total Savings INSTEAD of Average
+    setSavingsPerMonth(monthlyAvgSavings);
   }, [
-    selectedDuration,
-    equipment,
     basePrice,
+    selectedDuration,
     discountValue,
     discountType,
     compoundingValue,
@@ -199,7 +176,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         const daysUntil = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
         return {
-          text: `Maintenance ${startDate.toLocaleDateString("en-US", { day: "2-digit", month: "long", year: "numeric" })}`,
+          text: `Maintenance ${startDate.toLocaleDateString("en-AU")}`,
           daysUntil: daysUntil > 0 ? daysUntil : 0,
           isActive: daysUntil <= 0 && new Date(maintenance.end_date) >= today,
         };

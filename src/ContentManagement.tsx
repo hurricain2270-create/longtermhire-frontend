@@ -8,7 +8,7 @@ import ContentDetailsModal from "./components/ContentDetailsModal";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { isImageUrl } from "./utils/uploadUtils";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const ContentManagement = () => {
   const [searchData, setSearchData] = useState({
@@ -18,6 +18,7 @@ const ContentManagement = () => {
   });
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -55,6 +56,8 @@ const ContentManagement = () => {
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
+  // Use useLocation hook from react-router
+  // const navigate = useNavigate(); // This line is already declared above, no need to redeclare
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 200,
@@ -95,7 +98,15 @@ const ContentManagement = () => {
 
   // Load content on component mount
   useEffect(() => {
-    fetchContent(1, {});
+    const passedEquipmentName = location.state?.equipmentName;
+    if (passedEquipmentName) {
+      const filters = { equipmentName: passedEquipmentName };
+      setSearchData(prev => ({ ...prev, ...filters }));
+      setDebouncedSearchData(filters);
+      fetchContent(1, filters);
+    } else {
+      fetchContent(1, {});
+    }
   }, []);
 
   // Debounced search effect
@@ -716,8 +727,8 @@ const ContentManagement = () => {
                       key={pageNum}
                       onClick={() => handlePageChange(pageNum)}
                       className={`px-3 py-2 border rounded-md font-inter font-medium text-sm transition-colors ${pageNum === pagination.page
-                          ? "bg-[#FDCE06] border-[#FDCE06] text-[#1A1A1A]"
-                          : "bg-[#292A2B] border-[#333333] text-[#E5E5E5] hover:bg-[#333333]"
+                        ? "bg-[#FDCE06] border-[#FDCE06] text-[#1A1A1A]"
+                        : "bg-[#292A2B] border-[#333333] text-[#E5E5E5] hover:bg-[#333333]"
                         }`}
                     >
                       {pageNum}

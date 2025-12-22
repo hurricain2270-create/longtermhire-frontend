@@ -82,7 +82,7 @@ function ContentDetailsModal({ isOpen, onClose, content, onEdit }) {
                     </label>
                     <div className="bg-[#292A2B] border border-[#333333] rounded-md px-3 py-2 text-[#E5E5E5]">
                       {content.created_at
-                        ? new Date(content.created_at).toLocaleDateString()
+                        ? new Date(content.created_at).toLocaleDateString("en-AU")
                         : "N/A"}
                     </div>
                   </div>
@@ -93,7 +93,7 @@ function ContentDetailsModal({ isOpen, onClose, content, onEdit }) {
                     </label>
                     <div className="bg-[#292A2B] border border-[#333333] rounded-md px-3 py-2 text-[#E5E5E5]">
                       {content.updated_at
-                        ? new Date(content.updated_at).toLocaleDateString()
+                        ? new Date(content.updated_at).toLocaleDateString("en-AU")
                         : "N/A"}
                     </div>
                   </div>
@@ -139,8 +139,8 @@ function ContentDetailsModal({ isOpen, onClose, content, onEdit }) {
                     </label>
                     <div className="bg-[#292A2B] border border-[#333333] rounded-md p-3">
                       {content.images &&
-                      Array.isArray(content.images) &&
-                      content.images.length > 0 ? (
+                        Array.isArray(content.images) &&
+                        content.images.length > 0 ? (
                         <div className="space-y-4">
                           {/* Main Image Display */}
                           {(() => {
@@ -201,16 +201,16 @@ function ContentDetailsModal({ isOpen, onClose, content, onEdit }) {
                                     />
                                     {(image.is_main === 1 ||
                                       image.is_main === true) && (
-                                      <div className="absolute top-1 left-1 w-5 h-5 bg-[#FDCE06] rounded-full flex items-center justify-center">
-                                        <svg
-                                          className="w-3 h-3 text-[#1A1A1A]"
-                                          fill="currentColor"
-                                          viewBox="0 0 24 24"
-                                        >
-                                          <path d="M5 13l4 4L19 7" />
-                                        </svg>
-                                      </div>
-                                    )}
+                                        <div className="absolute top-1 left-1 w-5 h-5 bg-[#FDCE06] rounded-full flex items-center justify-center">
+                                          <svg
+                                            className="w-3 h-3 text-[#1A1A1A]"
+                                            fill="currentColor"
+                                            viewBox="0 0 24 24"
+                                          >
+                                            <path d="M5 13l4 4L19 7" />
+                                          </svg>
+                                        </div>
+                                      )}
                                     {image.caption && (
                                       <div
                                         className="text-[#9CA3AF] text-xs mt-1 truncate"

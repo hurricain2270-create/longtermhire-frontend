@@ -57,11 +57,8 @@ export function calculateMonthlyPrices(
     let currentDiscountType = '%';
 
     if (month === 1) {
-      // Month 1: Apply Initial Discount Only
+      // Month 1: Apply Initial Discount Only (from the base price)
       currentDiscountType = initialDiscountType;
-      // Note: For Month 1 logic, we use the base price as unit price
-      // And result is the discounted price.
-      // Confirming requirement: Month 1 is just the initial discount.
 
       let discountAmount = 0;
       if (initialDiscount > 0) {
@@ -79,25 +76,45 @@ export function calculateMonthlyPrices(
         priceForMonth = basePrice;
       }
 
-      // Update logic: the chart shows Month 1 Unit Price is the *Base Price*?
-      // Wait, user said: "Show 45,000 in the Unit Price (which is the 10% off)"
-      // Ah, so for Month 1, the "Unit Price" listed in the table is ALREADY the discounted price?
-      // Spreadsheet Row 1: Unit Price $5000, Discount 1.00%, Price $5000.
-      // This is confusing. 
-      // Let's stick to the interpretation:
-      // Month 1 Result = Base - Initial Discount.
-
       cumulativeTotal += priceForMonth;
-
-      // For next month, the UNIT PRICE will be this month's FINAL PRICE
-      currentUnitPrice = priceForMonth;
 
       schedule.push({
         month,
-        unitPrice: basePrice, // Display Base Price for Month 1? Or the Discounted? 
-        // User: "Show 45,000 in the Unit Price (which is the 10% off)"
-        // So Month 1 Unit Price = (Base * 0.9).
-        // Let's store what actually happened.
+        unitPrice: basePrice, // Month 1 Unit Price is the absolute Base Price
+        discount: appliedDiscount,
+        discountType: currentDiscountType,
+        price: priceForMonth,
+        cumulativeTotal
+      });
+
+    } else if (month === 2) {
+      // Month 2: Reset to Base Price and apply Compounding Discount
+      // The "Normal Discount" from Month 1 is IGNORED here.
+
+      const unitPriceForThisMonth = basePrice;
+      let discountAmount = 0;
+      currentDiscountType = compoundingDiscountType;
+
+      if (compoundingDiscount > 0) {
+        if (compoundingDiscountType === '%') {
+          const discountPercent = Math.min(Math.max(compoundingDiscount, 0), 100);
+          discountAmount = unitPriceForThisMonth * (discountPercent / 100);
+          priceForMonth = unitPriceForThisMonth - discountAmount;
+          appliedDiscount = compoundingDiscount;
+        } else {
+          discountAmount = compoundingDiscount;
+          priceForMonth = Math.max(0, unitPriceForThisMonth - compoundingDiscount);
+          appliedDiscount = compoundingDiscount;
+        }
+      } else {
+        priceForMonth = unitPriceForThisMonth;
+      }
+
+      cumulativeTotal += priceForMonth;
+
+      schedule.push({
+        month,
+        unitPrice: unitPriceForThisMonth,
         discount: appliedDiscount,
         discountType: currentDiscountType,
         price: priceForMonth,
@@ -105,10 +122,8 @@ export function calculateMonthlyPrices(
       });
 
     } else {
-      // Month 2+:
-      // Unit Price is Previous Month's Price.
-      // Apply Compounding Discount.
-
+      // Month 3+:
+      // Unit Price is Previous Month's Price (Progressive compounding)
       const previousPrice = schedule[month - 2].price;
       const unitPriceForThisMonth = previousPrice;
 

@@ -62,10 +62,6 @@ const EquipmentManagement = () => {
     }
   };
 
-  // Load equipment on component mount
-  useEffect(() => {
-    fetchEquipment();
-  }, []);
 
   // Debounced search effect
   useEffect(() => {

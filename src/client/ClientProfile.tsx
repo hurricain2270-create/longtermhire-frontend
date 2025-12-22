@@ -12,6 +12,7 @@ function ClientProfile() {
     fullName: "",
     email: "",
     companyName: "",
+    role: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -43,6 +44,7 @@ function ClientProfile() {
             fullName: clientProfile?.client_name || user?.username || "",
             email: user?.email || "",
             companyName: clientProfile?.company_name || "",
+            role: user?.role_id || "member",
           });
         }
       } catch (error) {
@@ -212,6 +214,20 @@ function ClientProfile() {
                   value={formData.companyName}
                   readOnly
                   className="w-full sm:max-w-md border border-[#333333] rounded-md bg-[#1A1A1A] text-[#9CA3AF] px-4 py-3 outline-none cursor-not-allowed"
+                />
+              </div>
+
+              {/* Role Field (Read-only) */}
+              <div className="w-full">
+                <label className="block text-[#9CA3AF] mb-2 text-sm font-medium">
+                  Role
+                </label>
+                <input
+                  type="text"
+                  name="role"
+                  value={formData.role}
+                  readOnly
+                  className="w-full sm:max-w-md border border-[#333333] rounded-md bg-[#1A1A1A] text-[#9CA3AF] px-4 py-3 outline-none cursor-not-allowed capitalize"
                 />
               </div>
 

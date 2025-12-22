@@ -103,14 +103,17 @@ const Chat = () => {
     });
 
     // Group messages by date for date headers
-    const groupMessagesByDate = (messages) => {
+    const groupMessagesByDate = (msgs) => {
         const groups = {};
-        messages.forEach((message) => {
-            const date = new Date(message.created_at).toDateString();
-            if (!groups[date]) {
-                groups[date] = [];
-            }
-            groups[date].push(message);
+        msgs.forEach((m) => {
+            if (!m.created_at) return;
+            const dateObj = new Date(m.created_at);
+            if (isNaN(dateObj.getTime())) return;
+
+            // Use ISO date part (YYYY-MM-DD) as key for reliable sorting and parsing
+            const d = dateObj.toISOString().split("T")[0];
+            if (!groups[d]) groups[d] = [];
+            groups[d].push(m);
         });
         return groups;
     };
@@ -223,7 +226,7 @@ const Chat = () => {
         loadClients();
         loadClientStatus();
     }, [loadConversations]);
-    
+
     // Set up periodic refresh of conversations to update unread counts
     // Use a separate effect to avoid reloading clients unnecessarily
     useEffect(() => {
@@ -231,16 +234,16 @@ const Chat = () => {
             // Only refresh conversations, not clients (to avoid unnecessary re-renders)
             loadConversations(false); // Don't show loading spinner on background refresh
         }, 5000); // Refresh every 5 seconds
-        
+
         return () => clearInterval(refreshInterval);
     }, [loadConversations]);
-    
+
     // Separate effect for client status refresh (less frequent)
     useEffect(() => {
         const statusInterval = setInterval(() => {
             loadClientStatus();
         }, 10000); // Refresh client status every 10 seconds (less frequent)
-        
+
         return () => clearInterval(statusInterval);
     }, []);
 
@@ -697,10 +700,10 @@ const Chat = () => {
                                                 {conversation.last_message_text || "No messages yet"}
                                             </p>
                                             {/* Last Seen Info */}
-                                            {!clientStatus.is_online && clientStatus.last_seen && (
+                                            {!clientStatus.is_online && clientStatus.last_seen && !isNaN(new Date(clientStatus.last_seen).getTime()) && (
                                                 <p className="text-[#9CA3AF] text-xs mt-1">
                                                     Last seen:{" "}
-                                                    {new Date(clientStatus.last_seen).toLocaleString()}
+                                                    {new Date(clientStatus.last_seen).toLocaleString("en-AU")}
                                                 </p>
                                             )}
                                         </div>
@@ -785,12 +788,13 @@ const Chat = () => {
                                     </div>
                                     {/* Client Last Seen */}
                                     {!getClientOnlineStatus(selectedConversation).is_online &&
-                                        getClientOnlineStatus(selectedConversation).last_seen && (
+                                        getClientOnlineStatus(selectedConversation).last_seen &&
+                                        !isNaN(new Date(getClientOnlineStatus(selectedConversation).last_seen).getTime()) && (
                                             <p className="text-[#9CA3AF] text-xs mt-1">
                                                 Client last seen:{" "}
                                                 {new Date(
                                                     getClientOnlineStatus(selectedConversation).last_seen
-                                                ).toLocaleString()}
+                                                ).toLocaleString("en-AU")}
                                             </p>
                                         )}
                                 </div>
@@ -821,9 +825,12 @@ const Chat = () => {
                                     </button>
                                 </div>
                             )}
-                            {loading && filteredMessages.length === 0 ? (
+                            {(loadingMessages || loading) && filteredMessages.length === 0 ? (
                                 <div className="flex items-center justify-center h-32">
-                                    <div className="text-[#9CA3AF]">Loading messages...</div>
+                                    <div className="text-[#9CA3AF] flex items-center gap-2">
+                                        <ClipLoader size={20} color="#FDCE06" />
+                                        Loading messages...
+                                    </div>
                                 </div>
                             ) : filteredMessages.length === 0 ? (
                                 <div className="flex items-center justify-center h-32">
@@ -837,12 +844,17 @@ const Chat = () => {
                                         {/* Date Header */}
                                         <div className="flex justify-center my-4">
                                             <div className="bg-[#333333] text-[#9CA3AF] text-xs px-3 py-1 rounded-full">
-                                                {new Date(date).toLocaleDateString([], {
-                                                    weekday: "long",
-                                                    year: "numeric",
-                                                    month: "long",
-                                                    day: "numeric",
-                                                })}
+                                                {(() => {
+                                                    // date is 'YYYY-MM-DD' from groupMessagesByDate
+                                                    // Append time to ensure it's treated as local or consistent UTC
+                                                    const dateObj = new Date(date + "T00:00:00");
+                                                    return isNaN(dateObj.getTime()) ? "Unknown Date" : dateObj.toLocaleDateString("en-AU", {
+                                                        weekday: "long",
+                                                        year: "numeric",
+                                                        month: "long",
+                                                        day: "numeric",
+                                                    });
+                                                })()}
                                             </div>
                                         </div>
 
@@ -921,7 +933,7 @@ const Chat = () => {
                                                                             </p>
                                                                             {message.attachment_size && (
                                                                                 <p className="text-xs text-[#ADAEBC] mt-0.5">
-                                                                                    {message.attachment_size > 1024 * 1024 
+                                                                                    {message.attachment_size > 1024 * 1024
                                                                                         ? `${(message.attachment_size / (1024 * 1024)).toFixed(2)} MB`
                                                                                         : `${(message.attachment_size / 1024).toFixed(2)} KB`}
                                                                                 </p>
@@ -951,12 +963,13 @@ const Chat = () => {
                                                                     : "text-[#9CA3AF]"
                                                                     }`}
                                                             >
-                                                                {new Date(
-                                                                    message.created_at
-                                                                ).toLocaleTimeString([], {
-                                                                    hour: "2-digit",
-                                                                    minute: "2-digit",
-                                                                })}
+                                                                {(() => {
+                                                                    const dateObj = new Date(message.created_at);
+                                                                    return isNaN(dateObj.getTime()) ? "" : dateObj.toLocaleTimeString("en-AU", {
+                                                                        hour: "2-digit",
+                                                                        minute: "2-digit",
+                                                                    });
+                                                                })()}
                                                             </p>
                                                             {/* Read Receipt */}
                                                             {isFromCurrentUser && (
@@ -1016,7 +1029,7 @@ const Chat = () => {
                         </div>
 
                         {/* Message Input */}
-                        <div 
+                        <div
                             ref={dropZoneRef}
                             className={`bg-[#1F1F20] border-t border-[#333333] p-3 sm:p-4 relative ${isDragging ? 'border-[#FDCE06] border-2 border-dashed' : ''}`}
                             onDragEnter={handleDragEnter}
@@ -1077,7 +1090,7 @@ const Chat = () => {
                                                     {selectedFile.name}
                                                 </p>
                                                 <p className="text-[#9CA3AF] text-xs">
-                                                    {selectedFile.size > 1024 * 1024 
+                                                    {selectedFile.size > 1024 * 1024
                                                         ? `${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB`
                                                         : `${(selectedFile.size / 1024).toFixed(2)} KB`}
                                                 </p>

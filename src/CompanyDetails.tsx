@@ -16,8 +16,8 @@ const CompanyDetails = () => {
 
   const [companyData, setCompanyData] = useState({
     companyName: "",
-    adText: "",
-    adTextDestination: "To Sticky Note",
+    headerAdText: "",
+    stickyAdText: "",
   });
 
   const [teamMembers, setTeamMembers] = useState([]);
@@ -58,60 +58,56 @@ const CompanyDetails = () => {
       const response = await companyApi.getCompany(id);
 
       if (!response.error && response.data) {
-        const company = response.data;
+        const companyDetails = response.data;
 
+        // Map company data
         setCompanyData({
-          companyName: company.company_name || "",
-          adText: company.ad_text || "",
-          adTextDestination: company.ad_text_destination || "To Sticky Note",
+          companyName: companyDetails.company_name || "",
+          headerAdText: companyDetails.header_ad_text || "",
+          stickyAdText: companyDetails.sticky_ad_text || "",
         });
 
-        // Set team members
-        if (company.members && Array.isArray(company.members)) {
-          setTeamMembers(
-            company.members.map((member) => ({
-              id: member.id,
-              name: member.member_name,
-              email: member.member_email,
-              phone: member.member_phone || "",
-              role: member.role,
-              user_id: member.user_id,
-              action: "Details",
+        // Map team members
+        setTeamMembers(
+          (companyDetails.members || []).map((member) => ({
+            id: member.id,
+            name: member.member_name,
+            email: member.member_email,
+            phone: member.member_phone || "",
+            role: member.role,
+            user_id: member.user_id,
+            action: "Details",
+          }))
+        );
+
+        // Map equipment
+        const equipmentResponse = await companyApi.getCompanyEquipment(id);
+        if (!equipmentResponse.error) {
+          setAssignedEquipment(
+            equipmentResponse.data.map((eq) => ({
+              id: eq.id,
+              equipmentName: eq.equipment_name,
+              categoryName: eq.category_name,
+              unitPrice: eq.base_price?.toString() || "0",
+              discount: eq.discount ? parseFloat(eq.discount).toString() : "",
+              discountType: eq.discount_type || "%",
+              compoundingDiscount: eq.compounding_discount ? parseFloat(eq.compounding_discount).toString() : "",
+              compoundingDiscountType: eq.compounding_discount_type || "%",
+              equipment_id: eq.equipment_id || eq.id, // Fallback to id if equipment_id is not present
             }))
           );
         } else {
-          setTeamMembers([]);
+          console.error("Failed to load equipment:", equipmentResponse);
+          setAssignedEquipment([]);
         }
       }
-
-      // Load company equipment
-      const equipmentResponse = await companyApi.getCompanyEquipment(id);
-
-      if (!equipmentResponse.error && equipmentResponse.data) {
-        console.log("Loaded equipment:", equipmentResponse.data);
-        setAssignedEquipment(
-          equipmentResponse.data.map((item) => ({
-            id: item.id,
-            equipmentName: item.equipment_name,
-            categoryName: item.category_name,
-            unitPrice: item.base_price?.toString() || "0",
-            discount: item.discount ? parseFloat(item.discount).toString() : "",
-            discountType: item.discount_type || "%",
-            compoundingDiscount: item.compounding_discount ? parseFloat(item.compounding_discount).toString() : "",
-            compoundingDiscountType: item.compounding_discount_type || "%",
-            equipment_id: item.equipment_id || item.id, // Fallback to id if equipment_id is not present
-          }))
-        );
-      } else {
-        console.error("Failed to load equipment:", equipmentResponse);
-        setAssignedEquipment([]);
-      }
-
-      setLoading(false);
     } catch (error) {
-      console.error("Error loading company:", error);
-      toast.error(error.message || "Failed to load company details");
-      setLoading(false);
+      console.error("Error loading company details:", error);
+      toast.error("Failed to load company details");
+    } finally {
+      if (!background) {
+        setLoading(false);
+      }
     }
   };
 
@@ -334,8 +330,8 @@ const CompanyDetails = () => {
       // Update company details
       const companyResponse = await companyApi.updateCompany(id, {
         company_name: companyData.companyName,
-        ad_text: companyData.adText,
-        ad_text_destination: companyData.adTextDestination,
+        header_ad_text: companyData.headerAdText,
+        sticky_ad_text: companyData.stickyAdText,
       });
 
       if (companyResponse.error) {
@@ -498,7 +494,7 @@ const CompanyDetails = () => {
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex gap-2 items-center justify-center">
-                          <button 
+                          <button
                             onClick={() => {
                               setSelectedTeamMember(member);
                               setShowTeamMemberDetailsModal(true);
@@ -709,37 +705,35 @@ const CompanyDetails = () => {
             </div>
           </div>
 
-          {/* AD Text Section */}
-          <div className="bg-[#1F1F20] border w-[35%] border-[#333333] rounded-lg p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-[#E5E5E5] font-[Inter] font-semibold text-xl">
-                AD Text
+          {/* AD Text Sections */}
+          <div className="bg-[#1F1F20] border w-[35%] border-[#333333] rounded-lg p-6 space-y-6">
+            {/* Header Ad Text Section */}
+            <div>
+              <h3 className="text-[#E5E5E5] font-[Inter] font-semibold text-xl mb-4">
+                Header Ad Text
               </h3>
-
-              {/* Dropdown for selecting destination */}
-              <select
-                value={companyData.adTextDestination}
-                onChange={(e) =>
-                  setCompanyData({
-                    ...companyData,
-                    adTextDestination: e.target.value,
-                  })
+              <SimpleRichTextEditor
+                value={companyData.headerAdText}
+                onChange={(value) =>
+                  setCompanyData({ ...companyData, headerAdText: value })
                 }
-                className="bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-3 py-1.5 outline-none focus:border-[#FDCE06] font-[Inter] text-xs"
-              >
-                <option value="Add Text">Add Text</option>
-                <option value="To Sticky Note">To Sticky Note</option>
-                <option value="To Header">To Header</option>
-              </select>
+                height={150}
+              />
             </div>
 
-            <SimpleRichTextEditor
-              value={companyData.adText}
-              onChange={(value) =>
-                setCompanyData({ ...companyData, adText: value })
-              }
-              height={200}
-            />
+            {/* Sticky Note Ad Text Section */}
+            <div>
+              <h3 className="text-[#E5E5E5] font-[Inter] font-semibold text-xl mb-4">
+                Sticky Note Ad Text
+              </h3>
+              <SimpleRichTextEditor
+                value={companyData.stickyAdText}
+                onChange={(value) =>
+                  setCompanyData({ ...companyData, stickyAdText: value })
+                }
+                height={150}
+              />
+            </div>
           </div>
         </div>
         {/* Save Button */}

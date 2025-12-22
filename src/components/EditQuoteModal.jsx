@@ -50,38 +50,7 @@ const EditQuoteModal = ({ isOpen, onClose, onSave, quote }) => {
     }));
   };
 
-  const handleLogoUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    try {
-      // Validate aspect ratio for logos (specific requirement: 16:9 to 3.5:1)
-      const { validateImageFile } = await import("../utils/uploadUtils");
-      await validateImageFile(file, {
-        minAspectRatio: 16 / 9, // Minimum 16:9 (1.78:1)
-        maxAspectRatio: 3.5, // Maximum 3.5:1 (allows 32:9 ultrawide and similar)
-      });
-
-      toast.info("Uploading logo...");
-
-      // Upload to S3 using the same API as equipment
-      const response = await equipmentApi.uploadFile(file);
-
-      if (response && response.url) {
-        setFormData((prev) => ({
-          ...prev,
-          companyLogo: response.url, // Save the URL string
-        }));
-        setLogoPreview(response.url);
-        toast.success("Logo uploaded successfully!");
-      } else {
-        toast.error("Failed to upload logo");
-      }
-    } catch (error) {
-      console.error("Error uploading logo:", error);
-      toast.error(error.message || "Failed to upload logo");
-    }
-  };
+  // Logo upload removed as per requirements
 
   const handleSubmit = () => {
     // Validation
@@ -134,46 +103,7 @@ const EditQuoteModal = ({ isOpen, onClose, onSave, quote }) => {
                 Your Company Details
               </h3>
 
-              {/* Company Logo */}
-              <div className="mb-4">
-                <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
-                  Company Logo
-                </label>
-                <div className="flex items-center gap-4">
-                  {logoPreview ? (
-                    <img
-                      src={logoPreview}
-                      alt="Company Logo"
-                      className="w-20 h-20 object-contain bg-[#292A2B] rounded border border-[#333333]"
-                    />
-                  ) : (
-                    <div className="w-20 h-20 bg-[#292A2B] rounded border border-[#333333] flex items-center justify-center">
-                      <svg
-                        className="w-6 h-6 text-[#666666]"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
-                  )}
-                  <label className="bg-[#FDCE06] text-[#1F1F20] px-3 py-2 rounded-md font-[Inter] font-medium text-sm cursor-pointer hover:bg-[#E5B800] transition-colors">
-                    Upload
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleLogoUpload}
-                      className="hidden"
-                    />
-                  </label>
-                </div>
-              </div>
+              {/* Company Logo Field Removed */}
 
               {/* Company Name */}
               <div className="mb-4">
