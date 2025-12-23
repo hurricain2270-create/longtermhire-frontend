@@ -166,7 +166,7 @@ const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Add Client"
+      title="Add Company"
       width="680px"
     >
       <form onSubmit={handleSubmit} className="p-1">
@@ -175,7 +175,7 @@ const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
             {/* Client Name Field */}
             <div>
               <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
-                Client Name
+                Company Name
               </label>
               <input
                 type="text"

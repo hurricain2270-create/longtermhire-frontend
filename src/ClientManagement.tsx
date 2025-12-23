@@ -328,7 +328,7 @@ const ClientManagement = () => {
       {/* Header */}
       <header className="mb-8">
         <h1 className="text-[#E5E5E5] font-[Inter] font-bold text-[36px] leading-[1.11em]">
-          Client Management
+          Company Management
         </h1>
       </header>
 
@@ -405,13 +405,13 @@ const ClientManagement = () => {
         {/* Section Header */}
         <div className="flex justify-between items-center p-6 border-b border-[#333333]">
           <h3 className="text-[#E5E5E5] font-[Inter] font-semibold text-[20px] leading-[1.4em]">
-            Client
+            Company
           </h3>
           <button
             onClick={handleAddClient}
             className="bg-[#FDCE06] rounded-md text-[#1F1F20] font-[Inter] font-bold text-[16px] leading-[1.19em] px-6 py-2 hover:bg-[#E5B800] transition-colors"
           >
-            + Add Client
+            + Add Company
           </button>
         </div>
 

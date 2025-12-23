@@ -354,26 +354,7 @@ const ContentManagement = () => {
                     </svg>
                   </span>
                 </th>
-                <th className="text-left text-[#E5E5E5] font-[Inter] font-bold text-sm px-3 py-3">
-                  Banner Description
-                  <span className="inline-block w-2 h-3.5 ml-1">
-                    <svg
-                      width="8.75"
-                      height="14"
-                      viewBox="0 0 9 14"
-                      fill="none"
-                    >
-                      <path
-                        d="M4.375 0.875L8.75 5.25H0L4.375 0.875Z"
-                        fill="#6B7280"
-                      />
-                      <path
-                        d="M4.375 13.125L0 8.75H8.75L4.375 13.125Z"
-                        fill="#6B7280"
-                      />
-                    </svg>
-                  </span>
-                </th>
+
                 <th className="text-left text-[#E5E5E5] font-[Inter] font-bold text-sm px-3 py-3">
                   Image
                   <span className="inline-block w-2 h-3.5 ml-1">
@@ -519,37 +500,7 @@ const ContentManagement = () => {
                         />
                       )}
                     </td>
-                    <td
-                      className="text-[#E5E5E5]"
-                      style={{
-                        width: "267.5px",
-                        fontFamily: "Inter",
-                        fontWeight: 400,
-                        fontSize: "14px",
-                        lineHeight: "17px",
-                        padding: "12px",
-                      }}
-                    >
-                      {Array.isArray(item.banner_description) ? (
-                        <div>
-                          <div style={{ marginTop: "0.4px" }}>
-                            {item.banner_description[0]}
-                          </div>
-                          <div style={{ marginTop: "20px" }}>
-                            {item.banner_description[1]}
-                          </div>
-                        </div>
-                      ) : (
-                        <div
-                          style={{
-                            marginTop:
-                              index === 0 || index === 4 ? "9.9px" : "10.4px",
-                          }}
-                        >
-                          {item.banner_description}
-                        </div>
-                      )}
-                    </td>
+
                     <td
                       className="text-[#E5E5E5]"
                       style={{
