@@ -1,5 +1,5 @@
-// @ts-nocheck
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ClipLoader from "react-spinners/ClipLoader";
@@ -233,11 +233,15 @@ const QuoteManagement = () => {
         // Admin company info for "From" section
         admin_company_name: adminSettings?.company_name || "Long Term Hire Pty Ltd",
         admin_company_address: adminSettings?.company_address || "PO Box 4089 MOUNT ELIZA VIC 3930 AUSTRALIA",
+        admin_company_logo: adminSettings?.company_logo || null,
         equipmentData: {
           id: "001",
           description: "7 Ton Excavator",
           basePrice: 5000,
-          discount: 1,
+          discount: 10,
+          discount_type: '%',
+          compounding_discount: 2,
+          compounding_discount_type: '%',
         },
       };
 
@@ -255,13 +259,35 @@ const QuoteManagement = () => {
     }
   };
 
+  const navigate = useNavigate();
+
   return (
     <div className="p-4 sm:p-8 bg-[#292A2B] min-h-screen">
       {/* Header */}
-      <header className="mb-8">
+      <header className="mb-8 flex items-center justify-between">
         <h1 className="text-[#E5E5E5] font-[Inter] font-bold text-2xl sm:text-3xl lg:text-[36px] leading-[1.11em]">
           Quote Management
         </h1>
+        <button
+          onClick={() => navigate("/profile")}
+          className="p-2 hover:bg-[#333333] rounded-md transition-colors"
+          title="Quote Settings"
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#9CA3AF"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className="hover:stroke-[#FDCE06] transition-colors"
+          >
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 1v6m0 6v6m5.2-13.2l-4.2 4.2m-2 2l-4.2 4.2M23 12h-6m-6 0H1m18.2 5.2l-4.2-4.2m-2-2l-4.2-4.2"></path>
+          </svg>
+        </button>
       </header>
 
       {/* Search Section */}

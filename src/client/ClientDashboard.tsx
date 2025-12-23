@@ -1462,11 +1462,7 @@ function ClientDashboard() {
                     transform: "rotate(-0.5deg)",
                   }}
                   dangerouslySetInnerHTML={{
-                    __html:
-                      companySettings.ad_text &&
-                        companySettings.ad_text_destination === "To Sticky Note"
-                        ? companySettings.ad_text
-                        : "<p>Welcome to LongtermHire!</p><p>Browse our equipment and request quotes.</p>",
+                    __html: companySettings.sticky_ad_text || "",
                   }}
                 />
               </div>
@@ -2461,34 +2457,7 @@ function ClientDashboard() {
         </div>
       )}
 
-      {/* Sticky Note Ad */}
-      {companySettings.sticky_ad_text && (
-        <div className="fixed bottom-4 right-4 z-50 max-w-sm">
-          <div className="bg-[#FDCE06] border-2 border-[#E5B800] rounded-lg p-4 shadow-2xl relative">
-            {/* Close Button */}
-            <button
-              onClick={() => setCompanySettings({ ...companySettings, sticky_ad_text: "" })}
-              className="absolute top-2 right-2 text-[#1F1F20] hover:text-[#000000] transition-colors"
-            >
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <path
-                  d="M15 5L5 15M5 5L15 15"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </button>
-            {/* Sticky Note Content */}
-            <div
-              className="text-[#1F1F20] text-sm pr-6"
-              dangerouslySetInnerHTML={{
-                __html: companySettings.sticky_ad_text,
-              }}
-            />
-          </div>
-        </div>
-      )}
+
 
       {/* Toast notifications */}
       <ToastContainer

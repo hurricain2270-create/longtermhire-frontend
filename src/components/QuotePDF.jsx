@@ -211,9 +211,11 @@ const QuotePDF = ({ quoteData }) => {
   // Use robust check for values
   const basePrice = parseFloat(equipmentData.basePrice || equipmentData.custom_base_price || 0);
   const discount = parseFloat(equipmentData.discount || equipmentData.discount_value || 0);
-  const discountType = equipmentData.discount_type || '%';
+  const discountTypeField = equipmentData.discount_type || equipmentData.discountType;
+  const discountType = (discountTypeField === 'percentage' || discountTypeField === '%' || discountTypeField === '0' || discountTypeField === 0) ? '%' : '$';
   const compoundingDiscount = parseFloat(equipmentData.compounding_discount || equipmentData.compounding_discount_value || 0);
-  const compoundingDiscountType = equipmentData.compounding_discount_type || '%';
+  const compoundingDiscountTypeField = equipmentData.compounding_discount_type || equipmentData.compoundingDiscountType;
+  const compoundingDiscountType = (compoundingDiscountTypeField === 'percentage' || compoundingDiscountTypeField === '%' || compoundingDiscountTypeField === '0' || compoundingDiscountTypeField === 0) ? '%' : '$';
 
   const schedule = calculateMonthlyPrices(
     basePrice,
@@ -319,6 +321,12 @@ const QuotePDF = ({ quoteData }) => {
               {/* Far Right Column - From */}
               <View style={styles.farRightColumn}>
                 <Text style={styles.sectionLabel}>From:</Text>
+                {quoteData?.admin_company_logo && (
+                  <Image
+                    src={quoteData.admin_company_logo}
+                    style={{ width: 80, height: 30, marginBottom: 5, objectFit: 'contain' }}
+                  />
+                )}
                 <Text style={styles.infoText}>
                   Company: {quoteData?.admin_company_name || "Long Term Hire Pty Ltd"}
                 </Text>

@@ -5,6 +5,7 @@ import { PDFViewer } from "@react-pdf/renderer";
 import QuotePDF from "./QuotePDF";
 import { equipmentApi } from "../services/equipmentApi";
 import { quoteApi } from "../services/quoteApi";
+import { settingsApi } from "../services/settingsApi";
 import SimpleRichTextEditor from "./SimpleRichTextEditor";
 
 const AddQuoteModal = ({ isOpen, onClose, onSave }) => {
@@ -22,30 +23,49 @@ const AddQuoteModal = ({ isOpen, onClose, onSave }) => {
 
   const [companies, setCompanies] = useState([]);
   const [loadingCompanies, setLoadingCompanies] = useState(false);
+  const [loadingSettings, setLoadingSettings] = useState(false);
 
   const [logoPreview, setLogoPreview] = useState(null);
 
   // Fetch companies on mount
   useEffect(() => {
     if (isOpen) {
-      fetchCompanies();
+      loadInitialData();
     }
   }, [isOpen]);
 
-  const fetchCompanies = async () => {
+  const loadInitialData = async () => {
     setLoadingCompanies(true);
+    setLoadingSettings(true);
     try {
-      const response = await quoteApi.getCompanies();
-      if (!response.error) {
-        setCompanies(response.data || []);
+      // Fetch companies
+      const companiesResponse = await quoteApi.getCompanies();
+      if (!companiesResponse.error) {
+        setCompanies(companiesResponse.data || []);
+      }
+
+      // Fetch default settings
+      const settingsResponse = await settingsApi.getSettings();
+      if (!settingsResponse.error && settingsResponse.data) {
+        const settings = settingsResponse.data;
+        setFormData(prev => ({
+          ...prev,
+          quoteExpiresAfter: settings.default_quote_expires_after?.toString() || "7",
+          produceQuoteFor: settings.default_produce_quote_for?.toString() || "12",
+          gstPercentage: settings.default_gst_percentage?.toString() || "15",
+          termsOfHire: settings.default_terms_of_hire || "",
+        }));
       }
     } catch (error) {
-      console.error("Error fetching companies:", error);
-      toast.error("Failed to load companies");
+      console.error("Error loading initial data:", error);
+      toast.error("Failed to load initial data");
     } finally {
       setLoadingCompanies(false);
+      setLoadingSettings(false);
     }
   };
+
+  /* Removed old fetchCompanies */
 
   const handleCompanySelect = (e) => {
     const companyId = e.target.value;

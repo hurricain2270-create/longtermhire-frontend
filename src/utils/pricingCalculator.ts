@@ -90,7 +90,6 @@ export function calculateMonthlyPrices(
     } else if (month === 2) {
       // Month 2: Reset to Base Price and apply Compounding Discount
       // The "Normal Discount" from Month 1 is IGNORED here.
-
       const unitPriceForThisMonth = basePrice;
       let discountAmount = 0;
       currentDiscountType = compoundingDiscountType;

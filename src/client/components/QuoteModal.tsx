@@ -82,6 +82,7 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
                 // Admin company info (From)
                 admin_company_name: adminSettings?.company_name || "Long Term Hire Pty Ltd",
                 admin_company_address: adminSettings?.company_address || "PO Box 4089 MOUNT ELIZA VIC 3930 AUSTRALIA",
+                admin_company_logo: adminSettings?.company_logo || null,
 
                 // Equipment Details
                 equipmentData: {
@@ -89,7 +90,9 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
                     description: equipment.equipment_name,
                     basePrice: basePrice,
                     discount: discountValue,
-                    discountType: discountType
+                    discountType: discountType,
+                    compounding_discount: parseFloat(equipment.compounding_discount || equipment.compounding_discount_value) || 0,
+                    compounding_discount_type: equipment.compounding_discount_type
                 }
             };
 

@@ -46,12 +46,12 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
     parseFloat(equipment.custom_base_price || equipment.base_price) || 0;
   const discountValue =
     parseFloat(equipment.discount || equipment.discount_value) || 0;
-  const discountType = equipment.discount_type;
+  const discountType = (equipment.discount_type === 'percentage' || equipment.discount_type === '%' || equipment.discount_type === '0') ? '%' : '$';
   const compoundingValue =
     parseFloat(
       equipment.compounding_discount || equipment.compounding_discount_value
     ) || 0;
-  const compoundingType = equipment.compounding_discount_type;
+  const compoundingType = (equipment.compounding_discount_type === 'percentage' || equipment.compounding_discount_type === '%' || equipment.compounding_discount_type === '0') ? '%' : '$';
 
   const hasDiscount = discountValue > 0;
   const hasCompounding = compoundingValue > 0;
@@ -189,7 +189,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
   // Note: Actual calculation follows old logic (compounding first, then discount)
   const getDiscountedPrice = () => {
     if (hasDiscount) {
-      if (discountType === "%" || discountType === "percentage") {
+      if (discountType === "%") {
         return basePrice * (1 - discountValue / 100);
       } else {
         return Math.max(0, basePrice - discountValue);
@@ -502,7 +502,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                   {/* Compounding Discount Label */}
                   {hasCompounding && (
                     <div className="text-[#10B981] text-sm font-semibold">
-                      Save {compoundingType === "%" || compoundingType === "percentage" ? `${compoundingValue}%` : formatCurrency(compoundingValue)}/month
+                      Save {compoundingType === "%" ? `${compoundingValue}%` : formatCurrency(compoundingValue)}/month
                     </div>
                   )}
                 </div>
@@ -518,7 +518,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                   Total Savings:
                 </span>
                 <span className="text-[#10B981] text-sm font-bold">
-                  -{formatCurrency(savingsPerMonth)}
+                  {formatCurrency(totalDiscount)}
                 </span>
               </div>
               <div className="relative mb-2">

@@ -35,6 +35,7 @@ const ActivitySkeleton = () => (
 
 function DashboardMain() {
   const [stats, setStats] = useState({
+    total_companies: 0,
     total_clients: 0,
     total_equipment: 0,
     recent_messages: 0,
@@ -110,7 +111,8 @@ function DashboardMain() {
       {/* Stats Section */}
       <section className="mb-8 sm:mb-10 lg:mb-12">
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4 sm:gap-6">
+            <StatCardSkeleton />
             <StatCardSkeleton />
             <StatCardSkeleton />
             <StatCardSkeleton />
@@ -129,11 +131,21 @@ function DashboardMain() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 sm:gap-6">
-            {/* Total Clients Card */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4 sm:gap-6">
+            {/* Total Companies Card */}
             <div className="bg-[#1F1F20] border border-[#333333] rounded-lg p-4 sm:p-6 min-h-[100px] sm:min-h-[118px] flex flex-col justify-between">
               <p className="text-[#9CA3AF] font-[Inter] font-normal text-xs sm:text-sm leading-tight mb-2">
-                Total Clients
+                Total Companies
+              </p>
+              <p className="text-[#E5E5E5] font-[Inter] font-bold text-2xl sm:text-3xl lg:text-4xl leading-tight">
+                {stats.total_companies || 0}
+              </p>
+            </div>
+
+            {/* Total Users Card */}
+            <div className="bg-[#1F1F20] border border-[#333333] rounded-lg p-4 sm:p-6 min-h-[100px] sm:min-h-[118px] flex flex-col justify-between">
+              <p className="text-[#9CA3AF] font-[Inter] font-normal text-xs sm:text-sm leading-tight mb-2">
+                Total Users
               </p>
               <p className="text-[#E5E5E5] font-[Inter] font-bold text-2xl sm:text-3xl lg:text-4xl leading-tight">
                 {stats.total_clients || 0}

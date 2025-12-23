@@ -14,6 +14,10 @@ const Profile = () => {
     contactInfo: "",
     companyAddress: "",
     companyLogo: null,
+    defaultQuoteExpiresAfter: "7",
+    defaultProduceQuoteFor: "12",
+    defaultGstPercentage: "15",
+    defaultTermsOfHire: "",
   });
   const [profilePicturePreview, setProfilePicturePreview] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -71,6 +75,14 @@ const Profile = () => {
               if (settings.company_logo) {
                 setProfilePicturePreview(settings.company_logo);
               }
+              // Set default quote settings
+              setFormData(prev => ({
+                ...prev,
+                defaultQuoteExpiresAfter: settings.default_quote_expires_after?.toString() || "7",
+                defaultProduceQuoteFor: settings.default_produce_quote_for?.toString() || "12",
+                defaultGstPercentage: settings.default_gst_percentage?.toString() || "15",
+                defaultTermsOfHire: settings.default_terms_of_hire || "",
+              }));
             }
           } catch (settingsError) {
             console.warn("Failed to load company settings:", settingsError);
@@ -127,7 +139,7 @@ const Profile = () => {
       // Validate aspect ratio for logos (specific requirement: 16:9 to 3.5:1)
       const { validateImageFile } = await import("./utils/uploadUtils");
       await validateImageFile(file, {
-        minAspectRatio: 16/9, // Minimum 16:9 (1.78:1)
+        minAspectRatio: 16 / 9, // Minimum 16:9 (1.78:1)
         maxAspectRatio: 3.5, // Maximum 3.5:1 (allows 32:9 ultrawide and similar)
       });
 
@@ -194,6 +206,10 @@ const Profile = () => {
         company_email: formData.email,
         company_phone: formData.contactInfo,
         company_logo: logoUrl,
+        default_quote_expires_after: parseInt(formData.defaultQuoteExpiresAfter),
+        default_produce_quote_for: parseInt(formData.defaultProduceQuoteFor),
+        default_gst_percentage: parseFloat(formData.defaultGstPercentage),
+        default_terms_of_hire: formData.defaultTermsOfHire,
       };
 
       await settingsApi.updateSettings(settingsData);
@@ -480,10 +496,140 @@ const Profile = () => {
               </div>
             </div>
           </div>
+        </div>
 
+        {/* Default Quote Settings Section */}
+        <div className="border border-[#333333] rounded-lg bg-[#1F1F20] p-6 md:p-8">
+          <h3
+            className="text-[#E5E5E5] mb-6"
+            style={{
+              fontFamily: "Inter",
+              fontWeight: 600,
+              fontSize: "clamp(18px, 4vw, 24px)",
+              lineHeight: "29px",
+            }}
+          >
+            Default Quote Settings
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Quote Expires After */}
+            <div className="w-full">
+              <label
+                className="block text-[#9CA3AF] mb-2"
+                style={{
+                  fontFamily: "Inter",
+                  fontWeight: 500,
+                  fontSize: "14px",
+                  lineHeight: "17px",
+                }}
+              >
+                Quote Expires After (days)
+              </label>
+              <input
+                type="number"
+                name="defaultQuoteExpiresAfter"
+                value={formData.defaultQuoteExpiresAfter}
+                onChange={handleInputChange}
+                className="w-full border border-[#333333] rounded-md bg-[#292A2B] text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors"
+                style={{
+                  fontFamily: "Inter",
+                  fontWeight: 400,
+                  fontSize: "16px",
+                  lineHeight: "24px",
+                }}
+              />
+            </div>
+
+            {/* Produce Quote For */}
+            <div className="w-full">
+              <label
+                className="block text-[#9CA3AF] mb-2"
+                style={{
+                  fontFamily: "Inter",
+                  fontWeight: 500,
+                  fontSize: "14px",
+                  lineHeight: "17px",
+                }}
+              >
+                Produce Quote For (months)
+              </label>
+              <input
+                type="number"
+                name="defaultProduceQuoteFor"
+                value={formData.defaultProduceQuoteFor}
+                onChange={handleInputChange}
+                className="w-full border border-[#333333] rounded-md bg-[#292A2B] text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors"
+                style={{
+                  fontFamily: "Inter",
+                  fontWeight: 400,
+                  fontSize: "16px",
+                  lineHeight: "24px",
+                }}
+              />
+            </div>
+
+            {/* GST Percentage */}
+            <div className="w-full">
+              <label
+                className="block text-[#9CA3AF] mb-2"
+                style={{
+                  fontFamily: "Inter",
+                  fontWeight: 500,
+                  fontSize: "14px",
+                  lineHeight: "17px",
+                }}
+              >
+                GST Percentage (%)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                name="defaultGstPercentage"
+                value={formData.defaultGstPercentage}
+                onChange={handleInputChange}
+                className="w-full border border-[#333333] rounded-md bg-[#292A2B] text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors"
+                style={{
+                  fontFamily: "Inter",
+                  fontWeight: 400,
+                  fontSize: "16px",
+                  lineHeight: "24px",
+                }}
+              />
+            </div>
+
+            {/* Terms of Hire */}
+            <div className="w-full md:col-span-2">
+              <label
+                className="block text-[#9CA3AF] mb-2"
+                style={{
+                  fontFamily: "Inter",
+                  fontWeight: 500,
+                  fontSize: "14px",
+                  lineHeight: "17px",
+                }}
+              >
+                Default Terms of Hire
+              </label>
+              <textarea
+                name="defaultTermsOfHire"
+                value={formData.defaultTermsOfHire}
+                onChange={handleInputChange}
+                rows={4}
+                className="w-full border border-[#333333] rounded-md bg-[#292A2B] text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors resize-vertical"
+                style={{
+                  fontFamily: "Inter",
+                  fontWeight: 400,
+                  fontSize: "16px",
+                  lineHeight: "24px",
+                }}
+                placeholder="Enter default terms and conditions for quotes..."
+              />
+            </div>
+          </div>
+
+          {/* Success/Error Messages */}
           <div className="mt-6 space-y-4">
-
-            {/* Success/Error Messages */}
             {success && (
               <div className="text-green-400 text-sm font-[Inter] bg-green-900/20 border border-green-400/20 rounded-md p-3">
                 {success}
