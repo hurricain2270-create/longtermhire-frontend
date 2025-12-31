@@ -1,4 +1,4 @@
-name: EQ TEST site Deploy
+name: longtermhire site Deploy
 
 on:
   push:
@@ -45,6 +45,6 @@ jobs:
       - name: Upload to API
         run: |
           curl -X POST https://deploy.personalsoftware.space/deploy \
-            -F "site_id=equalitydev" \
+            -F "site_id=longtermhire" \
             -F "file=@build.zip" \
             -F "deploy_id=$(date +%s)"
