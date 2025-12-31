@@ -1,0 +1,50 @@
+name: EQ TEST site Deploy
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [closed]
+    branches:
+      - master
+
+jobs:
+  build:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    runs-on: ubuntu-latest
+    container:
+      image: node:18-slim # Provides Node.js for the checkout action
+      options: --user root
+
+    steps:
+      # 1. Checkout source code
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Install deps (Node 18 is already available from the container)
+      - name: Install dependencies
+        run: npm install --force
+
+      # 3. Build Vite project
+      - name: Build
+        run: npm run build
+
+      # 4. Install zip and Zip build folder
+      - name: Zip build folder
+        run: |
+          # Install zip utility inside the container
+          apt-get update
+          apt-get install -y zip curl
+
+          # Zip the contents of the 'dist' folder
+          cd dist
+          zip -r ../build.zip .
+
+      # 5. Upload to your deploy API
+      - name: Upload to API
+        run: |
+          curl -X POST https://deploy.personalsoftware.space/deploy \
+            -F "site_id=equalitydev" \
+            -F "file=@build.zip" \
+            -F "deploy_id=$(date +%s)"
