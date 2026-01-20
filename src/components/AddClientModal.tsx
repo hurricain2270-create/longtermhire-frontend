@@ -175,7 +175,7 @@ const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
             {/* Client Name Field */}
             <div>
               <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
-                Company Name
+                Client Name
               </label>
               <input
                 type="text"
