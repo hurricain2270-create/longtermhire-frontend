@@ -45,7 +45,7 @@ export function calculateMonthlyPrices(
   basePrice = parseFloat(basePrice as any) || 0;
   initialDiscount = parseFloat(initialDiscount as any) || 0;
   compoundingDiscount = parseFloat(compoundingDiscount as any) || 0;
-  durationMonths = Math.max(1, parseInt(durationMonths as any) || 1);
+  durationMonths = Math.min(60, Math.max(1, parseInt(durationMonths as any) || 1));
 
   const schedule: MonthlyPriceDetail[] = [];
   let cumulativeTotal = 0;

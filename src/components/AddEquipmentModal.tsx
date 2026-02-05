@@ -148,7 +148,7 @@ const AddEquipmentModal = ({ isOpen, onClose, onSave }) => {
       isOpen={isOpen}
       onClose={handleCancel}
       title="Add Equipment"
-      width="700px"
+      width="min(700px, 95vw)"
     >
       <div className="space-y-6">
         {/* Description */}

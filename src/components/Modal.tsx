@@ -40,9 +40,9 @@ const Modal = ({
 
       {/* Modal Content */}
       <div
-        className="relative bg-[#1F1F20] border border-[#333333] rounded-lg shadow-xl max-h-[90vh] overflow-y-auto"
+        className="relative bg-[#1F1F20] border border-[#333333] rounded-lg shadow-xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full"
         style={{
-          width: width,
+          maxWidth: width,
           height: height,
         }}
         onClick={(e) => e.stopPropagation()}

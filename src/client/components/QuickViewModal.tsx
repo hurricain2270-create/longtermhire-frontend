@@ -456,9 +456,7 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({
             <div className="space-y-4">
               {/* Description */}
               <div className="space-y-2">
-                <h4 className="text-[#E5E5E5] text-sm font-bold">
-                  Description
-                </h4>
+                <h4 className="text-[#E5E5E5] text-sm font-bold">Description</h4>
                 <div
                   className="text-[#9CA3AF] text-sm leading-relaxed prose prose-invert max-w-none"
                   style={{
@@ -473,6 +471,18 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({
                   }}
                 />
               </div>
+
+              {/* Banner Description */}
+              {equipment.banner_description && (
+                <div className="space-y-2 pt-2 border-t border-[#333333]">
+                  <h4 className="text-[#FDCE06] text-sm font-bold">
+                    Banner Description
+                  </h4>
+                  <div className="text-[#E5E5E5] text-sm italic leading-relaxed">
+                    {equipment.banner_description}
+                  </div>
+                </div>
+              )}
 
               {/* Maintenance Schedule */}
               {maintenanceInfo && (

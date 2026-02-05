@@ -87,9 +87,24 @@ const AddQuoteModal = ({ isOpen, onClose, onSave }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    let finalValue = value;
+
+    // Local validation for numeric fields
+    if (name === "quoteExpiresAfter") {
+      const val = parseInt(value);
+      if (val < 0) finalValue = "0";
+      if (val > 365) finalValue = "365";
+    }
+
+    if (name === "produceQuoteFor") {
+      const val = parseInt(value);
+      if (val < 0) finalValue = "0";
+      if (val > 60) finalValue = "60";
+    }
+
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: finalValue,
     }));
   };
 
@@ -256,6 +271,8 @@ const AddQuoteModal = ({ isOpen, onClose, onSave }) => {
                   <input
                     type="number"
                     name="quoteExpiresAfter"
+                    min="0"
+                    max="365"
                     value={formData.quoteExpiresAfter}
                     onChange={handleInputChange}
                     className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-3 py-2 outline-none focus:border-[#FDCE06] transition-colors"
@@ -275,6 +292,8 @@ const AddQuoteModal = ({ isOpen, onClose, onSave }) => {
                   <input
                     type="number"
                     name="produceQuoteFor"
+                    min="1"
+                    max="60"
                     value={formData.produceQuoteFor}
                     onChange={handleInputChange}
                     className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-3 py-2 outline-none focus:border-[#FDCE06] transition-colors"

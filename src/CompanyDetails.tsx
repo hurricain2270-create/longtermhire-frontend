@@ -519,9 +519,9 @@ const CompanyDetails = () => {
           </div>
         </div>
 
-        <div className="flex flex-row-reverse gap-4 w-full">
+        <div className="flex flex-col-reverse lg:flex-row-reverse gap-4 w-full">
           {/* Assigned Equipment Section */}
-          <div className="bg-[#1F1F20] border w-[65%] border-[#333333] rounded-lg p-6">
+          <div className="bg-[#1F1F20] border w-full lg:w-[65%] border-[#333333] rounded-lg p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-[#E5E5E5] font-[Inter] font-semibold text-xl">
                 Assigned Equipment
@@ -706,7 +706,7 @@ const CompanyDetails = () => {
           </div>
 
           {/* AD Text Sections */}
-          <div className="bg-[#1F1F20] border w-[35%] border-[#333333] rounded-lg p-6 space-y-6">
+          <div className="bg-[#1F1F20] border w-full lg:w-[35%] border-[#333333] rounded-lg p-6 space-y-6">
             {/* Header Ad Text Section */}
             <div>
               <h3 className="text-[#E5E5E5] font-[Inter] font-semibold text-xl mb-4">
