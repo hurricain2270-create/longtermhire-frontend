@@ -3,7 +3,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 // Base API configuration
-const API_BASE_URL = "https://baas.mytechpassport.com"; // Adjust this to your backend URL
+const API_BASE_URL = "https://api.longtermhire.com"; // Adjust this to your backend URL
 //  "https://api.longtermhire.com"
 // https://baas.mytechpassport.com
 // Global state to track session expiration modal
