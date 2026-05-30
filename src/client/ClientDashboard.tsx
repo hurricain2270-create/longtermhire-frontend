@@ -11,6 +11,12 @@ import { useCompanyLogo } from "../hooks/useCompanyLogo";
 import { ClipLoader } from "react-spinners";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
+// Load readable handwritten-style font
+const fontLink = document.createElement("link");
+fontLink.href = "https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Nunito:wght@400;500&display=swap";
+fontLink.rel = "stylesheet";
+document.head.appendChild(fontLink);
 import EquipmentCard from "./components/EquipmentCard";
 import QuickViewModal from "./components/QuickViewModal";
 import CategoryFilter from "./components/CategoryFilter";
@@ -1455,10 +1461,10 @@ function ClientDashboard() {
                 <div
                   className="text-[#000000] text-xl leading-relaxed "
                   style={{
-                    fontFamily: "'Caveat','Dancing Script','Kalam', cursive",
+                    fontFamily: "'Patrick Hand', 'Nunito', sans-serif",
                     fontWeight: 500,
                     fontStyle: "normal",
-                    letterSpacing: "0.5px",
+                    letterSpacing: "0.3px",
                     transform: "rotate(-0.5deg)",
                   }}
                   dangerouslySetInnerHTML={{
