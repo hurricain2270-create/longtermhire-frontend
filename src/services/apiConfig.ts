@@ -1,5 +1,5 @@
 // Shared API config for LongTermHire frontend
-export const BASE_URL = 'https://baas.mytechpassport.com/v1/api/longtermhire';
+export const BASE_URL = 'https://api.longtermhire.com/v1/api/longtermhire';
 
 export const getAdminHeaders = (): HeadersInit => ({
   'Content-Type': 'application/json',
