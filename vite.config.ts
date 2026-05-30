@@ -4,29 +4,8 @@ import { fileURLToPath } from "url";
 import { defineConfig, UserConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import { VitePWA, VitePWAOptions } from "vite-plugin-pwa";
-// import viteCompression from "vite-plugin-compression";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
-
-const { dependencies } = JSON.parse(
-  fs.readFileSync(path.join(dirname, "package.json"), "utf-8")
-) as { dependencies: Record<string, string> };
-
-const vendorPackages: string[] = [
-  "react",
-  "react-router-dom",
-  "react-router",
-  "react-dom",
-];
-
-function renderChunks(deps: Record<string, string>) {
-  const chunks: Record<string, string[]> = {};
-  Object.keys(deps).forEach((key) => {
-    if (vendorPackages.includes(key)) return;
-    chunks[key] = [key];
-  });
-  return chunks;
-}
 
 export const OUTPUT_DIRECTORY = "dist";
 
@@ -34,43 +13,20 @@ const pwaConfig: Partial<VitePWAOptions> = {
   injectRegister: "script",
   registerType: "autoUpdate",
   devOptions: {
-    enabled: true,
+    enabled: false,
   },
   manifest: {
     icons: [
-      {
-        src: "pwa/icon-72x72.png",
-        sizes: "64x64",
-        type: "image/png",
-      },
-      {
-        src: "pwa/icon-192x192.png",
-        sizes: "192x192",
-        type: "image/png",
-      },
-      {
-        src: "pwa/icon-180x180.png",
-        sizes: "180x180",
-        type: "image/png",
-      },
-      {
-        src: "pwa/icon-96x96.png",
-        sizes: "96x96",
-        type: "image/png",
-      },
-      {
-        src: "pwa/icon-512x512.png",
-        sizes: "512x512",
-        type: "image/png",
-        purpose: "maskable",
-      },
+      { src: "pwa/icon-64x64.png",   sizes: "64x64",   type: "image/png" },
+      { src: "pwa/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { src: "pwa/icon-512x512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
     name: "Long Term Hire",
     short_name: "Long Term Hire",
     display: "standalone",
-    background_color: "#ffffff",
+    background_color: "#292A2B",
     description: "Long Term Hire",
-    theme_color: "#000000",
+    theme_color: "#FDCE06",
     start_url: "/",
   },
 };
@@ -79,11 +35,6 @@ const config: UserConfig = {
   plugins: [
     react(),
     VitePWA(pwaConfig),
-    // viteCompression({
-    //   algorithm: "brotliCompress",
-    //   filter: /\.(js|mjs|json|css|html)$/i,
-    //   deleteOriginFile: false,
-    // }),
   ],
   assetsInclude: [
     "**/*.svg",
@@ -100,28 +51,33 @@ const config: UserConfig = {
   build: {
     outDir: OUTPUT_DIRECTORY,
     sourcemap: false,
+    // Raise chunk size warning limit — this app has heavy deps (@react-pdf etc.)
+    chunkSizeWarningLimit: 2000,
     rollupOptions: {
       external: ["fsevents", "@tailwindcss/oxide"],
       output: {
         manualChunks: {
-          vendor: vendorPackages,
-          ...renderChunks(dependencies),
+          // Core React
+          vendor: ["react", "react-dom", "react-router-dom", "react-router"],
+          // PDF generation (large, isolated)
+          pdf: ["@react-pdf/renderer"],
+          // UI utilities
+          ui: ["react-toastify", "react-spinners", "lucide-react", "framer-motion"],
         },
       },
     },
-    assetsInlineLimit: 0, // Don't inline any assets
   },
   resolve: {
     alias: {
       "@/components": path.resolve(dirname, "./src/components"),
-      "@/pages": path.resolve(dirname, "./src/pages"),
-      "@/utils": path.resolve(dirname, "./src/utils"),
-      "@/assets": path.resolve(dirname, "./src/assets"),
-      "@/context": path.resolve(dirname, "./src/context"),
-      "@/routes": path.resolve(dirname, "./src/routes"),
-      "@/query": path.resolve(dirname, "./src/query"),
-      "@/hooks": path.resolve(dirname, "./src/hooks"),
-      "@": path.resolve(dirname, "./src"),
+      "@/pages":      path.resolve(dirname, "./src/pages"),
+      "@/utils":      path.resolve(dirname, "./src/utils"),
+      "@/assets":     path.resolve(dirname, "./src/assets"),
+      "@/context":    path.resolve(dirname, "./src/context"),
+      "@/routes":     path.resolve(dirname, "./src/routes"),
+      "@/query":      path.resolve(dirname, "./src/query"),
+      "@/hooks":      path.resolve(dirname, "./src/hooks"),
+      "@":            path.resolve(dirname, "./src"),
     },
   },
   server: {
