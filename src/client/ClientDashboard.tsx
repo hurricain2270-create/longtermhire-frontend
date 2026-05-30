@@ -14,7 +14,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 // Load readable handwritten-style font
 const fontLink = document.createElement("link");
-fontLink.href = "https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Nunito:wght@400;500&display=swap";
+fontLink.href = "https://fonts.googleapis.com/css2?family=Architects+Daughter&family=Patrick+Hand&display=swap";
 fontLink.rel = "stylesheet";
 document.head.appendChild(fontLink);
 import EquipmentCard from "./components/EquipmentCard";
@@ -1461,10 +1461,12 @@ function ClientDashboard() {
                 <div
                   className="text-[#000000] text-xl leading-relaxed "
                   style={{
-                    fontFamily: "'Patrick Hand', 'Nunito', sans-serif",
-                    fontWeight: 500,
+                    fontFamily: "'Architects Daughter', 'Patrick Hand', cursive",
+                    fontWeight: 400,
                     fontStyle: "normal",
-                    letterSpacing: "0.3px",
+                    letterSpacing: "0.5px",
+                    fontSize: "1.4rem",
+                    lineHeight: "2rem",
                     transform: "rotate(-0.5deg)",
                   }}
                   dangerouslySetInnerHTML={{
