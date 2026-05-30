@@ -1,0 +1,58 @@
+/* @import "tailwindcss"; */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@theme {
+  --font-inter: "Inter", sans-serif;
+  --font-kalam: "Kalam", cursive;
+  --font-caveat: "Caveat", cursive;
+  --font-dancing-script: "Dancing Script", cursive;
+}
+
+@layer base {
+  body {
+    @apply font-["inter"] min-h-screen  bg-[#292a2b];
+    font-feature-settings:
+      "rlig" 1,
+      "calt" 1;
+  }
+
+  /* Custom scrollbar styling for dark theme */
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-[#1a1b1c];
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-[#4a4b4c] rounded-full hover:bg-[#5a5b5c];
+  }
+
+  input[type="checkbox"] {
+    @apply !bg-[transparent] accent-[#FDCE06] border-[#fdce06] checked:!bg-[#fdce06] checked:border-[#fdce06] hover:border-[#e6b800] hover:bg-[#e6b800] focus:ring-[#fdce06] focus:ring-opacity-50;
+  }
+
+  /* For Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #4a4b4c #1a1b1c;
+  }
+
+  /* Thumbnail scroll container */
+  .thumbnail-scroll {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Hide scrollbar for thumbnail container */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
