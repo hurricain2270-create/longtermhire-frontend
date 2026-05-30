@@ -19,6 +19,7 @@ const CompanyDetails = () => {
     headerAdText: "",
     stickyAdText: "",
   });
+  const [stickyFontSize, setStickyFontSize] = useState("20");
 
   const [teamMembers, setTeamMembers] = useState([]);
 
@@ -64,8 +65,10 @@ const CompanyDetails = () => {
         setCompanyData({
           companyName: companyDetails.company_name || "",
           headerAdText: companyDetails.header_ad_text || "",
-          stickyAdText: companyDetails.sticky_ad_text || "",
+          stickyAdText: (companyDetails.sticky_ad_text || "").replace(/^<!--fontsize:\d+-->/, ""),
         });
+        const _fsMatch = (companyDetails.sticky_ad_text || "").match(/^<!--fontsize:(\d+)-->/);
+        if (_fsMatch) setStickyFontSize(_fsMatch[1]);
 
         // Map team members
         setTeamMembers(
@@ -331,7 +334,7 @@ const CompanyDetails = () => {
       const companyResponse = await companyApi.updateCompany(id, {
         company_name: companyData.companyName,
         header_ad_text: companyData.headerAdText,
-        sticky_ad_text: companyData.stickyAdText,
+        sticky_ad_text: `<!--fontsize:${stickyFontSize}-->${companyData.stickyAdText}`,
       });
 
       if (companyResponse.error) {
@@ -723,9 +726,25 @@ const CompanyDetails = () => {
 
             {/* Sticky Note Ad Text Section */}
             <div>
-              <h3 className="text-[#E5E5E5] font-[Inter] font-semibold text-xl mb-4">
-                Sticky Note Ad Text
-              </h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-[#E5E5E5] font-[Inter] font-semibold text-xl">
+                  Sticky Note Ad Text
+                </h3>
+                <div className="flex items-center gap-2">
+                  <label className="text-[#9CA3AF] text-sm font-[Inter]">Font Size:</label>
+                  <select
+                    value={stickyFontSize}
+                    onChange={(e) => setStickyFontSize(e.target.value)}
+                    className="bg-[#292A2B] border border-[#333333] text-[#E5E5E5] text-sm font-[Inter] rounded-md px-3 py-1.5 outline-none focus:border-[#FDCE06] transition-colors"
+                  >
+                    <option value="14">Small (14px)</option>
+                    <option value="18">Medium (18px)</option>
+                    <option value="22">Large (22px)</option>
+                    <option value="26">X-Large (26px)</option>
+                    <option value="32">XX-Large (32px)</option>
+                  </select>
+                </div>
+              </div>
               <SimpleRichTextEditor
                 value={companyData.stickyAdText}
                 onChange={(value) =>
