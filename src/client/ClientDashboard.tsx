@@ -1458,21 +1458,27 @@ function ClientDashboard() {
                   comment
                 </div>
                 {/* Sticky note content with handwritten font */}
-                <div
-                  className="text-[#000000] text-xl leading-relaxed "
-                  style={{
-                    fontFamily: "'Architects Daughter', 'Patrick Hand', cursive",
-                    fontWeight: 400,
-                    fontStyle: "normal",
-                    letterSpacing: "0.5px",
-                    fontSize: "1.4rem",
-                    lineHeight: "2rem",
-                    transform: "rotate(-0.5deg)",
-                  }}
-                  dangerouslySetInnerHTML={{
-                    __html: companySettings.sticky_ad_text || "",
-                  }}
-                />
+                {(() => {
+                  const raw = companySettings.sticky_ad_text || "";
+                  const fsMatch = raw.match(/^<!--fontsize:(\d+)-->/);
+                  const fontSize = fsMatch ? parseInt(fsMatch[1]) : 20;
+                  const text = raw.replace(/^<!--fontsize:\d+-->/, "");
+                  return (
+                    <div
+                      className="text-[#000000] leading-relaxed"
+                      style={{
+                        fontFamily: "'Architects Daughter', 'Patrick Hand', cursive",
+                        fontWeight: 400,
+                        fontStyle: "normal",
+                        letterSpacing: "0.5px",
+                        fontSize: `${fontSize}px`,
+                        lineHeight: `${Math.round(fontSize * 1.5)}px`,
+                        transform: "rotate(-0.5deg)",
+                      }}
+                      dangerouslySetInnerHTML={{ __html: text }}
+                    />
+                  );
+                })()}
               </div>
             </div>
 
