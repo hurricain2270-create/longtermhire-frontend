@@ -1370,13 +1370,7 @@ function ClientDashboard() {
           <div className="max-w-full lg:max-w-[810px]">
             {/* Header Ad Ticker */}
             {companySettings.header_ad_text && (
-              <div className="lth-ticker-wrap">
-                <div className="lth-ticker-inner">
-                  {(companySettings.header_ad_text || "").replace(/<[^>]*>/g, "")}
-                  &nbsp;&nbsp;&nbsp;&#9733;&nbsp;&nbsp;&nbsp;
-                  {(companySettings.header_ad_text || "").replace(/<[^>]*>/g, "")}
-                </div>
-              </div>
+              <Ticker text={(companySettings.header_ad_text || "").replace(/<[^>]*>/g, "")} />
             )}
 
             {/* Category Filter */}
