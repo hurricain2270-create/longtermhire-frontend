@@ -516,12 +516,10 @@ function ClientDashboard() {
   // Load chat conversations and start polling
   useEffect(() => {
     const initializeChat = async () => {
-      await loadConversations();
-
-      // Start polling if there are conversations
-      if (conversations.length > 0) {
-        const firstConversation = conversations[0];
-        startPolling(firstConversation.id);
+      // loadConversations now returns the list directly to avoid React state timing issues
+      const convList = await loadConversations();
+      if (convList && convList.length > 0) {
+        startPolling(convList[0].id);
       }
     };
 
