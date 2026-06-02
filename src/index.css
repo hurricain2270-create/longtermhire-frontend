@@ -58,8 +58,8 @@
 }
 
 @keyframes lthscroll {
-  0%   { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0%   { transform: translateX(100vw); }
+  100% { transform: translateX(-100%); }
 }
 .lth-ticker-wrap { overflow: hidden; background-color: #FDCE06; border-radius: 8px; margin-bottom: 32px; padding: 10px 0; }
-.lth-ticker-inner { display: inline-block; white-space: nowrap; animation: lthscroll 20s linear infinite; font-family: Inter, sans-serif; font-weight: 700; font-size: 15px; color: #1F1F20; padding-left: 100%; }
+.lth-ticker-inner { display: inline-block; white-space: nowrap; animation: lthscroll 22s linear infinite; font-family: Inter, sans-serif; font-weight: 700; font-size: 15px; color: #1F1F20; }
