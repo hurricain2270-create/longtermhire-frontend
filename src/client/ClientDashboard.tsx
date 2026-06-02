@@ -1368,19 +1368,28 @@ function ClientDashboard() {
         {/* Main Content */}
         <main className="flex-1 px-4 sm:px-8 lg:px-20 pb-[100px] py-6 lg:py-8 lg:max-w-[866px] xl:max-w-full">
           <div className="max-w-full lg:max-w-[810px]">
-            {/* Header Ad Banner */}
+            {/* Header Ad Ticker */}
             {companySettings.header_ad_text && (
-              <div className="mb-8 lg:mb-12">
-                <div className="bg-[#1F1F20] border-2 border-[#333333] rounded-lg p-6">
-                  <div
-                    className="text-[#E5E5E5] text-base"
-                    dangerouslySetInnerHTML={{
-                      __html: companySettings.header_ad_text,
-                    }}
-                  />
-                </div>
+              <div className="mb-8 lg:mb-12 overflow-hidden bg-[#FDCE06] rounded-lg" style={{ height: "44px", display: "flex", alignItems: "center" }}>
+                <div
+                  style={{
+                    display: "inline-block",
+                    whiteSpace: "nowrap",
+                    animation: "lthticker 18s linear infinite",
+                    fontFamily: "'Inter', sans-serif",
+                    fontWeight: 700,
+                    fontSize: "15px",
+                    color: "#1F1F20",
+                    paddingLeft: "100%",
+                  }}
+                  dangerouslySetInnerHTML={{
+                    __html: companySettings.header_ad_text.replace(/<[^>]*>/g, "") + "   ★   " + companySettings.header_ad_text.replace(/<[^>]*>/g, ""),
+                  }}
+                />
+                <style>{`@keyframes lthticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }`}</style>
               </div>
             )}
+
 
             {/* Category Filter */}
             {allCategories.length > 0 && (
