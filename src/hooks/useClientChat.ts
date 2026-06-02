@@ -44,21 +44,22 @@ export function useClientChat() {
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const currentConversationIdRef = useRef<number | null>(null);
 
-  const loadConversations = useCallback(async () => {
+  // Returns conversations so callers can use them immediately (avoids React state timing issue)
+  const loadConversations = useCallback(async (): Promise<Conversation[]> => {
     try {
       const data = await chatApi.getConversations();
       if (!data.error) {
         const convList: Conversation[] = data.data || data || [];
         setConversations(convList);
         if (convList.length > 0) {
-          setLoading(true);
           await loadMessagesInternal(convList[0].id, 1, false);
-          setLoading(false);
         }
+        return convList;
       }
     } catch (e) {
       console.error('loadConversations error:', e);
     }
+    return [];
   }, []); // eslint-disable-line
 
   const loadMessagesInternal = async (
@@ -73,7 +74,6 @@ export function useClientChat() {
         setMessages((prev) => (append ? [...fetched, ...prev] : fetched));
         setHasMoreMessages(data.data?.has_more ?? data.has_more ?? false);
         setCurrentPage(page);
-        // Update unread count
         const unread = data.data?.unread_count ?? data.unread_count ?? 0;
         setUnreadCount(unread);
       }
@@ -101,7 +101,6 @@ export function useClientChat() {
       try {
         const data = await chatApi.sendMessage(toUserId, message, attachmentData);
         if (!data.error) {
-          // Refresh messages after sending
           const convId = currentConversationIdRef.current;
           if (convId) await loadMessagesInternal(convId, 1, false);
           return true;
@@ -122,15 +121,13 @@ export function useClientChat() {
     pollingRef.current = setInterval(async () => {
       try {
         await loadMessagesInternal(conversationId, 1, false);
-
-        // Check admin status
         const statusData = await chatApi.getAdminStatus();
         if (!statusData.error) {
           setAdminStatus(statusData.data);
-          setAdminOnline(statusData.data.has_online_admin);
+          setAdminOnline(statusData.data?.has_online_admin ?? false);
         }
       } catch (_) {}
-    }, 5000);
+    }, 8000); // Increased to 8s to reduce server load
   }, []); // eslint-disable-line
 
   const stopPolling = useCallback(() => {
@@ -141,9 +138,7 @@ export function useClientChat() {
   }, []);
 
   const clearMessages = useCallback(() => setMessages([]), []);
-
   const clearUnreadCount = useCallback(() => setUnreadCount(0), []);
-
   const clearError = useCallback(() => setError(null), []);
 
   return {
