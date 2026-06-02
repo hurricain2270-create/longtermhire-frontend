@@ -1465,7 +1465,7 @@ function ClientDashboard() {
                     <div
                       className="text-[#000000] leading-relaxed w-full h-full"
                       style={{
-                        fontFamily: "'Architects Daughter', 'Patrick Hand', cursive",
+                        fontFamily: "'Comic Sans MS', 'Chalkboard SE', 'Bradley Hand', cursive",
                         fontWeight: 400,
                         letterSpacing: "0.5px",
                         fontSize: `${fontSize}px`,
