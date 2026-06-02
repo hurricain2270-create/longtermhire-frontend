@@ -1460,16 +1460,15 @@ function ClientDashboard() {
                 {/* Sticky note content with handwritten font */}
                 {(() => {
                   const raw = companySettings.sticky_ad_text || "";
-                  const fsMatch = raw.match(/^<!--fontsize:(\d+)-->/);
-                  const fontSize = fsMatch ? parseInt(fsMatch[1]) : 20;
                   const text = raw.replace(/^<!--fontsize:\d+-->/, "");
+                  const len = text.replace(/<[^>]*>/g, "").length;
+                  const fontSize = len < 30 ? 42 : len < 60 ? 34 : len < 120 ? 26 : len < 200 ? 20 : 16;
                   return (
                     <div
-                      className="text-[#000000] leading-relaxed"
+                      className="text-[#000000] leading-relaxed w-full h-full"
                       style={{
                         fontFamily: "'Architects Daughter', 'Patrick Hand', cursive",
                         fontWeight: 400,
-                        fontStyle: "normal",
                         letterSpacing: "0.5px",
                         fontSize: `${fontSize}px`,
                         lineHeight: `${Math.round(fontSize * 1.5)}px`,
