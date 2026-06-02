@@ -1368,28 +1368,17 @@ function ClientDashboard() {
         {/* Main Content */}
         <main className="flex-1 px-4 sm:px-8 lg:px-20 pb-[100px] py-6 lg:py-8 lg:max-w-[866px] xl:max-w-full">
           <div className="max-w-full lg:max-w-[810px]">
-            {/* Header Ad Ticker */}
+                        {/* Header Ad Ticker */}
             {companySettings.header_ad_text && (
-              <div className="mb-8 lg:mb-12 overflow-hidden bg-[#FDCE06] rounded-lg" style={{ height: "44px", display: "flex", alignItems: "center" }}>
-                <div
-                  style={{
-                    display: "inline-block",
-                    whiteSpace: "nowrap",
-                    animation: "lthticker 18s linear infinite",
-                    fontFamily: "'Inter', sans-serif",
-                    fontWeight: 700,
-                    fontSize: "15px",
-                    color: "#1F1F20",
-                    paddingLeft: "100%",
-                  }}
-                  dangerouslySetInnerHTML={{
-                    __html: companySettings.header_ad_text.replace(/<[^>]*>/g, "") + "   ★   " + companySettings.header_ad_text.replace(/<[^>]*>/g, ""),
-                  }}
-                />
-                <style>{`@keyframes lthticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }`}</style>
+              <div style={{ backgroundColor: "#FDCE06", borderRadius: "8px", marginBottom: "32px", padding: "10px 0", overflow: "hidden" }}>
+                {/* @ts-ignore */}
+                <marquee behavior="scroll" direction="left" scrollamount="6" style={{ fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "15px", color: "#1F1F20" }}>
+                  {companySettings.header_ad_text.replace(/<[^>]*>/g, "")}
+                  &nbsp;&nbsp;&nbsp;★&nbsp;&nbsp;&nbsp;
+                  {companySettings.header_ad_text.replace(/<[^>]*>/g, "")}
+                </marquee>
               </div>
             )}
-
 
             {/* Category Filter */}
             {allCategories.length > 0 && (
