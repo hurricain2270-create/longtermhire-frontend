@@ -229,7 +229,7 @@ function ClientDashboard() {
   const groupMessagesByDate = (messages) => {
     const groups = {};
     messages.forEach((message) => {
-      const date = new Date(message.created_at).toLocaleDateString("en-AU");
+      const date = formatChatDate(message.created_at);
       if (!groups[date]) {
         groups[date] = [];
       }
@@ -1986,7 +1986,7 @@ function ClientDashboard() {
                             )}
                             <div className="flex items-center justify-between mt-2">
                               <p className="text-xs opacity-70">
-                                {new Date(message.created_at).toLocaleString(
+                                {parseDate(message.created_at).toLocaleString(
                                   [],
                                   {
                                     month: "short",
