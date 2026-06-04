@@ -72,6 +72,30 @@ const formatCurrency = (value) => {
   }).format(safeNumber);
 };
 
+const Ticker = ({ text }: { text: string }) => {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const pos = React.useRef(0);
+  React.useEffect(() => {
+    if (!ref.current) return;
+    const el = ref.current;
+    pos.current = 0;
+    const timer = setInterval(() => {
+      pos.current -= 1.5;
+      if (Math.abs(pos.current) >= el.scrollWidth / 2) pos.current = 0;
+      el.style.transform = `translateX(${pos.current}px)`;
+    }, 16);
+    return () => clearInterval(timer);
+  }, [text]);
+  const clean = `${text}   ★   ${text}   ★   `;
+  return (
+    <div style={{ backgroundColor: "#FDCE06", borderRadius: "8px", marginBottom: "32px", overflow: "hidden", padding: "10px 0" }}>
+      <div ref={ref} style={{ display: "inline-block", whiteSpace: "nowrap", fontFamily: "Inter, sans-serif", fontWeight: 700, fontSize: "15px", color: "#1F1F20" }}>
+        {clean}
+      </div>
+    </div>
+  );
+};
+
 function ClientDashboard() {
   const [user, setUser] = useState(null);
   const [selectedEquipment, setSelectedEquipment] = useState(
