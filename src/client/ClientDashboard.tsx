@@ -292,10 +292,12 @@ function ClientDashboard() {
           console.log("Company settings response:", settingsResponse);
           if (settingsResponse) {
             console.log("Company settings:", settingsResponse);
+            // Handle both flat and nested response structures
+            const s = settingsResponse.data || settingsResponse;
             setCompanySettings({
-              header_ad_text: settingsResponse.header_ad_text || "",
-              sticky_ad_text: settingsResponse.sticky_ad_text || "",
-              company_logo: settingsResponse.company_logo || "",
+              header_ad_text: s.header_ad_text || "",
+              sticky_ad_text: s.sticky_ad_text || "",
+              company_logo: s.company_logo || "",
             });
             console.log("Company settings loaded:", {
               header_ad_text: settingsResponse.header_ad_text,
