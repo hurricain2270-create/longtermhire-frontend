@@ -1371,9 +1371,7 @@ function ClientDashboard() {
         <main className="flex-1 px-4 sm:px-8 lg:px-20 pb-[100px] py-6 lg:py-8 lg:max-w-[866px] xl:max-w-full">
           <div className="max-w-full lg:max-w-[810px]">
             {/* Header Ad Ticker */}
-            {companySettings.header_ad_text && (
-              <Ticker text={(companySettings.header_ad_text || "").replace(/<[^>]*>/g, "")} />
-            )}
+            <Ticker text={companySettings.header_ad_text ? (companySettings.header_ad_text || "").replace(/<[^>]*>/g, "") : "🔥 Special of the Month — 10% off all excavator hire this June. Contact us today to lock in your rate!"} />
 
             {/* Category Filter */}
             {allCategories.length > 0 && (
