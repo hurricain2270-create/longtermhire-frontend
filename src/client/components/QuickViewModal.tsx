@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { calculateMonthlyPrices } from "../../utils/pricingCalculator";
 
 const formatBannerDescription = (text: string) => {
   if (!text) return "";
@@ -25,6 +26,9 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({
 }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedDuration, setSelectedDuration] = useState(3);
+  const [calculatedPrice, setCalculatedPrice] = useState(0);
+  const [totalDiscount, setTotalDiscount] = useState(0);
+  const [savingsPerMonth, setSavingsPerMonth] = useState(0);
 
   // Parse images from equipment
   const getImages = () => {
@@ -133,69 +137,63 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({
 
   const maintenanceInfo = getMaintenanceInfo();
 
-  // Get base price and calculate discounts
+  // Get base price and calculate discounts — matching EquipmentCard logic exactly
   const basePrice =
     parseFloat(equipment?.custom_base_price || equipment?.base_price) || 0;
   const discountValue =
     parseFloat(equipment?.discount || equipment?.discount_value) || 0;
-  const discountType = equipment?.discount_type;
+  const discountType = (equipment?.discount_type === 'percentage' || equipment?.discount_type === '%' || equipment?.discount_type === '0') ? '%' : '$';
   const compoundingValue =
     parseFloat(
       equipment?.compounding_discount || equipment?.compounding_discount_value
     ) || 0;
-  const compoundingType = equipment?.compounding_discount_type;
+  const compoundingType = (equipment?.compounding_discount_type === 'percentage' || equipment?.compounding_discount_type === '%' || equipment?.compounding_discount_type === '0') ? '%' : '$';
 
   const hasDiscount = discountValue > 0;
   const hasCompounding = compoundingValue > 0;
 
-  // Calculate price based on duration and discounts (conforming to old logic)
-  // OLD LOGIC: Apply compounding FIRST (from month 1), then package discount on total
-  const compoundingDiscount = compoundingValue > 0 ? compoundingValue : 0;
-  const compoundingDiscountType = compoundingType || "percentage";
+  // Use centralized pricing calculator for consistency (same as EquipmentCard)
+  useEffect(() => {
+    const result = calculateMonthlyPrices(
+      basePrice,
+      discountValue,
+      discountType,
+      compoundingValue,
+      compoundingType,
+      selectedDuration
+    );
 
-  // Calculate compounding effect over duration (starting from month 1)
-  let standardCompoundingCost = 0;
-  let currentMonthPrice = basePrice;
+    const finalResult = result[result.length - 1];
+    const finalPrice = finalResult.cumulativeTotal;
+    const undiscountedTotal = basePrice * selectedDuration;
+    const totalSavingsCalc = undiscountedTotal - finalPrice;
+    const monthlyAvgSavingsCalc = totalSavingsCalc / selectedDuration;
 
-  for (let month = 1; month <= selectedDuration; month++) {
-    standardCompoundingCost += currentMonthPrice;
-    // Apply compounding discount for next month (if compounding exists)
-    if (compoundingDiscount > 0) {
-      if (
-        compoundingDiscountType === "%" ||
-        compoundingDiscountType === "percentage"
-      ) {
-        currentMonthPrice = currentMonthPrice * (1 - compoundingDiscount / 100);
+    setCalculatedPrice(finalPrice);
+    setTotalDiscount(totalSavingsCalc);
+    setSavingsPerMonth(monthlyAvgSavingsCalc);
+  }, [
+    basePrice,
+    selectedDuration,
+    discountValue,
+    discountType,
+    compoundingValue,
+    compoundingType,
+  ]);
+
+  // Calculate discounted price for display (first month base discount only)
+  const getDiscountedPrice = () => {
+    if (hasDiscount) {
+      if (discountType === "%") {
+        return basePrice * (1 - discountValue / 100);
       } else {
-        currentMonthPrice = Math.max(
-          0,
-          currentMonthPrice - compoundingDiscount
-        );
+        return Math.max(0, basePrice - discountValue);
       }
     }
-  }
+    return basePrice;
+  };
 
-  // THEN apply package discount (base discount) on top of the compounding total
-  let finalCost = standardCompoundingCost;
-  if (discountValue > 0) {
-    if (discountType === "%" || discountType === "percentage") {
-      finalCost = standardCompoundingCost * (1 - discountValue / 100);
-    } else {
-      finalCost = Math.max(0, standardCompoundingCost - discountValue);
-    }
-  }
-
-  const undiscountedTotal = basePrice * selectedDuration;
-  const totalSavings = undiscountedTotal - finalCost;
-  const monthlyAvgSavings = totalSavings / selectedDuration;
-
-  // Calculate discounted price for display (first month after base discount)
-  const discountedPrice =
-    discountValue > 0
-      ? discountType === "%" || discountType === "percentage"
-        ? basePrice * (1 - discountValue / 100)
-        : Math.max(0, basePrice - discountValue)
-      : basePrice;
+  const discountedPrice = getDiscountedPrice();
   const savings = basePrice - discountedPrice;
 
   if (!isOpen || !equipment) return null;
@@ -334,8 +332,8 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({
                       key={index}
                       onClick={() => setCurrentImageIndex(index)}
                       className={`flex-shrink-0 w-10 h-10 rounded border transition-all overflow-hidden ${index === currentImageIndex
-                          ? "border-[#FDCE06] ring-1 ring-[#FDCE06]"
-                          : "border-[#333333] hover:border-[#9CA3AF]"
+                        ? "border-[#FDCE06] ring-1 ring-[#FDCE06]"
+                        : "border-[#333333] hover:border-[#9CA3AF]"
                         }`}
                     >
                       <img
@@ -414,13 +412,13 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({
 
                 {hasCompounding && (
                   <div className="flex items-center gap-2 pt-2 border-t border-[#333333]">
-                    <span className="text-[#9CA3AF] text-sm">
+                    {/* <span className="text-[#9CA3AF] text-sm">
                       Total for {selectedDuration} month
                       {selectedDuration > 1 ? "s" : ""}:
-                    </span>
-                    <span className="text-[#E5E5E5] text-lg font-bold">
-                      {formatCurrency(finalCost)}
-                    </span>
+                    </span> */}
+                    {/* <span className="text-[#E5E5E5] text-lg font-bold">
+                      {formatCurrency(calculatedPrice)}
+                    </span> */}
                   </div>
                 )}
               </div>
@@ -430,10 +428,10 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({
                 <div className="space-y-2 pt-2 border-t border-[#333333]">
                   <div className="flex items-center justify-between">
                     <span className="text-[#E5E5E5] text-sm font-semibold">
-                      Savings per month:
+                      Total Savings:
                     </span>
                     <span className="text-[#10B981] text-sm font-bold">
-                      -{formatCurrency(monthlyAvgSavings)}
+                      {formatCurrency(totalDiscount)}
                     </span>
                   </div>
                   <div className="relative">
