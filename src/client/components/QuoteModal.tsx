@@ -18,11 +18,13 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // Change your useEffect to depend on equipment.id, not the entire object
     useEffect(() => {
-        if (isOpen && equipment) {
+        if (isOpen && equipment?.id) {
             prepareQuoteData();
         }
-    }, [isOpen, equipment]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isOpen, equipment?.id]); // 👈 Only run if the ID changes, not on mouse hover!
 
     const prepareQuoteData = async () => {
         setLoading(true);

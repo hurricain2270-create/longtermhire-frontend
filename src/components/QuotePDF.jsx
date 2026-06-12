@@ -259,11 +259,9 @@ const QuotePDF = ({ quoteData }) => {
         <View style={styles.contentWrapper}>
           {/* Logo and Title */}
           <View style={styles.logoSection}>
-            {quoteData?.company_logo ? (
-              <Image src={quoteData.company_logo} style={styles.logo} />
-            ) : (
-              <Image src="/login-logo.png" style={styles.logo} />
-            )}
+
+            <Image src="/login-logo.png" style={styles.logo} />
+
           </View>
           <Text style={styles.title}>Quote</Text>
 
@@ -323,6 +321,7 @@ const QuotePDF = ({ quoteData }) => {
                 <Text style={styles.sectionLabel}>From:</Text>
                 {quoteData?.admin_company_logo && (
                   <Image
+                    crossorigin="anonymous"
                     src={quoteData.admin_company_logo}
                     style={{ width: 80, height: 30, marginBottom: 5, objectFit: 'contain' }}
                   />
@@ -431,4 +430,8 @@ const QuotePDF = ({ quoteData }) => {
   );
 };
 
-export default QuotePDF;
+// Change this at the bottom of your QuotePDF file:
+export default React.memo(QuotePDF, (prevProps, nextProps) => {
+  // Only re-render if the core quote ID or equipment changes, not on random cursor triggers
+  return prevProps.quoteData?.quote_id === nextProps.quoteData?.quote_id;
+});
