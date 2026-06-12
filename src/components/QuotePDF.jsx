@@ -319,13 +319,13 @@ const QuotePDF = ({ quoteData }) => {
               {/* Far Right Column - From */}
               <View style={styles.farRightColumn}>
                 <Text style={styles.sectionLabel}>From:</Text>
-                {quoteData?.admin_company_logo && (
+                {/* {quoteData?.admin_company_logo && (
                   <Image
                     crossorigin="anonymous"
                     src={quoteData.admin_company_logo}
                     style={{ width: 80, height: 30, marginBottom: 5, objectFit: 'contain' }}
                   />
-                )}
+                )} */}
                 <Text style={styles.infoText}>
                   Company: {quoteData?.admin_company_name || "Long Term Hire Pty Ltd"}
                 </Text>
