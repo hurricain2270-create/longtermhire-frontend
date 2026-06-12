@@ -1,5 +1,15 @@
 import React, { useState, useEffect, useCallback } from "react";
 
+const formatBannerDescription = (text: string) => {
+  if (!text) return "";
+  const escaped = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  const bolded = escaped.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  return bolded.replace(/\n/g, "<br />");
+};
+
 interface QuickViewModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -478,9 +488,17 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({
                   <h4 className="text-[#FDCE06] text-sm font-bold">
                     Banner Description
                   </h4>
-                  <div className="text-[#E5E5E5] text-sm italic leading-relaxed">
-                    {equipment.banner_description}
-                  </div>
+                  <div
+                    className="text-[#E5E5E5] text-sm italic leading-relaxed prose prose-invert max-w-none"
+                    style={{
+                      whiteSpace: "pre-wrap",
+                      wordWrap: "break-word",
+                      overflowWrap: "break-word",
+                    }}
+                    dangerouslySetInnerHTML={{
+                      __html: formatBannerDescription(equipment.banner_description),
+                    }}
+                  />
                 </div>
               )}
 

@@ -1,6 +1,16 @@
 // @ts-nocheck
 import React from "react";
 
+const formatBannerDescription = (text) => {
+  if (!text) return "";
+  const escaped = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  const bolded = escaped.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+  return bolded.replace(/\n/g, "<br />");
+};
+
 function ContentDetailsModal({ isOpen, onClose, content, onEdit }) {
   if (!isOpen || !content) return null;
 
@@ -112,19 +122,35 @@ function ContentDetailsModal({ isOpen, onClose, content, onEdit }) {
                     <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-1">
                       Description
                     </label>
-                    <div className="bg-[#292A2B] border border-[#333333] rounded-md px-3 py-3 text-[#E5E5E5] min-h-[100px]">
-                      {content.description || "No description available"}
-                    </div>
+                    <div
+                      className="bg-[#292A2B] border border-[#333333] rounded-md px-3 py-3 text-[#E5E5E5] min-h-[100px] prose prose-invert max-w-none text-sm leading-relaxed"
+                      style={{
+                        wordWrap: "break-word",
+                        overflowWrap: "break-word",
+                      }}
+                      dangerouslySetInnerHTML={{
+                        __html: content.description || "No description available",
+                      }}
+                    />
                   </div>
 
                   <div>
                     <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-1">
                       Banner Description
                     </label>
-                    <div className="bg-[#292A2B] border border-[#333333] rounded-md px-3 py-3 text-[#E5E5E5] min-h-[100px]">
-                      {content.banner_description ||
-                        "No banner description available"}
-                    </div>
+                    <div
+                      className="bg-[#292A2B] border border-[#333333] rounded-md px-3 py-3 text-[#E5E5E5] min-h-[100px] prose prose-invert max-w-none text-sm leading-relaxed"
+                      style={{
+                        whiteSpace: "pre-wrap",
+                        wordWrap: "break-word",
+                        overflowWrap: "break-word",
+                      }}
+                      dangerouslySetInnerHTML={{
+                        __html: formatBannerDescription(
+                          content.banner_description || "No banner description available"
+                        ),
+                      }}
+                    />
                   </div>
 
                   <div>
