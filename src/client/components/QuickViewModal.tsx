@@ -412,13 +412,13 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({
 
                 {hasCompounding && (
                   <div className="flex items-center gap-2 pt-2 border-t border-[#333333]">
-                    {/* <span className="text-[#9CA3AF] text-sm">
+                    <span className="text-[#9CA3AF] text-sm">
                       Total for {selectedDuration} month
                       {selectedDuration > 1 ? "s" : ""}:
-                    </span> */}
-                    {/* <span className="text-[#E5E5E5] text-lg font-bold">
+                    </span>
+                    <span className="text-[#E5E5E5] text-lg font-bold">
                       {formatCurrency(calculatedPrice)}
-                    </span> */}
+                    </span>
                   </div>
                 )}
               </div>
