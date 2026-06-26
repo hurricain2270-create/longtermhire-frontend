@@ -1521,6 +1521,8 @@ function ClientDashboard() {
                         fontSize: `${autoSize}px`,
                         lineHeight: 1.15,
                         letterSpacing: "0.5px",
+                        textAlign: "center",
+                        marginTop: "14px",
                         transform: "rotate(-0.5deg)",
                       }}
                       dangerouslySetInnerHTML={{
