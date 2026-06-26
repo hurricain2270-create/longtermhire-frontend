@@ -1364,16 +1364,14 @@ function ClientDashboard() {
         {/* Main Content */}
         <main className="flex-1 px-4 sm:px-8 lg:px-20 pb-[100px] py-6 lg:py-8 lg:max-w-[866px] xl:max-w-full">
           <div className="max-w-full lg:max-w-[810px]">
-            {/* Header Ad Banner */}
+            {/* Header Ad Ticker */}
             {companySettings.header_ad_text && (
-              <div className="mb-8 lg:mb-12">
-                <div className="bg-[#1F1F20] border-2 border-[#333333] rounded-lg p-6">
-                  <div
-                    className="text-[#E5E5E5] text-base"
-                    dangerouslySetInnerHTML={{
-                      __html: companySettings.header_ad_text,
-                    }}
-                  />
+              <div className="lth-ticker-wrap">
+                <div className="lth-ticker-inner">
+                  {(companySettings.header_ad_text || "").replace(/<[^>]*>/g, "")}
+                  &nbsp;&nbsp;&nbsp;&#9733;&nbsp;&nbsp;&nbsp;
+                  {(companySettings.header_ad_text || "").replace(/<[^>]*>/g, "")}
+                  &nbsp;&nbsp;&nbsp;&#9733;&nbsp;&nbsp;&nbsp;
                 </div>
               </div>
             )}
