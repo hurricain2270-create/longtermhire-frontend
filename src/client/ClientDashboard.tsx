@@ -104,7 +104,7 @@ const HeaderTicker = ({ text }: { text: string }) => {
           whiteSpace: "nowrap",
           fontFamily: "'Inter', sans-serif",
           fontWeight: 700,
-          fontSize: "15px",
+          fontSize: "20px",
           color: "#1F1F20",
         }}
       >
