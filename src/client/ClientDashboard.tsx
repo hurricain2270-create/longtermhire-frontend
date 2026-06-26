@@ -1449,7 +1449,7 @@ function ClientDashboard() {
               <div
                 className="p-6 relative"
                 style={{
-                  background: "linear-gradient(160deg, #FFF488 0%, #FFE94D 45%, #FBD827 80%, #F0C815 100%)",
+                  background: "linear-gradient(160deg, #FF8FE0 0%, #FF4FCB 45%, #FF22B8 80%, #E600A0 100%)",
                   transform: "rotate(-1.6deg)",
                   borderRadius: "2px 2px 18px 2px",
                   boxShadow:
@@ -1462,7 +1462,7 @@ function ClientDashboard() {
                   style={{
                     width: "34px",
                     height: "34px",
-                    background: "linear-gradient(135deg, transparent 45%, rgba(0,0,0,0.18) 46%, #E6C61E 50%, #FFF6B0 75%, #FFFCE0 100%)",
+                    background: "linear-gradient(135deg, transparent 45%, rgba(0,0,0,0.18) 46%, #C2008A 50%, #FFB0EC 75%, #FFE3F8 100%)",
                     borderBottomRightRadius: "18px",
                     filter: "drop-shadow(-1px -2px 2px rgba(0,0,0,0.25))",
                   }}
@@ -1471,7 +1471,7 @@ function ClientDashboard() {
                 {(() => {
                   const rawText = companySettings.sticky_ad_text || "";
                   const plainLen = rawText.replace(/<[^>]*>/g, "").length;
-                  const autoSize = plainLen < 20 ? 40 : plainLen < 40 ? 32 : plainLen < 70 ? 26 : plainLen < 120 ? 20 : 16;
+                  const autoSize = plainLen < 20 ? 52 : plainLen < 40 ? 42 : plainLen < 70 ? 34 : plainLen < 120 ? 26 : 20;
                   return (
                     <div
                       className="text-[#000000]"
