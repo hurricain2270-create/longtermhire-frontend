@@ -104,7 +104,7 @@ function DashboardMain() {
       {/* Header */}
       <header className="mb-8 sm:mb-10 lg:mb-12">
         <h1 className="text-[#E5E5E5] font-[Inter] font-bold text-2xl sm:text-3xl lg:text-4xl leading-tight">
-          Dashboard
+          Dashboard ✓
         </h1>
       </header>
 
