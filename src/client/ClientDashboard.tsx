@@ -1474,7 +1474,7 @@ function ClientDashboard() {
                   const autoSize = plainLen < 20 ? 52 : plainLen < 40 ? 42 : plainLen < 70 ? 34 : plainLen < 120 ? 26 : 20;
                   return (
                     <div
-                      className="text-[#000000]"
+                      className="text-[#1E3A8A]"
                       style={{
                         fontFamily: "'Caveat','Dancing Script','Kalam', cursive",
                         fontWeight: 700,
