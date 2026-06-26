@@ -111,14 +111,9 @@ const AddEquipmentModal = ({ isOpen, onClose, onSave }) => {
 
     onSave({
       ...formData,
-      id: Date.now().toString(),
       availability: true,
-      categoryId: `C${(Math.floor(Math.random() * 900) + 100)
-        .toString()
-        .padStart(3, "0")}`,
-      equipmentId: `E${(Math.floor(Math.random() * 900) + 100)
-        .toString()
-        .padStart(3, "0")}`,
+      // equipmentId intentionally omitted — backend auto-generates it
+      // using the category's first letter + sequential number (e.g. E001, S001)
     });
 
     // Reset form only on successful submission
