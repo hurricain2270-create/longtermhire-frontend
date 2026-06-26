@@ -2119,7 +2119,7 @@ function ClientDashboard() {
       {/* Desktop Chat Popup */}
       {isChatOpen && (
         <div className="hidden lg:block fixed bottom-4 right-4 z-50">
-          <div className="bg-[#1F1F20] border border-[#333333] rounded-lg w-[380px] h-[75vh] flex flex-col shadow-2xl">
+          <div className="bg-[#1F1F20] border border-[#333333] rounded-lg w-[380px] h-[58vh] flex flex-col shadow-2xl">
             <div className="bg-[#1F1F20] border-b border-[#333333] px-4 py-3 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <h3 className="text-[#FFFFFF] text-base font-semibold">
