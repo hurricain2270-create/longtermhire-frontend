@@ -301,9 +301,6 @@ const ClientManagement = () => {
           ...prev,
           [equipmentPopover.clientId]: selectedEquipmentObjects,
         }));
-
-        // Reload equipment assignments to ensure data consistency
-        await loadClientAssignments(clients);
       } catch (error) {
         console.error("Error applying equipment assignment:", error);
       }
