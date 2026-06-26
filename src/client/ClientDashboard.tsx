@@ -1458,13 +1458,13 @@ function ClientDashboard() {
               >
                 {/* Peeling corner fold */}
                 <div
-                  className="absolute bottom-0 right-0 pointer-events-none"
+                  className="absolute top-0 left-0 pointer-events-none"
                   style={{
-                    width: "34px",
-                    height: "34px",
-                    background: "linear-gradient(135deg, transparent 45%, rgba(0,0,0,0.18) 46%, #C2008A 50%, #FFB0EC 75%, #FFE3F8 100%)",
-                    borderBottomRightRadius: "18px",
-                    filter: "drop-shadow(-1px -2px 2px rgba(0,0,0,0.25))",
+                    width: "56px",
+                    height: "56px",
+                    background: "linear-gradient(315deg, transparent 45%, rgba(0,0,0,0.18) 46%, #C2008A 50%, #FFB0EC 75%, #FFE3F8 100%)",
+                    borderTopLeftRadius: "18px",
+                    filter: "drop-shadow(1px 2px 2px rgba(0,0,0,0.25))",
                   }}
                 />
                 {/* Sticky note content with handwritten font */}
