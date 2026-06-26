@@ -1488,7 +1488,7 @@ function ClientDashboard() {
               <div
                 className="p-6 relative"
                 style={{
-                  background: "linear-gradient(160deg, #FF8FE0 0%, #FF4FCB 45%, #FF22B8 80%, #E600A0 100%)",
+                  background: "linear-gradient(160deg, #FFB3E8 0%, #FF8FD6 45%, #F76BC4 80%, #E84FAE 100%)",
                   transform: "rotate(-1.6deg)",
                   borderRadius: "2px 2px 18px 2px",
                   boxShadow:
@@ -1501,7 +1501,7 @@ function ClientDashboard() {
                   style={{
                     width: "56px",
                     height: "56px",
-                    background: "linear-gradient(315deg, transparent 45%, rgba(0,0,0,0.18) 46%, #C2008A 50%, #FFB0EC 75%, #FFE3F8 100%)",
+                    background: "linear-gradient(315deg, transparent 45%, rgba(0,0,0,0.18) 46%, #D6539F 50%, #FFCBEE 75%, #FFEDFB 100%)",
                     borderTopLeftRadius: "18px",
                     filter: "drop-shadow(1px 2px 2px rgba(0,0,0,0.25))",
                   }}
