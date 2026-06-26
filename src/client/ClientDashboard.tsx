@@ -69,9 +69,9 @@ const formatCurrency = (value) => {
 
 // Self-contained JS-driven scrolling ticker — no external CSS dependency
 const HeaderTicker = ({ text }: { text: string }) => {
-  const ref = React.useRef<HTMLDivElement>(null);
-  const pos = React.useRef(0);
-  React.useEffect(() => {
+  const ref = useRef<HTMLDivElement>(null);
+  const pos = useRef(0);
+  useEffect(() => {
     if (!ref.current) return;
     const el = ref.current;
     pos.current = el.parentElement ? el.parentElement.clientWidth : 0;
