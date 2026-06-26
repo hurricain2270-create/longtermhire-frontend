@@ -76,7 +76,7 @@ const HeaderTicker = ({ text }: { text: string }) => {
     const el = ref.current;
     pos.current = el.parentElement ? el.parentElement.clientWidth : 0;
     const timer = setInterval(() => {
-      pos.current -= 1.4;
+      pos.current -= 0.7;
       if (pos.current < -el.scrollWidth) {
         pos.current = el.parentElement ? el.parentElement.clientWidth : 0;
       }
