@@ -1446,7 +1446,23 @@ function ClientDashboard() {
                 : "lg:top-[150px] right-4"
                 } transition-all duration-300 ease-in-out`}
             >
-              <div className="bg-[#FDE047] border-2 border-[#EAB308] rounded-lg p-6 relative shadow-lg">
+              <div
+                className="rounded-sm p-6 relative"
+                style={{
+                  background: "linear-gradient(135deg, #FFF066 0%, #FDE047 55%, #F8D427 100%)",
+                  transform: "rotate(-1.2deg)",
+                  boxShadow:
+                    "0 1px 1px rgba(0,0,0,0.15), 0 8px 14px -4px rgba(0,0,0,0.35), 0 20px 30px -10px rgba(0,0,0,0.25)",
+                }}
+              >
+                {/* Peeling corner */}
+                <div
+                  className="absolute bottom-0 right-0 w-7 h-7 pointer-events-none"
+                  style={{
+                    background: "linear-gradient(135deg, transparent 50%, #00000022 51%, #D9BD1F 52%, #FFF6B0 100%)",
+                    borderBottomRightRadius: "2px",
+                  }}
+                />
                 {/* Sticky note content with handwritten font */}
                 {(() => {
                   const rawText = companySettings.sticky_ad_text || "";
