@@ -1442,8 +1442,8 @@ function ClientDashboard() {
             {/* Sticky Note */}
             <div
               className={`w-full lg:w-[378px] lg:fixed ${scrollTop > 150
-                ? "lg:top-[20px] right-4"
-                : "lg:top-[150px] right-4"
+                ? "lg:top-[20px] right-12"
+                : "lg:top-[150px] right-12"
                 } transition-all duration-300 ease-in-out`}
             >
               <div
