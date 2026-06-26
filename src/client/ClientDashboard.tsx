@@ -1447,20 +1447,32 @@ function ClientDashboard() {
                 } transition-all duration-300 ease-in-out`}
             >
               <div
-                className="rounded-sm p-6 relative"
+                className="p-6 relative"
                 style={{
-                  background: "linear-gradient(135deg, #FFF066 0%, #FDE047 55%, #F8D427 100%)",
-                  transform: "rotate(-1.2deg)",
+                  background: "linear-gradient(160deg, #FFF488 0%, #FFE94D 45%, #FBD827 80%, #F0C815 100%)",
+                  transform: "rotate(-1.6deg)",
+                  borderRadius: "2px 2px 18px 2px",
                   boxShadow:
-                    "0 1px 1px rgba(0,0,0,0.15), 0 8px 14px -4px rgba(0,0,0,0.35), 0 20px 30px -10px rgba(0,0,0,0.25)",
+                    "0 -1px 2px rgba(255,255,255,0.4) inset, 2px 2px 4px rgba(0,0,0,0.12) inset, 1px 2px 2px rgba(0,0,0,0.2), 4px 10px 16px -6px rgba(0,0,0,0.4), 10px 26px 34px -14px rgba(0,0,0,0.3)",
                 }}
               >
-                {/* Peeling corner */}
+                {/* Pin shadow at top */}
                 <div
-                  className="absolute bottom-0 right-0 w-7 h-7 pointer-events-none"
+                  className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full pointer-events-none"
                   style={{
-                    background: "linear-gradient(135deg, transparent 50%, #00000022 51%, #D9BD1F 52%, #FFF6B0 100%)",
-                    borderBottomRightRadius: "2px",
+                    background: "radial-gradient(circle at 35% 30%, #FF8A8A, #C81E1E 60%, #7A0F0F 100%)",
+                    boxShadow: "0 3px 4px rgba(0,0,0,0.45)",
+                  }}
+                />
+                {/* Peeling corner fold */}
+                <div
+                  className="absolute bottom-0 right-0 pointer-events-none"
+                  style={{
+                    width: "34px",
+                    height: "34px",
+                    background: "linear-gradient(135deg, transparent 45%, rgba(0,0,0,0.18) 46%, #E6C61E 50%, #FFF6B0 75%, #FFFCE0 100%)",
+                    borderBottomRightRadius: "18px",
+                    filter: "drop-shadow(-1px -2px 2px rgba(0,0,0,0.25))",
                   }}
                 />
                 {/* Sticky note content with handwritten font */}
