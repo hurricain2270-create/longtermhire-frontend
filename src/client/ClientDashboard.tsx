@@ -1447,10 +1447,6 @@ function ClientDashboard() {
                 } transition-all duration-300 ease-in-out`}
             >
               <div className="bg-[#FDE047] border-2 border-[#EAB308] rounded-lg p-6 relative shadow-lg">
-                {/* Red comment label */}
-                <div className="absolute -top-3 -right-3 bg-red-600 text-white text-xs px-3 py-1 rounded shadow-md font-semibold">
-                  comment
-                </div>
                 {/* Sticky note content with handwritten font */}
                 {(() => {
                   const rawText = companySettings.sticky_ad_text || "";
