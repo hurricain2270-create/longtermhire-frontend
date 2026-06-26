@@ -1382,7 +1382,7 @@ function ClientDashboard() {
             <img
               src={companyLogo || "/login-logo.png"}
               alt="Company Logo"
-              className="h-[100px] sm:h-[100px] mr-4 sm:mr-6"
+              className="h-[140px] sm:h-[150px] mr-4 sm:mr-6"
             />
           </div>
           <nav className="flex items-center gap-2 sm:gap-4">
