@@ -66,6 +66,54 @@ const formatCurrency = (value) => {
   }).format(safeNumber);
 };
 
+
+// Self-contained JS-driven scrolling ticker — no external CSS dependency
+const HeaderTicker = ({ text }: { text: string }) => {
+  const ref = React.useRef<HTMLDivElement>(null);
+  const pos = React.useRef(0);
+  React.useEffect(() => {
+    if (!ref.current) return;
+    const el = ref.current;
+    pos.current = el.parentElement ? el.parentElement.clientWidth : 0;
+    const timer = setInterval(() => {
+      pos.current -= 1.4;
+      if (pos.current < -el.scrollWidth) {
+        pos.current = el.parentElement ? el.parentElement.clientWidth : 0;
+      }
+      el.style.transform = `translateX(${pos.current}px)`;
+    }, 16);
+    return () => clearInterval(timer);
+  }, [text]);
+
+  return (
+    <div
+      style={{
+        background: "linear-gradient(90deg, #FDCE06 0%, #FF6A00 100%)",
+        borderRadius: "8px",
+        marginBottom: "32px",
+        padding: "12px 0",
+        overflow: "hidden",
+        position: "relative",
+        width: "100%",
+      }}
+    >
+      <div
+        ref={ref}
+        style={{
+          display: "inline-block",
+          whiteSpace: "nowrap",
+          fontFamily: "'Inter', sans-serif",
+          fontWeight: 700,
+          fontSize: "15px",
+          color: "#1F1F20",
+        }}
+      >
+        {text}
+      </div>
+    </div>
+  );
+};
+
 function ClientDashboard() {
   const [user, setUser] = useState(null);
   const [selectedEquipment, setSelectedEquipment] = useState(
@@ -1366,14 +1414,7 @@ function ClientDashboard() {
           <div className="max-w-full lg:max-w-[810px]">
             {/* Header Ad Ticker */}
             {companySettings.header_ad_text && (
-              <div className="lth-ticker-wrap">
-                <div className="lth-ticker-inner">
-                  {(companySettings.header_ad_text || "").replace(/<[^>]*>/g, "")}
-                  &nbsp;&nbsp;&nbsp;&#9733;&nbsp;&nbsp;&nbsp;
-                  {(companySettings.header_ad_text || "").replace(/<[^>]*>/g, "")}
-                  &nbsp;&nbsp;&nbsp;&#9733;&nbsp;&nbsp;&nbsp;
-                </div>
-              </div>
+              <HeaderTicker text={(companySettings.header_ad_text || "").replace(/<[^>]*>/g, "")} />
             )}
 
             {/* Category Filter */}
