@@ -1453,11 +1453,12 @@ function ClientDashboard() {
                 </div>
                 {/* Sticky note content with handwritten font */}
                 <div
-                  className="text-[#000000] text-base leading-relaxed "
+                  className="text-[#000000] leading-snug "
                   style={{
                     fontFamily: "'Caveat','Dancing Script','Kalam', cursive",
-                    fontWeight: 400,
+                    fontWeight: 700,
                     fontStyle: "normal",
+                    fontSize: "28px",
                     letterSpacing: "0.5px",
                     transform: "rotate(-0.5deg)",
                   }}
