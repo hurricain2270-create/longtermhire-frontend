@@ -25,8 +25,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   logo: {
-    width: 160,
-    height: 80,
+    width: 280,
+    height: 140,
     objectFit: "contain",
   },
   logoPlaceholder: {
