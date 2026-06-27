@@ -23,8 +23,6 @@ const styles = StyleSheet.create({
   },
   logoSection: {
     marginBottom: 10,
-    position: "relative",
-    left: -15,
   },
   logo: {
     width: 280,
