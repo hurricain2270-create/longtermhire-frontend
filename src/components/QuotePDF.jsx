@@ -263,7 +263,7 @@ const QuotePDF = ({ quoteData }) => {
             <Image src="/login-logo.png" style={styles.logo} />
 
           </View>
-          <Text style={styles.title}>Quote</Text>
+          <Text style={styles.title}>A Very Big Quote</Text>
 
           {/* Quote Details Section - 3 Columns with Borders */}
           <View style={styles.detailsSection}>
