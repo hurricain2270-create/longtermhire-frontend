@@ -182,4 +182,16 @@ export const clientApi = {
       throw error.response?.data || error.message;
     }
   },
+
+  resendInvitation: async (userId) => {
+    try {
+      const response = await api.post(
+        `/v1/api/longtermhire/super_admin/resend-invitation/${userId}`
+      );
+      if (response.data?.error) throw new Error(response.data.message || "Failed to resend invitation");
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
 };
