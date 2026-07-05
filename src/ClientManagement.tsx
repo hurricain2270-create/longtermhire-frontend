@@ -136,6 +136,15 @@ const ClientManagement = () => {
     }
   };
 
+  const handleResendInvitation = async (client) => {
+    try {
+      const res = await clientApi.resendInvitation(client.user_id);
+      toast.success(`Invitation resent to ${client.email || client.client_name}!`);
+    } catch (error) {
+      toast.error(error.message || "Failed to resend invitation");
+    }
+  };
+
   const handleInviteClient = async (clientData) => {
     try {
       setInviteLoading(true);
@@ -528,6 +537,12 @@ const ClientManagement = () => {
                           className="text-red-400 font-[Inter] font-medium text-[14px] leading-[1.43em] hover:underline transition-all"
                         >
                           Delete
+                        </button>
+                        <button
+                          onClick={() => handleResendInvitation(client)}
+                          className="text-[#FDCE06] font-[Inter] font-medium text-[14px] leading-[1.43em] hover:underline transition-all"
+                        >
+                          Resend
                         </button>
                       </div>
                     </td>
