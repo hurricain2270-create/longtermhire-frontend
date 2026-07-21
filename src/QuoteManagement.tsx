@@ -235,13 +235,13 @@ const QuoteManagement = () => {
         admin_company_address: adminSettings?.company_address || "PO Box 4089 MOUNT ELIZA VIC 3930 AUSTRALIA",
         admin_company_logo: adminSettings?.company_logo || null,
         equipmentData: {
-          id: "001",
-          description: "7 Ton Excavator",
-          basePrice: 5000,
-          discount: 10,
-          discount_type: '%',
-          compounding_discount: 2,
-          compounding_discount_type: '%',
+          id: quoteToDownload.equipmentId || "001",
+          description: quoteToDownload.equipmentName || quoteToDownload.equipment_name || "Equipment",
+          basePrice: parseFloat(quoteToDownload.basePrice || quoteToDownload.base_price || 0),
+          discount: parseFloat(quoteToDownload.discount || 0),
+          discount_type: quoteToDownload.discountType || quoteToDownload.discount_type || '%',
+          compounding_discount: parseFloat(quoteToDownload.compoundingDiscount || quoteToDownload.compounding_discount || 0),
+          compounding_discount_type: quoteToDownload.compoundingDiscountType || quoteToDownload.compounding_discount_type || '%',
         },
       };
 
