@@ -5,7 +5,7 @@ import QuotePDF from "../../components/QuotePDF";
 import { ClipLoader } from "react-spinners";
 import { clientEquipmentApi } from "../../services/clientEquipmentApi";
 import { settingsApi } from "../../services/settingsApi";
-import { quoteApi } from "../../services/quoteApi";
+import api from "../../services/api";
 import { toast } from "react-toastify";
 
 interface QuoteModalProps {
@@ -115,9 +115,8 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
         if (!quoteData || saving) return;
         setSaving(true);
         try {
+            const token = localStorage.getItem("clientAuthToken");
             const payload = {
-                company_id: quoteData.company_id || null,
-                client_user_id: null,
                 company_name: quoteData.company_name,
                 company_address: quoteData.company_address,
                 company_email: quoteData.company_email,
@@ -126,21 +125,24 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
                 terms_of_hire: quoteData.terms_of_hire,
                 quote_expires_after: parseInt(quoteData.quote_expires_after) || 7,
                 produce_quote_for: parseInt(quoteData.produce_quote_for) || 12,
-                status: "Active",
-                equipment_id: quoteData.equipmentData?.id,
                 equipment_name: quoteData.equipmentData?.description,
                 base_price: quoteData.equipmentData?.basePrice,
             };
-            const result = await quoteApi.createQuote(payload);
+            const response = await api.post(
+                "/v1/api/longtermhire/client/create-quote",
+                payload,
+                { headers: { Authorization: "Bearer " + token } }
+            );
+            const result = response.data;
             if (!result.error) {
                 const qid = result.data?.quote_id || result.quote_id;
                 setSavedQuoteId(qid);
-                toast.success("Quote saved! Reference: " + qid);
+                toast.success("Quote sent! Reference: " + qid);
             } else {
-                toast.error(result.message || "Failed to save quote");
+                toast.error(result.message || "Failed to send quote");
             }
         } catch (err) {
-            toast.error("Failed to save quote. Please try again.");
+            toast.error("Failed to send quote. Please try again.");
         } finally {
             setSaving(false);
         }
@@ -212,7 +214,7 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
                             disabled={saving}
                             className="px-4 py-2 bg-[#FDCE06] text-[#1F1F20] rounded font-bold hover:bg-[#E5B800] transition-colors disabled:opacity-50"
                         >
-                            {saving ? "Saving..." : "Save Quote"}
+                            {saving ? "Sending..." : "Send Quote to Long Term Hire"}
                         </button>
                     )}
                     <button
