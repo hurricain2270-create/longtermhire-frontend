@@ -201,8 +201,13 @@ const QuoteManagement = () => {
 
   const handlePreviewPDF = async (quote) => {
     try {
-      const settingsResponse = await companyApi.getSettings?.() || { data: null };
-      const adminSettings = settingsResponse?.data || null;
+      let adminSettings = null;
+      try {
+        const settingsResponse = await settingsApi.getSettings();
+        if (!settingsResponse.error && settingsResponse.data) {
+          adminSettings = settingsResponse.data;
+        }
+      } catch (e) {}
       const data = {
         company_name: quote.companyName,
         company_address: quote.companyAddress,
