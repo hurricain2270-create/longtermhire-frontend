@@ -502,7 +502,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                   {/* Compounding Discount Label */}
                   {hasCompounding && (
                     <div className="text-[#10B981] text-sm font-semibold">
-                      Save {compoundingType === "%" ? `${compoundingValue}%` : formatCurrency(compoundingValue)}/month
+                      Save {compoundingType === "%" ? `${compoundingValue}%` : formatCurrency(compoundingValue)} per month compounding
                     </div>
                   )}
                 </div>
