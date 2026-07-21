@@ -5,7 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 import ClipLoader from "react-spinners/ClipLoader";
 import AddQuoteModal from "./components/AddQuoteModal";
 import EditQuoteModal from "./components/EditQuoteModal";
-import { pdf } from "@react-pdf/renderer";
+import { pdf, PDFViewer } from "@react-pdf/renderer";
 import QuotePDF from "./components/QuotePDF";
 import { quoteApi } from "./services/quoteApi";
 import { settingsApi } from "./services/settingsApi";
@@ -18,6 +18,8 @@ const QuoteManagement = () => {
 
   const [quotes, setQuotes] = useState([]);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [previewQuote, setPreviewQuote] = useState(null);
+  const [previewData, setPreviewData] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedQuote, setSelectedQuote] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -194,6 +196,41 @@ const QuoteManagement = () => {
         console.error("Error deleting quote:", error);
         toast.error(error.message || "Failed to delete quote");
       }
+    }
+  };
+
+  const handlePreviewPDF = async (quote) => {
+    try {
+      const settingsResponse = await companyApi.getSettings?.() || { data: null };
+      const adminSettings = settingsResponse?.data || null;
+      const data = {
+        company_name: quote.companyName,
+        company_address: quote.companyAddress,
+        company_email: quote.companyEmail,
+        company_logo: quote.companyLogo,
+        gst_percentage: quote.gstPercentage,
+        terms_of_hire: quote.termsOfHire,
+        quote_id: quote.quoteId,
+        quote_expires_after: quote.quoteExpiresAfter,
+        produce_quote_for: quote.produceQuoteFor,
+        created_at: quote.createdDate,
+        admin_company_name: adminSettings?.company_name || "Long Term Hire Pty Ltd",
+        admin_company_address: adminSettings?.company_address || "PO Box 4089 MOUNT ELIZA VIC 3930 AUSTRALIA",
+        admin_company_logo: adminSettings?.company_logo || null,
+        equipmentData: {
+          id: quote.equipmentId || "001",
+          description: quote.equipmentName || quote.equipment_name || "Equipment",
+          basePrice: parseFloat(quote.basePrice || quote.base_price || 0),
+          discount: parseFloat(quote.discount || 0),
+          discount_type: quote.discountType || quote.discount_type || '%',
+          compounding_discount: parseFloat(quote.compoundingDiscount || quote.compounding_discount || 0),
+          compounding_discount_type: quote.compoundingDiscountType || quote.compounding_discount_type || '%',
+        },
+      };
+      setPreviewData(data);
+      setPreviewQuote(quote);
+    } catch (error) {
+      toast.error("Failed to load preview");
     }
   };
 
@@ -456,6 +493,13 @@ const QuoteManagement = () => {
                     <td className="px-4 py-4">
                       <div className="flex gap-3 items-center justify-center">
                         <button
+                          onClick={() => handlePreviewPDF(quote)}
+                          className="text-[#FDCE06] font-[Inter] font-medium text-sm hover:underline transition-all"
+                          title="Preview Quote"
+                        >
+                          Preview
+                        </button>
+                        <button
                           onClick={() => handleDownloadPDF(quote)}
                           className="text-[#4CAF50] font-[Inter] font-medium text-sm hover:underline transition-all"
                           title="Download PDF"
@@ -499,6 +543,28 @@ const QuoteManagement = () => {
       />
 
       {/* Toast Container */}
+      {/* Quote Preview Modal */}
+      {previewData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
+          <div className="bg-[#1F1F20] border border-[#333] rounded-lg w-full max-w-4xl h-[90vh] flex flex-col">
+            <div className="p-4 border-b border-[#333] flex items-center justify-between">
+              <h3 className="text-[#E5E5E5] font-bold text-lg">
+                Quote Preview — {previewQuote?.quoteId}
+              </h3>
+              <button
+                onClick={() => { setPreviewData(null); setPreviewQuote(null); }}
+                className="text-[#9CA3AF] hover:text-white text-xl"
+              >✕</button>
+            </div>
+            <div className="flex-1 bg-[#525659]">
+              <PDFViewer width="100%" height="100%" className="border-none">
+                <QuotePDF quoteData={previewData} />
+              </PDFViewer>
+            </div>
+          </div>
+        </div>
+      )}
+
       <ToastContainer
         position="top-right"
         autoClose={3000}
