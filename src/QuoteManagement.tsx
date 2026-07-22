@@ -201,7 +201,7 @@ const QuoteManagement = () => {
                     <td className="px-4 py-3 text-right">
                       <button
                         onClick={() => openEdit(client)}
-                        className="text-xs px-3 py-1.5 border border-[#444] rounded text-[#E5E5E5] hover:border-[#FDCE06] hover:text-[#FDCE06] transition-colors"
+                        className="text-xs px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-semibold hover:bg-[#E5B800] transition-colors"
                       >
                         Edit template
                       </button>
