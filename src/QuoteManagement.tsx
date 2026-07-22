@@ -191,7 +191,7 @@ const QuoteManagement = () => {
                 return (
                   <tr key={client.id || i} className="border-b border-[#2A2A2A] last:border-0">
                     <td className="px-4 py-3">
-                      <div className="text-[#E5E5E5] text-sm font-medium">{client.company_name}</div>
+                      <div className="text-[#FDCE06] text-sm font-medium">{client.company_name}</div>
                       <div className="text-[#9CA3AF] text-xs">{client.email}</div>
                     </td>
                     <td className="px-4 py-3 text-sm text-[#E5E5E5]">{tmpl ? `${tmpl.produceQuoteFor} months` : <span className="text-[#666]">—</span>}</td>
@@ -236,7 +236,7 @@ const QuoteManagement = () => {
               ) : receivedQuotes.map((quote, i) => (
                 <tr key={quote.id || i} className="border-b border-[#2A2A2A] last:border-0">
                   <td className="px-4 py-3 text-sm font-medium text-[#FDCE06]">{quote.quoteId}</td>
-                  <td className="px-4 py-3 text-sm text-[#E5E5E5]">{quote.companyName}</td>
+                  <td className="px-4 py-3 text-sm text-[#FDCE06] font-medium">{quote.companyName}</td>
                   <td className="px-4 py-3 text-sm text-[#E5E5E5]">{quote.equipmentName}</td>
                   <td className="px-4 py-3 text-sm text-[#E5E5E5] text-right">${quote.basePrice.toLocaleString("en-AU", { minimumFractionDigits: 2 })}</td>
                   <td className="px-4 py-3 text-sm text-[#9CA3AF]">{quote.createdDate}</td>
