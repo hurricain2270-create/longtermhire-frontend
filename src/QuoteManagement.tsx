@@ -284,7 +284,7 @@ const QuoteManagement = () => {
                 <th className="text-left px-4 py-3 text-xs font-medium text-[#9CA3AF]">Equipment</th>
                 <th className="text-right px-4 py-3 text-xs font-medium text-[#9CA3AF] w-28">Base price</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-[#9CA3AF] w-28">Date sent</th>
-                <th className="text-right px-4 py-3 text-xs font-medium text-[#9CA3AF] w-20"></th>
+                <th className="text-right px-4 py-3 text-xs font-medium text-[#9CA3AF] w-36"></th>
               </tr>
             </thead>
             <tbody>
@@ -298,18 +298,20 @@ const QuoteManagement = () => {
                   <td className="px-4 py-3 text-sm text-[#E5E5E5] text-right">${quote.basePrice.toLocaleString("en-AU", { minimumFractionDigits: 2 })}</td>
                   <td className="px-4 py-3 text-sm text-[#9CA3AF]">{quote.createdDate}</td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => handlePreview(quote)}
-                      className="text-xs px-3 py-1.5 border border-[#4CAF50] rounded text-[#4CAF50] hover:bg-[#4CAF50]/10 transition-colors"
-                    >
-                      Preview
-                    </button>
-                    <button
-                      onClick={() => handleDeleteQuote(quote.quoteId, quote.id)}
-                      className="text-xs px-3 py-1.5 border border-[#ef4444] rounded text-[#ef4444] hover:bg-[#ef4444]/10 transition-colors"
-                    >
-                      Delete
-                    </button>
+                    <div className="flex gap-2 justify-end">
+                      <button
+                        onClick={() => handlePreview(quote)}
+                        className="text-xs px-3 py-1.5 border border-[#4CAF50] rounded text-[#4CAF50] hover:bg-[#4CAF50]/10 transition-colors"
+                      >
+                        Preview
+                      </button>
+                      <button
+                        onClick={() => handleDeleteQuote(quote.quoteId, quote.id)}
+                        className="text-xs px-3 py-1.5 border border-[#ef4444] rounded text-[#ef4444] hover:bg-[#ef4444]/10 transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
