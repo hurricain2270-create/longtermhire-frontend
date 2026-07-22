@@ -148,6 +148,44 @@ const QuoteManagement = () => {
     }
   };
 
+  const handleTemplatePreview = async (client) => {
+    try {
+      const tmpl = getClientTemplate(client);
+      let adminSettings = null;
+      try {
+        const settingsRes = await settingsApi.getSettings();
+        if (!settingsRes.error && settingsRes.data) adminSettings = settingsRes.data;
+      } catch (e) {}
+      setPreviewData({
+        company_name: client.company_name,
+        company_address: client.address || "",
+        company_email: client.email || "",
+        company_logo: client.company_logo || null,
+        gst_percentage: "10",
+        terms_of_hire: tmpl?.termsOfHire || "",
+        quote_id: "PREVIEW",
+        quote_expires_after: tmpl?.quoteExpiresAfter || "7",
+        produce_quote_for: tmpl?.produceQuoteFor || "12",
+        created_at: new Date().toLocaleDateString("en-AU"),
+        admin_company_name: adminSettings?.company_name || "Long Term Hire Pty Ltd",
+        admin_company_address: adminSettings?.company_address || "PO Box 4089 MOUNT ELIZA VIC 3930 AUSTRALIA",
+        admin_company_logo: adminSettings?.company_logo || null,
+        equipmentData: {
+          id: "—",
+          description: "Equipment description will appear here",
+          basePrice: 0,
+          discount: 0,
+          discount_type: "%",
+          compounding_discount: 0,
+          compounding_discount_type: "%",
+        },
+      });
+      setPreviewQuote({ quoteId: "Template preview — " + client.company_name });
+    } catch (e) {
+      toast.error("Failed to load preview");
+    }
+  };
+
   const getClientTemplate = (client) => {
     return quotes.find(
       (q) => q.companyName?.toLowerCase() === client.company_name?.toLowerCase() && !q.equipmentName
@@ -199,12 +237,20 @@ const QuoteManagement = () => {
                     <td className="px-4 py-3 text-sm text-[#666]">10%</td>
                     <td className="px-4 py-3 text-sm text-[#9CA3AF] truncate max-w-xs">{tmpl?.termsOfHire ? tmpl.termsOfHire.substring(0, 60) + "…" : <span className="text-[#666]">No template set</span>}</td>
                     <td className="px-4 py-3 text-right">
-                      <button
-                        onClick={() => openEdit(client)}
-                        className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-medium text-[14px] leading-[1.43em] hover:bg-[#E5B800] transition-colors"
-                      >
-                        Edit template
-                      </button>
+                      <div className="flex gap-2 justify-end">
+                        <button
+                          onClick={() => handleTemplatePreview(client)}
+                          className="px-3 py-1.5 border border-[#4CAF50] rounded text-[#4CAF50] font-[Inter] font-medium text-[14px] leading-[1.43em] hover:bg-[#4CAF50]/10 transition-colors"
+                        >
+                          Preview
+                        </button>
+                        <button
+                          onClick={() => openEdit(client)}
+                          className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-medium text-[14px] leading-[1.43em] hover:bg-[#E5B800] transition-colors"
+                        >
+                          Edit template
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );
