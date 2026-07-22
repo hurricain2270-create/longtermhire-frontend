@@ -242,10 +242,10 @@ const QuotePDF = ({ quoteData }) => {
       id: equipmentData.id,
       description: equipmentData.description || equipmentData.name,
       month: item.month,
-      unitPrice: formatNum(item.unitPrice),
+      unitPrice: item.unitPrice,
       discount: item.discountType === '%' ? `${item.discount.toFixed(2)}%` : `$${item.discount.toFixed(2)}`,
-      price: formatNum(item.price),
-      total: formatNum(item.cumulativeTotal),
+      price: item.price,
+      total: item.cumulativeTotal,
     });
   });
 
