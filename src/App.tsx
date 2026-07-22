@@ -1,4 +1,14 @@
-import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import 
+        <Route
+          path="/hire-management"
+          element={
+            <PrivateRoute allowedRoles={["super_admin"]}>
+              <DashboardLayout>
+                <HireManagement />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />{ BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AdminSidebar from "./AdminSidebar";
@@ -13,6 +23,7 @@ import PricingManagement from "./PricingManagement";
 import ContentManagement from "./ContentManagement";
 import ContentDetails from "./ContentDetails";
 import QuoteManagement from "./QuoteManagement";
+import HireManagement from "./HireManagement";
 import Profile from "./Profile";
 import Chat from "./components/Chat";
 import PrivateRoute from "./components/PrivateRoute";
