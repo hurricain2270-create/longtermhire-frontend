@@ -14,7 +14,7 @@ const EditQuoteModal = ({ isOpen, onClose, onSave, quote }) => {
     companyEmail: "",
     quoteExpiresAfter: "3",
     produceQuoteFor: "8",
-    gstPercentage: "15",
+    gstPercentage: "10",
     termsOfHire: "",
   });
 
@@ -32,7 +32,7 @@ const EditQuoteModal = ({ isOpen, onClose, onSave, quote }) => {
         companyEmail: quote.companyEmail || "",
         quoteExpiresAfter: quote.quoteExpiresAfter || "3",
         produceQuoteFor: quote.produceQuoteFor || "8",
-        gstPercentage: quote.gstPercentage || "15",
+        gstPercentage: quote.gstPercentage || "10",
         termsOfHire: quote.termsOfHire || "",
       });
       // Set logo preview if URL exists
@@ -244,7 +244,7 @@ const EditQuoteModal = ({ isOpen, onClose, onSave, quote }) => {
                       company_email:
                         formData.companyEmail || "email@company.com",
                       company_logo: logoPreview,
-                      gst_percentage: formData.gstPercentage || "15",
+                      gst_percentage: formData.gstPercentage || "10",
                       terms_of_hire:
                         formData.termsOfHire ||
                         "Terms and conditions will appear here",
