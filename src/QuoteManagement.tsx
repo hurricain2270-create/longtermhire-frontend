@@ -240,15 +240,15 @@ const QuoteManagement = () => {
                       <div className="flex gap-2 justify-end">
                         <button
                           onClick={() => handleTemplatePreview(client)}
-                          className="px-3 py-1.5 border border-[#4CAF50] rounded text-[#4CAF50] font-[Inter] font-medium text-[14px] leading-[1.43em] hover:bg-[#4CAF50]/10 transition-colors"
+                          className="px-3 py-1.5 border border-[#4CAF50] rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[14px] leading-[1.43em] hover:bg-[#3d9e43] transition-colors"
                         >
                           Preview
                         </button>
                         <button
                           onClick={() => openEdit(client)}
-                          className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-medium text-[14px] leading-[1.43em] hover:bg-[#E5B800] transition-colors"
+                          className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] leading-[1.43em] hover:bg-[#E5B800] transition-colors"
                         >
-                          Edit template
+                          Edit Template
                         </button>
                       </div>
                     </td>
