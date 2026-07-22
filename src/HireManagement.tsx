@@ -7,10 +7,13 @@ import api from "./services/api";
 
 const fmt = (n) => {
   const num = parseFloat(n || 0);
-  const fixed = num.toFixed(2);
-  const parts = fixed.split(".");
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  return "$" + parts.join(".");
+  const cents = Math.round(num * 100);
+  const dollars = Math.floor(Math.abs(cents) / 100);
+  const centsStr = String(Math.abs(cents) % 100).padStart(2, "0");
+  const dollarsStr = String(dollars).split("").reverse().reduce((acc, d, i) => {
+    return d + (i > 0 && i % 3 === 0 ? "," : "") + acc;
+  }, "");
+  return (num < 0 ? "-$" : "$") + dollarsStr + "." + centsStr;
 };
 
 const monthsBetween = (start) => {
