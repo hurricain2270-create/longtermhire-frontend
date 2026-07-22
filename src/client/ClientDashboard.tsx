@@ -344,7 +344,7 @@ function ClientDashboard() {
             // Fetch live news headline for ticker
             try {
               const token = localStorage.getItem("clientAuthToken");
-              const newsRes = await fetch("/v1/api/longtermhire/client/news-ticker", {
+              const newsRes = await fetch("https://api.longtermhire.com/v1/api/longtermhire/client/news-ticker", {
                 headers: { Authorization: "Bearer " + token }
               });
               const newsData = await newsRes.json();
