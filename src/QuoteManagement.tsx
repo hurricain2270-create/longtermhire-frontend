@@ -61,6 +61,9 @@ const QuoteManagement = () => {
           produceQuoteFor: quote.produce_quote_for?.toString() || "12",
           gstPercentage: quote.gst_percentage?.toString() || "15",
           termsOfHire: quote.terms_of_hire || "",
+          equipmentName: quote.equipment_name || "",
+          equipmentId: quote.equipment_id || "",
+          basePrice: parseFloat(quote.base_price || 0),
           createdDate: quote.created_at
             ? new Date(quote.created_at).toISOString().split("T")[0]
             : "",
