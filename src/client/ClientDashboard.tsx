@@ -287,6 +287,7 @@ function ClientDashboard() {
     sticky_ad_text: "",
     company_logo: "",
   });
+  const [newsHeadline, setNewsHeadline] = useState("");
 
   // Load selected categories from localStorage on mount
   useEffect(() => {
@@ -339,6 +340,20 @@ function ClientDashboard() {
               sticky_ad_text: settingsResponse.sticky_ad_text || "",
               company_logo: settingsResponse.company_logo || "",
             });
+
+            // Fetch live news headline for ticker
+            try {
+              const token = localStorage.getItem("clientAuthToken");
+              const newsRes = await fetch("/v1/api/longtermhire/client/news-ticker", {
+                headers: { Authorization: "Bearer " + token }
+              });
+              const newsData = await newsRes.json();
+              if (newsData?.data?.headline) {
+                setNewsHeadline(newsData.data.headline);
+              }
+            } catch (e) {
+              console.log("News ticker fetch failed, using default");
+            }
             console.log("Company settings loaded:", {
               header_ad_text: settingsResponse.header_ad_text,
               sticky_ad_text: settingsResponse.sticky_ad_text,
@@ -1413,8 +1428,8 @@ function ClientDashboard() {
         <main className="flex-1 px-4 sm:px-8 lg:px-20 pb-[100px] py-6 lg:py-8 lg:max-w-[866px] xl:max-w-full">
           <div className="max-w-full lg:max-w-[810px]">
             {/* Header Ad Ticker */}
-            {companySettings.header_ad_text && (
-              <HeaderTicker text={(companySettings.header_ad_text || "").replace(/<[^>]*>/g, "")} />
+            {(newsHeadline || companySettings.header_ad_text) && (
+              <HeaderTicker text={newsHeadline || (companySettings.header_ad_text || "").replace(/<[^>]*>/g, "")} />
             )}
 
             {/* Category Filter */}
