@@ -127,6 +127,10 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
                 produce_quote_for: parseInt(quoteData.produce_quote_for) || 12,
                 equipment_name: quoteData.equipmentData?.description,
                 base_price: quoteData.equipmentData?.basePrice,
+                discount: quoteData.equipmentData?.discount || 0,
+                discount_type: quoteData.equipmentData?.discount_type || '%',
+                compounding_discount: quoteData.equipmentData?.compounding_discount || 0,
+                compounding_discount_type: quoteData.equipmentData?.compounding_discount_type || '%',
             };
             const response = await api.post(
                 "/v1/api/longtermhire/client/create-quote",
