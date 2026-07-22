@@ -1,5 +1,4 @@
-import 
-        <Route path="/hire-management" element={<PrivateRoute allowedRoles={["super_admin"]}><DashboardLayout><HireManagement /></DashboardLayout></PrivateRoute>} />{ BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AdminSidebar from "./AdminSidebar";
