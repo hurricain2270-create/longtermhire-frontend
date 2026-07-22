@@ -186,6 +186,17 @@ const QuoteManagement = () => {
     }
   };
 
+  const handleDeleteQuote = async (quoteId, id) => {
+    if (!window.confirm(`Delete quote ${quoteId}?`)) return;
+    try {
+      await quoteApi.deleteQuote(id);
+      toast.success("Quote deleted");
+      loadAll();
+    } catch (e) {
+      toast.error("Failed to delete quote");
+    }
+  };
+
   const getClientTemplate = (client) => {
     return quotes.find(
       (q) => q.companyName?.toLowerCase() === client.company_name?.toLowerCase() && !q.equipmentName
@@ -292,6 +303,12 @@ const QuoteManagement = () => {
                       className="text-xs px-3 py-1.5 border border-[#4CAF50] rounded text-[#4CAF50] hover:bg-[#4CAF50]/10 transition-colors"
                     >
                       Preview
+                    </button>
+                    <button
+                      onClick={() => handleDeleteQuote(quote.quoteId, quote.id)}
+                      className="text-xs px-3 py-1.5 border border-[#ef4444] rounded text-[#ef4444] hover:bg-[#ef4444]/10 transition-colors"
+                    >
+                      Delete
                     </button>
                   </td>
                 </tr>
