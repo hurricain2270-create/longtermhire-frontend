@@ -10,6 +10,9 @@ import {
 } from "@react-pdf/renderer";
 import { calculateMonthlyPrices } from "../utils/pricingCalculator";
 
+// Format number with comma separator and 2 decimal places
+const formatNum = (n) => parseFloat(n || 0).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
 // Define styles
 const styles = StyleSheet.create({
   page: {
@@ -232,10 +235,10 @@ const QuotePDF = ({ quoteData }) => {
       id: equipmentData.id,
       description: equipmentData.description || equipmentData.name,
       month: item.month,
-      unitPrice: item.unitPrice.toFixed(2),
+      unitPrice: formatNum(item.unitPrice),
       discount: item.discountType === '%' ? `${item.discount.toFixed(2)}%` : `$${item.discount.toFixed(2)}`,
-      price: item.price.toFixed(2),
-      total: item.cumulativeTotal.toFixed(2),
+      price: formatNum(item.price),
+      total: formatNum(item.cumulativeTotal),
     });
   });
 
@@ -372,18 +375,18 @@ const QuotePDF = ({ quoteData }) => {
                 </Text>
                 <Text style={[styles.tableCol, styles.col3]}>{item.month}</Text>
                 <Text style={[styles.tableCol, styles.col4]}>
-                  ${parseFloat(item.unitPrice).toFixed(2)}
+                  ${formatNum(item.unitPrice)}
                 </Text>
                 <Text style={[styles.tableCol, styles.col5]}>
                   {item.discount}
                 </Text>
                 <Text style={[styles.tableCol, styles.col6]}>
-                  ${parseFloat(item.price).toFixed(2)}
+                  ${formatNum(item.price)}
                 </Text>
                 <Text
                   style={[styles.tableCol, styles.col7, styles.tableColLast]}
                 >
-                  ${parseFloat(item.total).toFixed(2)}
+                  ${formatNum(item.total)}
                 </Text>
               </View>
             ))}
@@ -396,20 +399,20 @@ const QuotePDF = ({ quoteData }) => {
               <View style={styles.totalsValues}>
                 <View style={styles.totalLine}>
                   <Text style={styles.totalLabel}>Subtotal</Text>
-                  <Text style={styles.totalValue}>${subtotal.toFixed(2)}</Text>
+                  <Text style={styles.totalValue}>${formatNum(subtotal)}</Text>
                 </View>
                 <View style={styles.totalLine}>
                   <Text style={styles.totalLabel}>
                     GST ({gstPercentage.toFixed(0)}%)
                   </Text>
-                  <Text style={styles.totalValue}>${gst.toFixed(2)}</Text>
+                  <Text style={styles.totalValue}>${formatNum(gst)}</Text>
                 </View>
                 <View style={styles.totalLine}>
                   <Text style={[styles.totalLabel, { fontWeight: "bold" }]}>
                     Total AUD
                   </Text>
                   <Text style={[styles.totalValue, { fontSize: 10 }]}>
-                    ${totalAUD.toFixed(2)}
+                    ${formatNum(totalAUD)}
                   </Text>
                 </View>
               </View>
