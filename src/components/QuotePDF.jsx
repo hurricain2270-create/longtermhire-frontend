@@ -281,14 +281,14 @@ const QuotePDF = ({ quoteData }) => {
             <View style={styles.leftColumn}>
               <Text style={styles.sectionLabel}>To:</Text>
               <Text style={styles.infoText}>
-                Company: {quoteData?.company_name || "Client Company"}
+                {quoteData?.company_name || ""}
               </Text>
-              <Text style={styles.infoText}>
-                Contact: {quoteData?.company_address || "Client Contact"}
-              </Text>
-              <Text style={styles.infoText}>
-                Email: {quoteData?.company_email || "client@email.com"}
-              </Text>
+              {quoteData?.company_address ? (
+                <Text style={styles.infoText}>{quoteData.company_address}</Text>
+              ) : null}
+              {quoteData?.company_email ? (
+                <Text style={styles.infoText}>{quoteData.company_email}</Text>
+              ) : null}
             </View>
 
             {/* Right Section - Split into 2 columns */}
