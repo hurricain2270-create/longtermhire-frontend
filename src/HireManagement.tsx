@@ -4,7 +4,6 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ClipLoader from "react-spinners/ClipLoader";
 import api from "./services/api";
-import { authHeader } from "./services/authHeader";
 
 const fmt = (n) => {
   const num = parseFloat(n || 0);
