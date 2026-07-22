@@ -10,8 +10,14 @@ import {
 } from "@react-pdf/renderer";
 import { calculateMonthlyPrices } from "../utils/pricingCalculator";
 
-// Format number with comma separator and 2 decimal places
-const formatNum = (n) => parseFloat(n || 0).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+// Format number with comma separator and 2 decimal places (safe for PDF renderer)
+const formatNum = (n) => {
+  const num = parseFloat(n || 0);
+  const fixed = num.toFixed(2);
+  const parts = fixed.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+};
 
 // Define styles
 const styles = StyleSheet.create({
