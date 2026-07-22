@@ -329,19 +329,12 @@ const QuotePDF = ({ quoteData }) => {
               {/* Far Right Column - From */}
               <View style={styles.farRightColumn}>
                 <Text style={styles.sectionLabel}>From:</Text>
-                {/* {quoteData?.admin_company_logo && (
-                  <Image
-                    crossorigin="anonymous"
-                    src={quoteData.admin_company_logo}
-                    style={{ width: 80, height: 30, marginBottom: 5, objectFit: 'contain' }}
-                  />
-                )} */}
                 <Text style={styles.infoText}>
-                  Company: {quoteData?.admin_company_name || "Long Term Hire Pty Ltd"}
+                  {quoteData?.admin_company_name || "Long Term Hire Pty Ltd"}
                 </Text>
-                <Text style={styles.infoText}>
-                  Address: {quoteData?.admin_company_address || "PO Box 4089 MOUNT ELIZA VIC 3930 AUSTRALIA"}
-                </Text>
+                {quoteData?.admin_company_address ? (
+                  <Text style={styles.infoText}>{quoteData.admin_company_address}</Text>
+                ) : null}
               </View>
             </View>
           </View>
