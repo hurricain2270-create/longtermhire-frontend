@@ -201,9 +201,10 @@ const EditQuoteModal = ({ isOpen, onClose, onSave, quote }) => {
                   <input
                     type="number"
                     name="gstPercentage"
-                    value={formData.gstPercentage}
-                    onChange={handleInputChange}
-                    className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-3 py-2 outline-none focus:border-[#FDCE06] transition-colors"
+                    value="10"
+                    readOnly
+                    disabled
+                    className="w-full bg-[#1a1a1a] border border-[#222] rounded-md text-[#666666] px-3 py-2 outline-none cursor-not-allowed"
                   />
                   <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#9CA3AF] text-sm">
                     %
