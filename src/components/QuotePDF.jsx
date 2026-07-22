@@ -335,6 +335,7 @@ const QuotePDF = ({ quoteData }) => {
                 {quoteData?.admin_company_address ? (
                   <Text style={styles.infoText}>{quoteData.admin_company_address}</Text>
                 ) : null}
+                <Text style={styles.infoText}>admin@longtermhire.com</Text>
               </View>
             </View>
           </View>
