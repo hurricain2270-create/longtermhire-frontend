@@ -64,6 +64,10 @@ const QuoteManagement = () => {
           equipmentName: quote.equipment_name || "",
           equipmentId: quote.equipment_id || "",
           basePrice: parseFloat(quote.base_price || 0),
+          discount: parseFloat(quote.discount || 0),
+          discountType: quote.discount_type || '%',
+          compoundingDiscount: parseFloat(quote.compounding_discount || 0),
+          compoundingDiscountType: quote.compounding_discount_type || '%',
           createdDate: quote.created_at
             ? new Date(quote.created_at).toISOString().split("T")[0]
             : "",
@@ -227,12 +231,12 @@ const QuoteManagement = () => {
         admin_company_logo: adminSettings?.company_logo || null,
         equipmentData: {
           id: quote.equipmentId || "001",
-          description: quote.equipmentName || quote.equipment_name || "Equipment",
-          basePrice: parseFloat(quote.basePrice || quote.base_price || 0),
-          discount: parseFloat(quote.discount || 0),
-          discount_type: quote.discountType || quote.discount_type || '%',
-          compounding_discount: parseFloat(quote.compoundingDiscount || quote.compounding_discount || 0),
-          compounding_discount_type: quote.compoundingDiscountType || quote.compounding_discount_type || '%',
+          description: quote.equipmentName || "Equipment",
+          basePrice: quote.basePrice || 0,
+          discount: quote.discount || 0,
+          discount_type: quote.discountType || '%',
+          compounding_discount: quote.compoundingDiscount || 0,
+          compounding_discount_type: quote.compoundingDiscountType || '%',
         },
       };
       setPreviewData(data);
