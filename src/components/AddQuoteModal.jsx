@@ -17,7 +17,7 @@ const AddQuoteModal = ({ isOpen, onClose, onSave }) => {
     companyEmail: "",
     quoteExpiresAfter: "3",
     produceQuoteFor: "8",
-    gstPercentage: "15",
+    gstPercentage: "10",
     termsOfHire: "",
   });
 
@@ -52,7 +52,7 @@ const AddQuoteModal = ({ isOpen, onClose, onSave }) => {
           ...prev,
           quoteExpiresAfter: settings.default_quote_expires_after?.toString() || "7",
           produceQuoteFor: settings.default_produce_quote_for?.toString() || "12",
-          gstPercentage: settings.default_gst_percentage?.toString() || "15",
+          gstPercentage: settings.default_gst_percentage?.toString() || "10",
           termsOfHire: settings.default_terms_of_hire || "",
         }));
       }
@@ -148,7 +148,7 @@ const AddQuoteModal = ({ isOpen, onClose, onSave }) => {
       companyEmail: "",
       quoteExpiresAfter: "3",
       produceQuoteFor: "8",
-      gstPercentage: "15",
+      gstPercentage: "10",
       termsOfHire: "",
     });
     setLogoPreview(null);
@@ -349,7 +349,7 @@ const AddQuoteModal = ({ isOpen, onClose, onSave }) => {
                       company_address: formData.companyAddress || "Your Address",
                       company_email: formData.companyEmail || "email@company.com",
                       company_logo: logoPreview,
-                      gst_percentage: formData.gstPercentage || "15",
+                      gst_percentage: formData.gstPercentage || "10",
                       terms_of_hire: formData.termsOfHire || "Terms and conditions will appear here",
                       quote_id: "PREVIEW",
                       quote_expires_after: formData.quoteExpiresAfter || "3",
