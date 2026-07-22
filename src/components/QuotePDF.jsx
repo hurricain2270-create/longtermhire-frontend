@@ -360,7 +360,7 @@ const QuotePDF = ({ quoteData }) => {
                   styles.tableColLast,
                 ]}
               >
-                Total/Accumulative
+                Accumulative
               </Text>
             </View>
 
