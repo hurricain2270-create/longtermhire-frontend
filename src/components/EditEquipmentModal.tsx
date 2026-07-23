@@ -18,6 +18,7 @@ const EditEquipmentModal = ({
     minimumDuration: "3 Months",
     position: "",
     availability: true,
+    ownershipStatus: "owned",
     description: "",
   });
 
@@ -33,6 +34,7 @@ const EditEquipmentModal = ({
         minimumDuration: equipment.minimum_duration || "3 Months",
         position: equipment.position || "",
         availability: equipment.availability,
+        ownershipStatus: equipment.ownership_status || "owned",
         description: equipment.description || "",
       });
     }
@@ -59,6 +61,7 @@ const EditEquipmentModal = ({
       minimumDuration: formData.minimumDuration,
       position: formData.position,
       availability: formData.availability ? 1 : 0,
+      ownership_status: formData.ownershipStatus,
       description: formData.description,
     };
 
@@ -229,6 +232,25 @@ const EditEquipmentModal = ({
           </div>
 
           {/* Availability */}
+
+          {/* Ownership */}
+          <div>
+            <label className="block text-[#D1D5DB] font-[Inter] font-medium text-[14px] leading-[20px] mb-2">
+              Ownership
+            </label>
+            <select
+              name="ownershipStatus"
+              value={formData.ownershipStatus}
+              onChange={handleInputChange}
+              className="w-full h-[46px] bg-[#292A2B] border border-[#333333] rounded-[6px] text-[#E5E5E5] text-[16px] font-[Inter] px-3 outline-none focus:border-[#FDCE06] transition-colors"
+            >
+              <option value="owned">Owned</option>
+              <option value="prospective">Not purchased yet</option>
+            </select>
+            <p className="text-[#6B7280] font-[Inter] text-[12px] mt-1">
+              Internal only. Clients never see this.
+            </p>
+          </div>
 
           {/* Action Buttons */}
           <div className="flex gap-4 pt-6">
