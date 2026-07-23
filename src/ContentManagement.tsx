@@ -220,6 +220,7 @@ const ContentManagement = () => {
         <h1 className="text-[#E5E5E5] font-[Inter] font-bold text-2xl sm:text-3xl lg:text-[36px] leading-[1.11em]">
           Content Management
         </h1>
+        <p className="text-[#9CA3AF] text-sm mt-1">Manage equipment descriptions, images and banners shown to clients in the equipment portal.</p>
       </header>
 
       {/* Search Section */}
