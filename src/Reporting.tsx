@@ -127,6 +127,7 @@ const Reporting = () => {
   const lastMonth = monthTotal(-1);
   const thisMonth = monthTotal(0);
   const nextMonth = monthTotal(1);
+  const monthAfter = monthTotal(2);
   const monthName = (offset) =>
     new Date(today.getFullYear(), today.getMonth() + offset, 1)
       .toLocaleDateString("en-AU", { month: "long" });
@@ -217,11 +218,12 @@ const Reporting = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-3 gap-3 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
         {[
           { label: monthName(-1), value: fmt(lastMonth), color: "#9CA3AF", note: "Last month" },
           { label: monthName(0), value: fmt(thisMonth), color: "#4CAF50", note: "This month" },
           { label: monthName(1), value: fmt(nextMonth), color: "#FDCE06", note: "Next month" },
+          { label: monthName(2), value: fmt(monthAfter), color: "#FDCE06", note: "Month after" },
         ].map((s, i) => (
           <div key={i} className="bg-[#292A2B] rounded-lg p-4">
             <div className="text-[#9CA3AF] font-[Inter] text-[11px] mb-1">
