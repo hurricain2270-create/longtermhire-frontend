@@ -218,7 +218,7 @@ const Reporting = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-4 gap-3 mb-8">
         {[
           { label: monthName(-1), value: fmt(lastMonth), color: "#9CA3AF", note: "Last month" },
           { label: monthName(0), value: fmt(thisMonth), color: "#4CAF50", note: "This month" },
