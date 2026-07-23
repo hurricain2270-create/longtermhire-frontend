@@ -14,6 +14,7 @@ import "react-toastify/dist/ReactToastify.css";
 import EquipmentCard from "./components/EquipmentCard";
 import QuickViewModal from "./components/QuickViewModal";
 import CategoryFilter from "./components/CategoryFilter";
+import ClientHires from "./components/ClientHires";
 import { calculateMonthlyPrices } from "../utils/pricingCalculator";
 
 // Add custom CSS for scrollbar hiding and range input styling
@@ -1447,6 +1448,9 @@ function ClientDashboard() {
                 </div>
               </div>
             )}
+
+            {/* Current Hires */}
+            <ClientHires userRole={getUserRole()} />
 
             {/* Dynamic Equipment Sections */}
             {Object.keys(equipmentData).length === 0 ? (
