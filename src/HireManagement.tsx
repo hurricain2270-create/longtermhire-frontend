@@ -15,6 +15,7 @@ const HireManagement = () => {
   const [owingEdits, setOwingEdits] = useState({});
   const [savingInvoice, setSavingInvoice] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [activeCompany, setActiveCompany] = useState(null);
   const [dateForm, setDateForm] = useState({ start: "", end: "" });
 
   useEffect(() => {
@@ -244,6 +245,10 @@ const HireManagement = () => {
     });
   }
 
+  const companyNames = Object.keys(grouped);
+  const shownCompany =
+    activeCompany && grouped[activeCompany] ? activeCompany : companyNames[0];
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -277,7 +282,37 @@ const HireManagement = () => {
           No equipment assigned to clients yet.
         </div>
       ) : (
-        Object.entries(grouped).map(([companyName, group]) => {
+        <>
+        {companyNames.length > 1 && (
+          <div className="flex flex-wrap gap-2 mb-5 border-b border-[#333] pb-3">
+            {companyNames.map((name) => {
+              const isOn = name === shownCompany;
+              const count = grouped[name].items.filter((i) => i.hire_status === "active").length;
+              return (
+                <button
+                  key={name}
+                  onClick={() => setActiveCompany(name)}
+                  className={
+                    "px-4 py-2 rounded font-[Inter] font-bold text-[13px] transition-colors " +
+                    (isOn
+                      ? "bg-[#FDCE06] text-[#1F1F20]"
+                      : "bg-[#292A2B] text-[#9CA3AF] border border-[#333] hover:border-[#FDCE06]")
+                  }
+                >
+                  {name}
+                  {count > 0 ? (
+                    <span className={isOn ? "text-[#1F1F20] opacity-70 ml-2" : "text-[#4CAF50] ml-2"}>
+                      {count}
+                    </span>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+        )}
+        {Object.entries(grouped)
+          .filter(([companyName]) => companyName === shownCompany)
+          .map(([companyName, group]) => {
           const activeItems = group.items.filter((i) => i.hire_status === "active");
           const termMonths = 12;
 
@@ -514,7 +549,8 @@ const HireManagement = () => {
               </table>
             </div>
           );
-        })
+        })}
+        </>
       )}
 
       {/* Confirmation Modal */}
