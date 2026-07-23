@@ -424,10 +424,10 @@ const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
               {loading ? (
                 <>
                   <ClipLoader color="#1F1F20" size={16} />
-                  Sending...
+                  Saving...
                 </>
               ) : (
-                "Send Invite"
+                "Save"
               )}
             </button>
           </div>
