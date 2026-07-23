@@ -429,7 +429,7 @@ const HireManagement = () => {
                                     <tr>
                                       <th className="text-left text-[#666] pb-1 w-32">Month</th>
                                       <th className="text-right text-[#666] pb-1">Monthly rate</th>
-                                      <th className="text-right text-[#666] pb-1 whitespace-nowrap">Est. fees</th>
+                                      <th className="text-right text-[#666] pb-1 whitespace-nowrap">Additional est. fees</th>
                                       <th className="text-right text-[#666] pb-1">Accumulative</th>
                                       <th className="text-right text-[#666] pb-1 w-28">Owing</th>
                                       <th className="text-right text-[#666] pb-1 w-44">Invoice</th>
