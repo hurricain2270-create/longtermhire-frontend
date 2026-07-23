@@ -290,6 +290,29 @@ function ClientDashboard() {
   });
   const [newsHeadline, setNewsHeadline] = useState("");
 
+  // Sessions stay open up to 12 hours, so refresh the ticker periodically
+  // rather than leaving the morning's headlines up all day.
+  useEffect(() => {
+    const refreshNews = async () => {
+      try {
+        const token = localStorage.getItem("clientAuthToken");
+        if (!token) return;
+        const res = await fetch(
+          "https://api.longtermhire.com/v1/api/longtermhire/client/news-ticker",
+          { headers: { Authorization: "Bearer " + token } }
+        );
+        const json = await res.json();
+        if (json && json.data && json.data.headline) {
+          setNewsHeadline(json.data.headline);
+        }
+      } catch (e) {
+        // keep whatever is already scrolling
+      }
+    };
+    const id = setInterval(refreshNews, 1800000); // every 30 minutes
+    return () => clearInterval(id);
+  }, []);
+
   // Load selected categories from localStorage on mount
   useEffect(() => {
     const savedCategories = localStorage.getItem("selectedCategories");
