@@ -15,6 +15,7 @@ const HireManagement = () => {
   const [owingEdits, setOwingEdits] = useState({});
   const [savingInvoice, setSavingInvoice] = useState(null);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [dateForm, setDateForm] = useState({ start: "", end: "" });
 
   useEffect(() => {
     loadData();
@@ -38,11 +39,11 @@ const HireManagement = () => {
     }
   };
 
-  const startHire = async (assignmentId) => {
+  const startHire = async (assignmentId, startDate) => {
     try {
       setStartingId(assignmentId);
-      const today = new Date().toISOString().slice(0, 10);
-      await api.post("/v1/api/longtermhire/super_admin/start-hire/" + assignmentId, { start_date: today });
+      const chosen = startDate || new Date().toISOString().slice(0, 10);
+      await api.post("/v1/api/longtermhire/super_admin/start-hire/" + assignmentId, { start_date: chosen });
       toast.success("Hire started");
       loadData();
     } catch (e) {
@@ -134,6 +135,22 @@ const HireManagement = () => {
     }
   };
 
+  const updateHireDates = async (assignmentId) => {
+    try {
+      setStartingId(assignmentId);
+      await api.post("/v1/api/longtermhire/super_admin/update-hire-dates/" + assignmentId, {
+        start_date: dateForm.start || null,
+        end_date: dateForm.end || null,
+      });
+      toast.success("Dates updated");
+      loadData();
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Failed to update dates");
+    } finally {
+      setStartingId(null);
+    }
+  };
+
   const runConfirmedAction = () => {
     if (!confirmAction) return;
     const { type, assignmentId, equipmentName } = confirmAction;
@@ -141,6 +158,8 @@ const HireManagement = () => {
     if (type === "end") endHire(assignmentId, equipmentName);
     else if (type === "restart") restartHire(assignmentId, equipmentName);
     else if (type === "delete") deleteHire(assignmentId, equipmentName);
+    else if (type === "start") startHire(assignmentId, dateForm.start);
+    else if (type === "dates") updateHireDates(assignmentId);
   };
 
   const fmt = (n) => {
@@ -301,10 +320,21 @@ const HireManagement = () => {
                           <td className="px-4 py-3 text-xs text-[#9CA3AF]">{item.equip_code}</td>
                           <td className="px-4 py-3 text-sm text-[#9CA3AF]">
                             {item.hire_start_date ? (
-                              <span style={{ color: isCompleted ? "#666" : "#9CA3AF" }}>
+                              <button
+                                onClick={() => {
+                                  setDateForm({
+                                    start: String(item.hire_start_date).slice(0, 10),
+                                    end: item.hire_end_date ? String(item.hire_end_date).slice(0, 10) : "",
+                                  });
+                                  setConfirmAction({ type: "dates", assignmentId: item.assignment_id, equipmentName: item.equipment_name });
+                                }}
+                                title="Edit hire dates"
+                                className="text-left hover:text-[#FDCE06] hover:underline transition-colors"
+                                style={{ color: isCompleted ? "#666" : "#9CA3AF" }}
+                              >
                                 {new Date(item.hire_start_date).toLocaleDateString("en-AU")}
                                 {isCompleted && item.hire_end_date ? " → " + new Date(item.hire_end_date).toLocaleDateString("en-AU") : ""}
-                              </span>
+                              </button>
                             ) : <span className="text-[#666]">—</span>}
                           </td>
                           <td className="px-4 py-3">
@@ -354,7 +384,10 @@ const HireManagement = () => {
                                 </>
                               ) : !isActive ? (
                                 <button
-                                  onClick={() => startHire(item.assignment_id)}
+                                  onClick={() => {
+                                    setDateForm({ start: new Date().toISOString().slice(0, 10), end: "" });
+                                    setConfirmAction({ type: "start", assignmentId: item.assignment_id, equipmentName: item.equipment_name });
+                                  }}
                                   disabled={startingId === item.assignment_id}
                                   className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors"
                                 >
@@ -494,6 +527,22 @@ const HireManagement = () => {
             label: "Restart hire",
             btn: "bg-[#FDCE06] hover:bg-[#E5B800] border-[#FDCE06]",
           },
+          start: {
+            title: "Start hire",
+            body: "Set the date " + confirmAction.equipmentName + " went on hire. The schedule and invoicing run from this date.",
+            note: null,
+            label: "Start hire",
+            btn: "bg-[#FDCE06] hover:bg-[#E5B800] border-[#FDCE06]",
+            fields: "start",
+          },
+          dates: {
+            title: "Edit hire dates",
+            body: "Adjust the hire dates for " + confirmAction.equipmentName + ". The schedule, elapsed months and forecast all recalculate from these.",
+            note: null,
+            label: "Save dates",
+            btn: "bg-[#FDCE06] hover:bg-[#E5B800] border-[#FDCE06]",
+            fields: "both",
+          },
           delete: {
             title: "Delete hire record",
             body: "This permanently removes the hire history for " + confirmAction.equipmentName + " and resets it to Not started. The equipment stays assigned to the client.",
@@ -513,6 +562,32 @@ const HireManagement = () => {
               </div>
               <div className="px-5 py-4">
                 <p className="text-[#9CA3AF] font-[Inter] text-sm leading-relaxed">{cfg.body}</p>
+                {cfg.fields && (
+                  <div className="mt-4 space-y-3">
+                    <div>
+                      <label className="text-[#9CA3AF] font-[Inter] text-xs mb-1 block">Hire start date</label>
+                      <input
+                        type="date"
+                        value={dateForm.start}
+                        onChange={(e) => setDateForm({ ...dateForm, start: e.target.value })}
+                        className="w-full bg-[#292A2B] border border-[#333] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-sm outline-none focus:border-[#FDCE06]"
+                      />
+                    </div>
+                    {cfg.fields === "both" && (
+                      <div>
+                        <label className="text-[#9CA3AF] font-[Inter] text-xs mb-1 block">
+                          Off hire date <span className="text-[#666]">(leave blank if still on hire)</span>
+                        </label>
+                        <input
+                          type="date"
+                          value={dateForm.end}
+                          onChange={(e) => setDateForm({ ...dateForm, end: e.target.value })}
+                          className="w-full bg-[#292A2B] border border-[#333] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-sm outline-none focus:border-[#FDCE06]"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
                 {cfg.note && (
                   <div className="mt-3 px-3 py-2 rounded bg-[#2a1616] border border-[#5a2d2d]">
                     <p className="text-[#ef4444] font-[Inter] text-xs leading-relaxed">{cfg.note}</p>
