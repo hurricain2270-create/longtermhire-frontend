@@ -215,6 +215,7 @@ const QuoteManagement = () => {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
+      <h1 className="text-[#E5E5E5] font-[Inter] font-bold text-[36px] leading-[1.11em] mb-6">Quote Management</h1>
 
       {/* Section 1: Client Quote Templates */}
       <div className="mb-10">
