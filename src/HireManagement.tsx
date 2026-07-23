@@ -48,6 +48,21 @@ const HireManagement = () => {
     }
   };
 
+  const endHire = async (assignmentId, equipmentName) => {
+    if (!window.confirm("End the hire for " + equipmentName + "? Invoicing stops from today. This cannot be undone from this page.")) return;
+    try {
+      setStartingId(assignmentId);
+      const today = new Date().toISOString().slice(0, 10);
+      await api.post("/v1/api/longtermhire/super_admin/end-hire/" + assignmentId, { end_date: today });
+      toast.success("Hire ended");
+      loadData();
+    } catch (e) {
+      toast.error("Failed to end hire");
+    } finally {
+      setStartingId(null);
+    }
+  };
+
   const fmt = (n) => {
     try {
       const num = parseFloat(n || 0);
@@ -167,7 +182,10 @@ const HireManagement = () => {
                   {group.items.map((item) => {
                     const bp = parseFloat(item.custom_base_price || item.base_price || 0);
                     const months = parseInt(item.produce_quote_for || termMonths);
-                    const monthsIn = monthsBetween(item.hire_start_date);
+                    const isCompleted = item.hire_status === "completed";
+                    const monthsIn = isCompleted && item.hire_end_date
+                      ? Math.max(0, (new Date(item.hire_end_date).getFullYear() - new Date(item.hire_start_date).getFullYear()) * 12 + (new Date(item.hire_end_date).getMonth() - new Date(item.hire_start_date).getMonth()))
+                      : monthsBetween(item.hire_start_date);
                     const clampedMonths = Math.min(monthsIn, months);
                     const progressPct = months > 0 ? Math.min(100, Math.round((clampedMonths / months) * 100)) : 0;
                     const isActive = item.hire_status === "active";
@@ -197,7 +215,9 @@ const HireManagement = () => {
                           <td className="px-4 py-3 text-sm text-right text-[#E5E5E5]">{fmt(month1Price)}</td>
                           <td className="px-4 py-3 text-right">
                             <div className="flex gap-2 justify-end">
-                              {!isActive ? (
+                              {isCompleted ? (
+                                <span className="text-xs px-3 py-1.5 rounded-full bg-[#2A2A2A] text-[#9CA3AF] border border-[#444]">Completed</span>
+                              ) : !isActive ? (
                                 <button
                                   onClick={() => startHire(item.assignment_id)}
                                   disabled={startingId === item.assignment_id}
@@ -206,12 +226,21 @@ const HireManagement = () => {
                                   {startingId === item.assignment_id ? "Starting..." : "Start Hire"}
                                 </button>
                               ) : (
-                                <button
-                                  onClick={() => setExpandedItem(isExpanded ? null : item.assignment_id)}
-                                  className="px-3 py-1.5 border border-[#4CAF50] rounded text-[#4CAF50] font-bold text-[13px] hover:bg-[#4CAF50]/10 transition-colors"
-                                >
-                                  {isExpanded ? "Hide" : "View schedule"}
-                                </button>
+                                <>
+                                  <button
+                                    onClick={() => setExpandedItem(isExpanded ? null : item.assignment_id)}
+                                    className="px-3 py-1.5 border border-[#4CAF50] rounded text-[#4CAF50] font-bold text-[13px] hover:bg-[#4CAF50]/10 transition-colors"
+                                  >
+                                    {isExpanded ? "Hide" : "View schedule"}
+                                  </button>
+                                  <button
+                                    onClick={() => endHire(item.assignment_id, item.equipment_name)}
+                                    disabled={startingId === item.assignment_id}
+                                    className="px-3 py-1.5 border border-[#ef4444] rounded text-[#ef4444] font-bold text-[13px] hover:bg-[#ef4444]/10 disabled:opacity-50 transition-colors"
+                                  >
+                                    End Hire
+                                  </button>
+                                </>
                               )}
                             </div>
                           </td>
