@@ -272,7 +272,17 @@ function ClientDashboard() {
   const groupMessagesByDate = (messages) => {
     const groups = {};
     messages.forEach((message) => {
-      const date = new Date(message.created_at).toLocaleDateString("en-AU");
+      if (!message.created_at) return;
+      const d = new Date(message.created_at);
+      if (isNaN(d.getTime())) return;
+      // ISO key (YYYY-MM-DD) — a localised key like "23/07/2026" cannot be
+      // parsed back into a Date, which is what produced "Invalid Date".
+      const date =
+        d.getFullYear() +
+        "-" +
+        String(d.getMonth() + 1).padStart(2, "0") +
+        "-" +
+        String(d.getDate()).padStart(2, "0");
       if (!groups[date]) {
         groups[date] = [];
       }
@@ -1669,7 +1679,7 @@ function ClientDashboard() {
                               {/* Date Header */}
                               <div className="flex justify-center my-4">
                                 <div className="bg-[#333333] text-[#9CA3AF] text-xs px-3 py-1 rounded-full">
-                                  {new Date(date).toLocaleDateString([], {
+                                  {new Date(date + "T00:00:00").toLocaleDateString([], {
                                     weekday: "long",
                                     year: "numeric",
                                     month: "long",
@@ -1960,7 +1970,7 @@ function ClientDashboard() {
                     {/* Date Header */}
                     <div className="flex justify-center my-4">
                       <div className="bg-[#333333] text-[#9CA3AF] text-xs px-3 py-1 rounded-full">
-                        {new Date(date).toLocaleDateString([], {
+                        {new Date(date + "T00:00:00").toLocaleDateString([], {
                           weekday: "long",
                           year: "numeric",
                           month: "long",
@@ -2236,7 +2246,7 @@ function ClientDashboard() {
                     {/* Date Header */}
                     <div className="flex justify-center my-2">
                       <div className="bg-[#333333] text-[#9CA3AF] text-[10px] px-2 py-1 rounded-full">
-                        {new Date(date).toLocaleDateString([], {
+                        {new Date(date + "T00:00:00").toLocaleDateString([], {
                           weekday: "short",
                           month: "short",
                           day: "numeric",
