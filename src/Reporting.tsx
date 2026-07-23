@@ -41,23 +41,70 @@ const Reporting = () => {
     return Math.max(0, Math.floor((now - s) / 86400000));
   };
 
-  const rateFor = (basePrice, h) => {
-    if (!h) return parseFloat(basePrice || 0);
-    let price = parseFloat(h.custom_base_price || basePrice || 0);
-    const disc = parseFloat(h.discount || 0);
-    if (h.discount_type === "%" || h.discount_type === "percentage") {
-      price = price - (price * disc) / 100;
-    } else if (disc > 0) {
-      price = price - disc;
+  // Rate for hire-month N, stepping down with the compounding discount
+  const rateForMonth = (basePrice, h, n) => {
+    let price = parseFloat((h && h.custom_base_price) || basePrice || 0);
+    const disc = parseFloat((h && h.discount) || 0);
+    const comp = parseFloat((h && h.compounding_discount) || 0);
+    const dt = h && h.discount_type;
+    const ct = h && h.compounding_discount_type;
+    if (dt === "%" || dt === "percentage") price = price - (price * disc) / 100;
+    else if (disc > 0) price = price - disc;
+    for (let i = 1; i < n; i++) {
+      if (comp > 0) {
+        if (ct === "%" || ct === "percentage") price = price - (price * comp) / 100;
+        else price = price - comp;
+      }
     }
     return Math.max(0, price);
+  };
+
+  const rateFor = (basePrice, h) => rateForMonth(basePrice, h, 1);
+
+  // Which calendar month does hire-month N end in? (21 Feb start -> month 1 = March)
+  const endMonthOf = (startDate, n) => {
+    const d = new Date(startDate);
+    const y = d.getFullYear(), m = d.getMonth(), day = d.getDate();
+    const lastDay = new Date(y, m + n + 1, 0).getDate();
+    const end = new Date(y, m + n, Math.min(day, lastDay));
+    end.setDate(end.getDate() - 1);
+    return { year: end.getFullYear(), month: end.getMonth() };
+  };
+
+  // What this hire bills in a given calendar month, 0 if not running then
+  const billedInMonth = (basePrice, h, target) => {
+    if (!h || !h.hire_start_date) return 0;
+    const term = parseInt(h.produce_quote_for || 12);
+    for (let n = 1; n <= term; n++) {
+      const em = endMonthOf(h.hire_start_date, n);
+      if (em.year === target.getFullYear() && em.month === target.getMonth()) {
+        if (h.hire_end_date) {
+          const end = new Date(h.hire_end_date);
+          if (end.getFullYear() * 12 + end.getMonth() < em.year * 12 + em.month) return 0;
+        }
+        return rateForMonth(basePrice, h, n);
+      }
+    }
+    return 0;
   };
 
   const equipment = data.equipment || [];
   const hires = data.hires || [];
   const quotes = data.quotes || [];
 
+  const today = new Date();
+
   const activeHireFor = (eqRowId) =>
+    hires.find(
+      (h) =>
+        String(h.equipment_id) === String(eqRowId) &&
+        h.hire_status === "active" &&
+        h.hire_start_date &&
+        new Date(h.hire_start_date) <= today
+    );
+
+  // Includes hires booked to start later
+  const bookedHireFor = (eqRowId) =>
     hires.find((h) => String(h.equipment_id) === String(eqRowId) && h.hire_status === "active");
 
   const quotesFor = (name) =>
@@ -70,7 +117,19 @@ const Reporting = () => {
   const owned = equipment.filter(isOwned);
   const onHire = equipment.filter((e) => activeHireFor(e.id));
   const utilisation = owned.length > 0 ? Math.round((onHire.length / owned.length) * 100) : 0;
-  const earning = onHire.reduce((sum, e) => sum + rateFor(e.base_price, activeHireFor(e.id)), 0);
+  const monthTotal = (offset) => {
+    const t = new Date(today.getFullYear(), today.getMonth() + offset, 1);
+    return equipment.reduce(
+      (sum, e) => sum + billedInMonth(e.base_price, bookedHireFor(e.id), t),
+      0
+    );
+  };
+  const lastMonth = monthTotal(-1);
+  const thisMonth = monthTotal(0);
+  const nextMonth = monthTotal(1);
+  const monthName = (offset) =>
+    new Date(today.getFullYear(), today.getMonth() + offset, 1)
+      .toLocaleDateString("en-AU", { month: "long" });
 
   const quotedNotOwned = equipment
     .filter((e) => !isOwned(e) && quotesFor(e.equipment_name).length > 0)
@@ -145,16 +204,30 @@ const Reporting = () => {
         Internal view. Ownership status is never shown to clients.
       </p>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+      <div className="grid grid-cols-3 gap-3 mb-4">
         {[
           { label: "Owned", value: String(owned.length), color: "#E5E5E5" },
-          { label: "On hire", value: String(onHire.length), color: "#4CAF50" },
+          { label: "On hire now", value: String(onHire.length), color: "#4CAF50" },
           { label: "Utilisation", value: utilisation + "%", color: "#E5E5E5" },
-          { label: "Earning / month", value: fmt(earning), color: "#FDCE06" },
         ].map((s, i) => (
           <div key={i} className="bg-[#292A2B] rounded-lg p-4">
             <div className="text-[#9CA3AF] font-[Inter] text-[11px] mb-1">{s.label}</div>
             <div className="font-[Inter] font-bold text-[24px]" style={{ color: s.color }}>{s.value}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-3 gap-3 mb-8">
+        {[
+          { label: monthName(-1), value: fmt(lastMonth), color: "#9CA3AF", note: "Last month" },
+          { label: monthName(0), value: fmt(thisMonth), color: "#4CAF50", note: "This month" },
+          { label: monthName(1), value: fmt(nextMonth), color: "#FDCE06", note: "Next month" },
+        ].map((s, i) => (
+          <div key={i} className="bg-[#292A2B] rounded-lg p-4">
+            <div className="text-[#9CA3AF] font-[Inter] text-[11px] mb-1">
+              {s.note} &middot; {s.label}
+            </div>
+            <div className="font-[Inter] font-bold text-[22px]" style={{ color: s.color }}>{s.value}</div>
           </div>
         ))}
       </div>
