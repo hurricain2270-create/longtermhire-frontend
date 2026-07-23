@@ -127,7 +127,7 @@ const HireManagement = () => {
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-[#E5E5E5] text-xl font-semibold mb-1">Hire management</h1>
+        <h1 className="text-[#E5E5E5] font-[Inter] font-bold text-[36px] leading-[1.11em] mb-1">Hire Management</h1>
         <p className="text-[#9CA3AF] text-sm">Active equipment hires, invoiced to date, and forecast to end of term.</p>
       </div>
 
