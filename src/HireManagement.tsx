@@ -162,6 +162,12 @@ const HireManagement = () => {
     else if (type === "dates") updateHireDates(assignmentId);
   };
 
+  // Estimated fees & charges as per terms:
+  // Environmental Levy 1.5% + Wear & Tear 3.5% + Damage Waiver 7.5% = 12.5%
+  // Calculated on the STANDARD hire rate, so it does not compound down.
+  const FEE_RATE = 0.125;
+  const feesFor = (standardRate) => parseFloat(standardRate || 0) * FEE_RATE;
+
   const fmt = (n) => {
     try {
       const num = parseFloat(n || 0);
@@ -423,6 +429,7 @@ const HireManagement = () => {
                                     <tr>
                                       <th className="text-left text-[#666] pb-1 w-32">Month</th>
                                       <th className="text-right text-[#666] pb-1">Monthly rate</th>
+                                      <th className="text-right text-[#666] pb-1 whitespace-nowrap">Est. fees</th>
                                       <th className="text-right text-[#666] pb-1">Accumulative</th>
                                       <th className="text-right text-[#666] pb-1 w-28">Owing</th>
                                       <th className="text-right text-[#666] pb-1 w-44">Invoice</th>
@@ -443,6 +450,7 @@ const HireManagement = () => {
                                         <tr key={m}>
                                           <td className="py-1 text-[#9CA3AF] whitespace-nowrap">{monthLabel(item.hire_start_date, m)}</td>
                                           <td className="py-1 text-right text-[#E5E5E5]">{fmt(price)}</td>
+                                          <td className="py-1 text-right text-[#9CA3AF]">{fmt(feesFor(bp))}</td>
                                           <td className="py-1 text-right text-[#E5E5E5]">{fmt(cumulative)}</td>
                                           <td className="py-1 text-right">
                                             {inv ? (
