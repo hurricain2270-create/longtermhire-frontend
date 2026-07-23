@@ -35,6 +35,12 @@ const ClientHires = ({ userRole = "member" }) => {
     }
   };
 
+  // Estimated fees & charges as per terms:
+  // Environmental Levy 1.5% + Wear & Tear 3.5% + Damage Waiver 7.5% = 12.5%
+  // Calculated on the STANDARD hire rate, so it does not compound down.
+  const FEE_RATE = 0.125;
+  const feesFor = (standardRate) => parseFloat(standardRate || 0) * FEE_RATE;
+
   const fmt = (n) => {
     const num = parseFloat(n || 0);
     return "$" + num.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
@@ -238,6 +244,7 @@ const ClientHires = ({ userRole = "member" }) => {
                         <tr className="text-[#666] text-xs">
                           <th className="text-left pb-2 font-medium">Month</th>
                           <th className="text-right pb-2 font-medium">Rate</th>
+                          <th className="text-right pb-2 font-medium whitespace-nowrap">Est. fees</th>
                           <th className="text-right pb-2 font-medium">Running total</th>
                           <th className="text-right pb-2 font-medium w-24">Status</th>
                         </tr>
@@ -247,6 +254,7 @@ const ClientHires = ({ userRole = "member" }) => {
                           <tr key={r.month} className="border-t border-[#222]">
                             <td className="py-1.5 text-[#9CA3AF] whitespace-nowrap">{monthLabel(h.hire_start_date, r.month)}</td>
                             <td className="py-1.5 text-right text-[#E5E5E5]">{fmt(r.price)}</td>
+                            <td className="py-1.5 text-right text-[#9CA3AF]">{fmt(feesFor(bp))}</td>
                             <td className="py-1.5 text-right text-[#E5E5E5]">{fmt(r.cumulative)}</td>
                             <td className="py-1.5 text-right">
                               {r.month <= monthsIn ? (
@@ -260,6 +268,10 @@ const ClientHires = ({ userRole = "member" }) => {
                       </tbody>
                     </table>
                   </div>
+                  <p className="text-[#9CA3AF] text-xs mt-3">
+                    Estimated Fees &amp; Charges of {fmt(feesFor(bp))} per month apply in
+                    addition to the rates above, as per your terms of hire.
+                  </p>
                   {parseFloat(h.compounding_discount || 0) > 0 && (
                     <p className="text-[#9CA3AF] text-xs mt-3">
                       Your rate reduces by {h.compounding_discount}
