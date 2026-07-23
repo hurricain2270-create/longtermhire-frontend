@@ -4,6 +4,7 @@ import "react-toastify/dist/ReactToastify.css";
 import ClipLoader from "react-spinners/ClipLoader";
 import { pdf, PDFViewer } from "@react-pdf/renderer";
 import QuotePDF from "./components/QuotePDF";
+import api from "./services/api";
 import { quoteApi } from "./services/quoteApi";
 import { clientApi } from "./services/clientApi";
 import { settingsApi } from "./services/settingsApi";
@@ -11,6 +12,7 @@ import { settingsApi } from "./services/settingsApi";
 const QuoteManagement = () => {
   const [clients, setClients] = useState([]);
   const [quotes, setQuotes] = useState([]);
+  const [companyMembers, setCompanyMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingClient, setEditingClient] = useState(null);
   const [editForm, setEditForm] = useState({});
@@ -30,6 +32,17 @@ const QuoteManagement = () => {
         quoteApi.getQuotes(1, 50, {}),
       ]);
 
+      try {
+        const membersRes = await api.get(
+          "/v1/api/longtermhire/super_admin/company-members"
+        );
+        if (membersRes?.data && !membersRes.data.error) {
+          setCompanyMembers(membersRes.data.data || []);
+        }
+      } catch (e) {
+        // sender attribution is a nicety, never block the list on it
+      }
+
       if (clientsRes && !clientsRes.error) {
         const clientList = Array.isArray(clientsRes) ? clientsRes : (clientsRes.data || []);
         setClients(clientList);
@@ -40,6 +53,7 @@ const QuoteManagement = () => {
           id: q.id,
           quoteId: q.quote_id,
           companyName: q.company_name || "",
+          clientUserId: q.client_user_id,
           companyAddress: q.company_address || "",
           companyEmail: q.company_email || "",
           companyLogo: q.company_logo || null,
@@ -110,6 +124,9 @@ const QuoteManagement = () => {
       setSaving(false);
     }
   };
+
+  const senderFor = (clientUserId) =>
+    companyMembers.find((m) => String(m.user_id) === String(clientUserId));
 
   const handlePreview = async (quote) => {
     try {
@@ -294,7 +311,18 @@ const QuoteManagement = () => {
               ) : receivedQuotes.map((quote, i) => (
                 <tr key={quote.id || i} className="border-b border-[#2A2A2A] last:border-0">
                   <td className="px-4 py-3 text-sm font-medium text-[#FDCE06]">{quote.quoteId}</td>
-                  <td className="px-4 py-3 text-sm text-[#FDCE06] font-medium">{quote.companyName}</td>
+                  <td className="px-4 py-3">
+                    <div className="text-sm text-[#FDCE06] font-medium">{quote.companyName}</div>
+                    {senderFor(quote.clientUserId) ? (
+                      <div className="text-[11px] text-[#9CA3AF] font-[Inter] mt-0.5">
+                        {senderFor(quote.clientUserId).member_name}
+                        <span className="text-[#6B7280]">
+                          {" \u00b7 "}
+                          {senderFor(quote.clientUserId).role}
+                        </span>
+                      </div>
+                    ) : null}
+                  </td>
                   <td className="px-4 py-3 text-sm text-[#E5E5E5]">{quote.equipmentName}</td>
                   <td className="px-4 py-3 text-sm text-[#E5E5E5] text-right">${quote.basePrice.toLocaleString("en-AU", { minimumFractionDigits: 2 })}</td>
                   <td className="px-4 py-3 text-sm text-[#9CA3AF]">{quote.createdDate}</td>
