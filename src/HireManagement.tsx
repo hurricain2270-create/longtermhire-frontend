@@ -152,6 +152,14 @@ const HireManagement = () => {
     }
   };
 
+  // Calendar month label once a hire has a real start date
+  const monthLabel = (startDate, monthNumber) => {
+    if (!startDate) return "Month " + monthNumber;
+    const d = new Date(startDate);
+    const target = new Date(d.getFullYear(), d.getMonth() + (monthNumber - 1), 1);
+    return target.toLocaleDateString("en-AU", { month: "long", year: "numeric" });
+  };
+
   const monthsBetween = (start) => {
     if (!start) return 0;
     try {
@@ -366,7 +374,7 @@ const HireManagement = () => {
                                 <table className="w-full text-xs">
                                   <thead>
                                     <tr>
-                                      <th className="text-left text-[#666] pb-1 w-20">Month</th>
+                                      <th className="text-left text-[#666] pb-1 w-32">Month</th>
                                       <th className="text-right text-[#666] pb-1">Monthly rate</th>
                                       <th className="text-right text-[#666] pb-1">Accumulative</th>
                                       <th className="text-right text-[#666] pb-1 w-28">Owing</th>
@@ -386,7 +394,7 @@ const HireManagement = () => {
                                       const isSaving = savingInvoice === editKey;
                                       return (
                                         <tr key={m}>
-                                          <td className="py-1 text-[#9CA3AF]">Month {m}</td>
+                                          <td className="py-1 text-[#9CA3AF] whitespace-nowrap">{monthLabel(item.hire_start_date, m)}</td>
                                           <td className="py-1 text-right text-[#E5E5E5]">{fmt(price)}</td>
                                           <td className="py-1 text-right text-[#E5E5E5]">{fmt(cumulative)}</td>
                                           <td className="py-1 text-right">
