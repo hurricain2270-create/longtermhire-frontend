@@ -80,6 +80,21 @@ const HireManagement = () => {
     }
   };
 
+  const deleteHire = async (assignmentId, equipmentName) => {
+    if (!window.confirm("Delete the hire record for " + equipmentName + "?\n\nThis permanently removes all logged invoices and payment history for this hire, and resets it to Not started. This cannot be undone.")) return;
+    try {
+      setStartingId(assignmentId);
+      await api.post("/v1/api/longtermhire/super_admin/delete-hire/" + assignmentId, {});
+      toast.success("Hire deleted");
+      setExpandedItem(null);
+      loadData();
+    } catch (e) {
+      toast.error("Failed to delete hire");
+    } finally {
+      setStartingId(null);
+    }
+  };
+
   const loadInvoices = async (assignmentId) => {
     try {
       const res = await api.get("/v1/api/longtermhire/super_admin/hire-invoices/" + assignmentId);
@@ -299,6 +314,13 @@ const HireManagement = () => {
                                     className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors"
                                   >
                                     {startingId === item.assignment_id ? "..." : "Restart Hire"}
+                                  </button>
+                                  <button
+                                    onClick={() => deleteHire(item.assignment_id, item.equipment_name)}
+                                    disabled={startingId === item.assignment_id}
+                                    className="px-3 py-1.5 border border-[#ef4444] rounded bg-[#ef4444] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#d63a3a] disabled:opacity-50 transition-colors"
+                                  >
+                                    Delete
                                   </button>
                                 </>
                               ) : !isActive ? (
