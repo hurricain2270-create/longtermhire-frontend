@@ -252,13 +252,13 @@ const QuoteManagement = () => {
                       <div className="flex gap-2 justify-end">
                         <button
                           onClick={() => handleTemplatePreview(client)}
-                          className="px-3 py-1.5 border border-[#4CAF50] rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[14px] leading-[1.43em] hover:bg-[#3d9e43] transition-colors"
+                          className="px-3 py-1.5 border border-[#4CAF50] rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#3d9e43] transition-colors"
                         >
                           Preview
                         </button>
                         <button
                           onClick={() => openEdit(client)}
-                          className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] leading-[1.43em] hover:bg-[#E5B800] transition-colors"
+                          className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] transition-colors"
                         >
                           Edit Template
                         </button>
@@ -302,13 +302,13 @@ const QuoteManagement = () => {
                     <div className="flex gap-2 justify-end">
                       <button
                         onClick={() => handlePreview(quote)}
-                        className="px-3 py-1.5 border border-[#4CAF50] rounded text-[#4CAF50] font-[Inter] font-bold text-[13px] hover:bg-[#4CAF50]/10 transition-colors"
+                        className="px-3 py-1.5 border border-[#4CAF50] rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#3d9e43] transition-colors"
                       >
                         Preview
                       </button>
                       <button
                         onClick={() => handleDeleteQuote(quote.quoteId, quote.id)}
-                        className="px-3 py-1.5 border border-[#ef4444] rounded text-[#ef4444] font-[Inter] font-bold text-[13px] hover:bg-[#ef4444]/10 transition-colors"
+                        className="px-3 py-1.5 border border-[#ef4444] rounded bg-[#ef4444] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#d63a3a] transition-colors"
                       >
                         Delete
                       </button>
