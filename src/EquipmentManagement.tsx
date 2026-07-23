@@ -490,7 +490,7 @@ const EquipmentManagement = () => {
                       <td className="text-[#E5E5E5] font-inter font-normal text-sm px-3 py-4 flex justify-center">
                         <button
                           onClick={() => handleViewDetails(item)}
-                          className="text-[#FDCE06] font-inter font-medium text-sm hover:underline transition-all"
+                          className="px-3 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] transition-colors"
                         >
                           View
                         </button>
@@ -508,7 +508,7 @@ const EquipmentManagement = () => {
                         <div className="flex flex-wrap gap-2 items-center">
                           <button
                             onClick={() => handleViewDetails(item)}
-                            className="text-[#FDCE06] font-inter font-medium text-sm hover:underline transition-all"
+                            className="px-3 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] transition-colors"
                           >
                             View
                           </button>
