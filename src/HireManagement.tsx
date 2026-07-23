@@ -11,6 +11,9 @@ const HireManagement = () => {
   const [error, setError] = useState(null);
   const [startingId, setStartingId] = useState(null);
   const [expandedItem, setExpandedItem] = useState(null);
+  const [invoices, setInvoices] = useState({});
+  const [owingEdits, setOwingEdits] = useState({});
+  const [savingInvoice, setSavingInvoice] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -60,6 +63,47 @@ const HireManagement = () => {
       toast.error("Failed to end hire");
     } finally {
       setStartingId(null);
+    }
+  };
+
+  const loadInvoices = async (assignmentId) => {
+    try {
+      const res = await api.get("/v1/api/longtermhire/super_admin/hire-invoices/" + assignmentId);
+      if (res && res.data && !res.data.error) {
+        const map = {};
+        (res.data.data || []).forEach((inv) => { map[inv.month_number] = inv; });
+        setInvoices((prev) => ({ ...prev, [assignmentId]: map }));
+      }
+    } catch (e) {
+      console.error("Failed to load invoices", e);
+    }
+  };
+
+  const toggleExpand = (assignmentId) => {
+    if (expandedItem === assignmentId) {
+      setExpandedItem(null);
+    } else {
+      setExpandedItem(assignmentId);
+      loadInvoices(assignmentId);
+    }
+  };
+
+  const saveInvoice = async (assignmentId, monthNumber, amount, owing, status) => {
+    try {
+      setSavingInvoice(assignmentId + "-" + monthNumber);
+      await api.post("/v1/api/longtermhire/super_admin/hire-invoice", {
+        assignment_id: assignmentId,
+        month_number: monthNumber,
+        amount: amount,
+        amount_owing: owing,
+        status: status,
+      });
+      toast.success("Saved");
+      loadInvoices(assignmentId);
+    } catch (e) {
+      toast.error("Failed to save");
+    } finally {
+      setSavingInvoice(null);
     }
   };
 
@@ -228,7 +272,7 @@ const HireManagement = () => {
                               ) : (
                                 <>
                                   <button
-                                    onClick={() => setExpandedItem(isExpanded ? null : item.assignment_id)}
+                                    onClick={() => toggleExpand(item.assignment_id)}
                                     className="px-3 py-1.5 border border-[#4CAF50] rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#3d9e43] transition-colors"
                                   >
                                     {isExpanded ? "Hide" : "View schedule"}
@@ -256,7 +300,8 @@ const HireManagement = () => {
                                       <th className="text-left text-[#666] pb-1 w-20">Month</th>
                                       <th className="text-right text-[#666] pb-1">Monthly rate</th>
                                       <th className="text-right text-[#666] pb-1">Accumulative</th>
-                                      <th className="text-right text-[#666] pb-1 w-24">Status</th>
+                                      <th className="text-right text-[#666] pb-1 w-28">Owing</th>
+                                      <th className="text-right text-[#666] pb-1 w-44">Invoice</th>
                                     </tr>
                                   </thead>
                                   <tbody>
@@ -266,13 +311,60 @@ const HireManagement = () => {
                                       const cumulative = Array.from({ length: m }, (_, j) =>
                                         calcMonthlyPrice(bp, item.discount, item.discount_type, item.compounding_discount, item.compounding_discount_type, j + 1)
                                       ).reduce((a, b) => a + b, 0);
+                                      const inv = (invoices[item.assignment_id] || {})[m];
+                                      const editKey = item.assignment_id + "-" + m;
+                                      const owingValue = owingEdits[editKey] !== undefined ? owingEdits[editKey] : (inv ? inv.amount_owing : "");
+                                      const isSaving = savingInvoice === editKey;
                                       return (
                                         <tr key={m}>
-                                          <td className="py-0.5 text-[#9CA3AF]">Month {m}</td>
-                                          <td className="py-0.5 text-right text-[#E5E5E5]">{fmt(price)}</td>
-                                          <td className="py-0.5 text-right text-[#E5E5E5]">{fmt(cumulative)}</td>
-                                          <td className="py-0.5 text-right">
-                                            {m <= clampedMonths ? <span className="text-[#4CAF50]">Invoiced</span> : <span className="text-[#666]">Forecast</span>}
+                                          <td className="py-1 text-[#9CA3AF]">Month {m}</td>
+                                          <td className="py-1 text-right text-[#E5E5E5]">{fmt(price)}</td>
+                                          <td className="py-1 text-right text-[#E5E5E5]">{fmt(cumulative)}</td>
+                                          <td className="py-1 text-right">
+                                            {inv ? (
+                                              parseFloat(inv.amount_owing) <= 0 ? (
+                                                <span className="text-[#4CAF50] font-bold">$0.00</span>
+                                              ) : (
+                                                <input
+                                                  type="number"
+                                                  value={owingValue}
+                                                  onChange={(e) => setOwingEdits({ ...owingEdits, [editKey]: e.target.value })}
+                                                  className="w-24 bg-[#292A2B] border border-[#333] rounded px-2 py-0.5 text-right text-[#FDCE06] text-xs outline-none focus:border-[#FDCE06]"
+                                                />
+                                              )
+                                            ) : (
+                                              <span className="text-[#666]">—</span>
+                                            )}
+                                          </td>
+                                          <td className="py-1 text-right">
+                                            {!inv ? (
+                                              <button
+                                                onClick={() => saveInvoice(item.assignment_id, m, price, price, "unpaid")}
+                                                disabled={isSaving}
+                                                className="px-2 py-0.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[11px] hover:bg-[#E5B800] disabled:opacity-50"
+                                              >
+                                                {isSaving ? "..." : "Log invoice"}
+                                              </button>
+                                            ) : parseFloat(inv.amount_owing) <= 0 ? (
+                                              <span className="text-[#4CAF50] font-bold">Paid</span>
+                                            ) : (
+                                              <div className="flex gap-1 justify-end">
+                                                <button
+                                                  onClick={() => saveInvoice(item.assignment_id, m, inv.amount, parseFloat(owingValue || 0), parseFloat(owingValue || 0) <= 0 ? "paid" : "unpaid")}
+                                                  disabled={isSaving}
+                                                  className="px-2 py-0.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[11px] hover:bg-[#E5B800] disabled:opacity-50"
+                                                >
+                                                  {isSaving ? "..." : "Save"}
+                                                </button>
+                                                <button
+                                                  onClick={() => saveInvoice(item.assignment_id, m, inv.amount, 0, "paid")}
+                                                  disabled={isSaving}
+                                                  className="px-2 py-0.5 border border-[#4CAF50] rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[11px] hover:bg-[#3d9e43] disabled:opacity-50"
+                                                >
+                                                  Paid
+                                                </button>
+                                              </div>
+                                            )}
                                           </td>
                                         </tr>
                                       );
