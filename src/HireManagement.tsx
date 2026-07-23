@@ -173,7 +173,11 @@ const HireManagement = () => {
       const s = new Date(start);
       const e = end ? new Date(end) : new Date();
       let months = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
-      if (e.getDate() < s.getDate()) months -= 1; // part-month doesn't count
+      // anniversary day, wound back when the current month is shorter than the
+      // start date — a 31 Jan hire completes its first month on 28 Feb
+      const lastDayOfMonth = new Date(e.getFullYear(), e.getMonth() + 1, 0).getDate();
+      const anniversary = Math.min(s.getDate(), lastDayOfMonth);
+      if (e.getDate() < anniversary) months -= 1; // part-month doesn't count
       return Math.max(0, months);
     } catch (err) {
       return 0;
