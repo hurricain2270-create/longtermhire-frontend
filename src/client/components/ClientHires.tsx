@@ -40,19 +40,28 @@ const ClientHires = ({ userRole = "member" }) => {
     return "$" + num.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
   };
 
-  // Calendar month label once a hire has a real start date
+  // Calendar month label — a hire month runs to the day before the same date
+  // next month, so a 21 Feb start makes month 1 end 20 Mar and read "March".
   const monthLabel = (startDate, monthNumber) => {
     if (!startDate) return "Month " + monthNumber;
     const d = new Date(startDate);
-    const target = new Date(d.getFullYear(), d.getMonth() + (monthNumber - 1), 1);
-    return target.toLocaleDateString("en-AU", { month: "long", year: "numeric" });
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    const day = d.getDate();
+    // clamp the day so a 31st start doesn't overflow a shorter month
+    const lastDay = new Date(y, m + monthNumber + 1, 0).getDate();
+    const end = new Date(y, m + monthNumber, Math.min(day, lastDay));
+    end.setDate(end.getDate() - 1);
+    return end.toLocaleDateString("en-AU", { month: "long", year: "numeric" });
   };
 
   const monthsBetween = (start, end) => {
     if (!start) return 0;
     const s = new Date(start);
     const e = end ? new Date(end) : new Date();
-    return Math.max(0, (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth()));
+    let months = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
+    if (e.getDate() < s.getDate()) months -= 1; // part-month doesn't count
+    return Math.max(0, months);
   };
 
   const calcMonthlyPrice = (basePrice, discount, discountType, compDiscount, compDiscountType, month) => {
