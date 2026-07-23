@@ -66,6 +66,20 @@ const HireManagement = () => {
     }
   };
 
+  const restartHire = async (assignmentId, equipmentName) => {
+    if (!window.confirm("Restart the hire for " + equipmentName + "? It will resume from the original start date and invoicing continues.")) return;
+    try {
+      setStartingId(assignmentId);
+      await api.post("/v1/api/longtermhire/super_admin/restart-hire/" + assignmentId, {});
+      toast.success("Hire restarted");
+      loadData();
+    } catch (e) {
+      toast.error("Failed to restart hire");
+    } finally {
+      setStartingId(null);
+    }
+  };
+
   const loadInvoices = async (assignmentId) => {
     try {
       const res = await api.get("/v1/api/longtermhire/super_admin/hire-invoices/" + assignmentId);
@@ -239,13 +253,25 @@ const HireManagement = () => {
                     return (
                       <React.Fragment key={item.assignment_id}>
                         <tr className="border-b border-[#1a1a1a] last:border-0">
-                          <td className="px-4 py-3 text-sm font-medium" style={{ color: isActive ? "#E5E5E5" : "#666" }}>{item.equipment_name}</td>
+                          <td className="px-4 py-3 text-sm font-medium" style={{ color: isCompleted ? "#666" : isActive ? "#E5E5E5" : "#666" }}>{item.equipment_name}</td>
                           <td className="px-4 py-3 text-xs text-[#9CA3AF]">{item.equip_code}</td>
                           <td className="px-4 py-3 text-sm text-[#9CA3AF]">
-                            {item.hire_start_date ? new Date(item.hire_start_date).toLocaleDateString("en-AU") : <span className="text-[#666]">—</span>}
+                            {item.hire_start_date ? (
+                              <span style={{ color: isCompleted ? "#666" : "#9CA3AF" }}>
+                                {new Date(item.hire_start_date).toLocaleDateString("en-AU")}
+                                {isCompleted && item.hire_end_date ? " → " + new Date(item.hire_end_date).toLocaleDateString("en-AU") : ""}
+                              </span>
+                            ) : <span className="text-[#666]">—</span>}
                           </td>
                           <td className="px-4 py-3">
-                            {isActive ? (
+                            {isCompleted ? (
+                              <div>
+                                <div className="text-[11px] text-[#666] mb-1">Completed · {clampedMonths} of {months} months</div>
+                                <div className="bg-[#2A2A2A] rounded h-1.5 w-full">
+                                  <div className="h-1.5 rounded bg-[#555]" style={{ width: progressPct + "%" }} />
+                                </div>
+                              </div>
+                            ) : isActive ? (
                               <div>
                                 <div className="text-[11px] text-[#9CA3AF] mb-1">{clampedMonths} of {months} months</div>
                                 <div className="bg-[#2A2A2A] rounded h-1.5 w-full">
@@ -256,11 +282,25 @@ const HireManagement = () => {
                               <span className="text-xs px-2 py-0.5 rounded-full bg-[#3a2e00] text-[#FDCE06] border border-[#5a4800]">Not started</span>
                             )}
                           </td>
-                          <td className="px-4 py-3 text-sm text-right text-[#E5E5E5]">{fmt(month1Price)}</td>
+                          <td className="px-4 py-3 text-sm text-right" style={{ color: isCompleted ? "#666" : "#E5E5E5" }}>{fmt(month1Price)}</td>
                           <td className="px-4 py-3 text-right">
                             <div className="flex gap-2 justify-end">
                               {isCompleted ? (
-                                <span className="text-xs px-3 py-1.5 rounded-full bg-[#2A2A2A] text-[#9CA3AF] border border-[#444]">Completed</span>
+                                <>
+                                  <button
+                                    onClick={() => toggleExpand(item.assignment_id)}
+                                    className="px-3 py-1.5 border border-[#4CAF50] rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#3d9e43] transition-colors"
+                                  >
+                                    {isExpanded ? "Hide" : "View schedule"}
+                                  </button>
+                                  <button
+                                    onClick={() => restartHire(item.assignment_id, item.equipment_name)}
+                                    disabled={startingId === item.assignment_id}
+                                    className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors"
+                                  >
+                                    {startingId === item.assignment_id ? "..." : "Restart Hire"}
+                                  </button>
+                                </>
                               ) : !isActive ? (
                                 <button
                                   onClick={() => startHire(item.assignment_id)}
