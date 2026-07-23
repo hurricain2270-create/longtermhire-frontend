@@ -466,7 +466,7 @@ const HireManagement = () => {
                                       <th className="text-right text-[#666] pb-1">Monthly rate</th>
                                       <th className="text-right text-[#666] pb-1 whitespace-nowrap">Additional est. fees</th>
                                       <th className="text-right text-[#666] pb-1">Accumulative</th>
-                                      <th className="text-right text-[#666] pb-1 w-28">Owing</th>
+                                      <th className="text-right text-[#666] pb-1 w-32">Owing inc GST</th>
                                       <th className="text-right text-[#666] pb-1 w-44">Invoice</th>
                                     </tr>
                                   </thead>
@@ -477,6 +477,7 @@ const HireManagement = () => {
                                       const cumulative = Array.from({ length: m }, (_, j) =>
                                         calcMonthlyPrice(bp, item.discount, item.discount_type, item.compounding_discount, item.compounding_discount_type, j + 1)
                                       ).reduce((a, b) => a + b, 0);
+                                      const monthTotalDue = (price + feesFor(bp)) * 1.1;
                                       const inv = (invoices[item.assignment_id] || {})[m];
                                       const editKey = item.assignment_id + "-" + m;
                                       const owingValue = owingEdits[editKey] !== undefined ? owingEdits[editKey] : (inv ? inv.amount_owing : "");
@@ -496,9 +497,11 @@ const HireManagement = () => {
                                                   type="number"
                                                   value={owingValue}
                                                   onChange={(e) => setOwingEdits({ ...owingEdits, [editKey]: e.target.value })}
-                                                  className="w-24 bg-[#292A2B] border border-[#333] rounded px-2 py-0.5 text-right text-[#FDCE06] text-xs outline-none focus:border-[#FDCE06]"
+                                                  className="w-24 bg-[#292A2B] border border-[#ef4444] rounded px-2 py-0.5 text-right text-[#ef4444] font-bold text-xs outline-none focus:border-[#ef4444]"
                                                 />
                                               )
+                                            ) : m <= clampedMonths ? (
+                                              <span className="text-[#ef4444] font-bold">{fmt(monthTotalDue)}</span>
                                             ) : (
                                               <span className="text-[#666]">—</span>
                                             )}
@@ -506,7 +509,7 @@ const HireManagement = () => {
                                           <td className="py-1 text-right">
                                             {!inv ? (
                                               <button
-                                                onClick={() => saveInvoice(item.assignment_id, m, price, price, "unpaid")}
+                                                onClick={() => saveInvoice(item.assignment_id, m, monthTotalDue, monthTotalDue, "unpaid")}
                                                 disabled={isSaving}
                                                 className="px-2 py-0.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[11px] hover:bg-[#E5B800] disabled:opacity-50"
                                               >
