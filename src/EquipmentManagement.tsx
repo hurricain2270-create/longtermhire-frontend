@@ -22,6 +22,7 @@ const EquipmentManagement = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState(null);
   const [equipment, setEquipment] = useState([]);
+  const [ownershipFilter, setOwnershipFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -234,6 +235,22 @@ const EquipmentManagement = () => {
           </h3>
 
           <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
+            {/* Ownership */}
+            <div className="flex flex-col">
+              <label className="text-[#9CA3AF] font-[Inter] font-medium text-[14px] leading-[1.21em] mb-2">
+                Ownership
+              </label>
+              <select
+                value={ownershipFilter}
+                onChange={(e) => setOwnershipFilter(e.target.value)}
+                className="bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors"
+              >
+                <option value="all">All</option>
+                <option value="owned">Owned</option>
+                <option value="prospective">Not purchased</option>
+              </select>
+            </div>
+
             {/* Category ID */}
             <div className="flex flex-col">
               <label className="text-[#9CA3AF] font-[Inter] font-medium text-[14px] leading-[1.21em] mb-2">
@@ -447,7 +464,13 @@ const EquipmentManagement = () => {
                     </td>
                   </tr>
                 ) : (
-                  equipment.map((item) => (
+                  equipment
+                    .filter(
+                      (item) =>
+                        ownershipFilter === "all" ||
+                        (item.ownership_status || "owned") === ownershipFilter
+                    )
+                    .map((item) => (
                     <tr
                       key={item.id}
                       className="border-t border-[#333333] hover:bg-[#292A2B] transition-colors"
