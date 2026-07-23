@@ -224,6 +224,7 @@ const EquipmentManagement = () => {
           <h1 className="text-[#E5E5E5] font-inter font-bold text-2xl lg:text-4xl leading-tight">
             Equipment Management
           </h1>
+          <p className="text-[#9CA3AF] text-sm mt-1">Add and maintain your equipment fleet — categories, pricing, availability and specifications.</p>
         </div>
 
         {/* Search Section */}
