@@ -80,6 +80,13 @@ const ClientHires = ({ userRole = "member" }) => {
   }
   if (hires.length === 0) return null;
 
+  // Current hires first, off-hire items below
+  const sortedHires = [...hires].sort((a, b) => {
+    const aActive = a.hire_status === "active" ? 0 : 1;
+    const bActive = b.hire_status === "active" ? 0 : 1;
+    return aActive - bActive;
+  });
+
   return (
     <section className="mb-12 lg:mb-16">
       <h2 className="text-[#D1D5DB] text-xl sm:text-2xl font-semibold mb-2">
@@ -90,7 +97,7 @@ const ClientHires = ({ userRole = "member" }) => {
       </p>
 
       <div className="space-y-4">
-        {hires.map((h) => {
+        {sortedHires.map((h) => {
           const bp = parseFloat(h.custom_base_price || h.base_price || 0);
           const months = parseInt(h.produce_quote_for || 12);
           const isCompleted = h.hire_status === "completed";
@@ -132,6 +139,11 @@ const ClientHires = ({ userRole = "member" }) => {
                       {h.hire_start_date
                         ? " · Started " + new Date(h.hire_start_date).toLocaleDateString("en-AU")
                         : ""}
+                      {isCompleted && h.hire_end_date ? (
+                        <span className="text-[#E5E5E5] font-medium">
+                          {" · Went off hire " + new Date(h.hire_end_date).toLocaleDateString("en-AU")}
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                   <span
@@ -142,7 +154,7 @@ const ClientHires = ({ userRole = "member" }) => {
                         : "bg-[#1a3a1a] text-[#4CAF50] border-[#2d5a2d]")
                     }
                   >
-                    {isCompleted ? "Completed" : "On hire"}
+                    {isCompleted ? "Off hire" : "On hire"}
                   </span>
                 </div>
 
