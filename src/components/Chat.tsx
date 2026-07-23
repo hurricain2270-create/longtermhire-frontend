@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useRef } from "react";
+import api from "../services/api";
 import { useChat } from "../hooks/useChat";
 import { useOnlineStatus } from "../contexts/OnlineStatusContext";
 import { chatApi } from "../services/chatApi";
@@ -59,6 +60,26 @@ const Chat = () => {
     } = useChat((newMessages) => {
         // Check if any of the new messages are from clients (not from current admin)
         const currentUserId = parseInt(localStorage.getItem("userId"));
+
+  // Which company each person belongs to, so names aren't ambiguous
+  const [companyByUser, setCompanyByUser] = useState({});
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await api.get("/v1/api/longtermhire/super_admin/company-members");
+        if (res && res.data && !res.data.error) {
+          const map = {};
+          (res.data.data || []).forEach((m) => {
+            map[String(m.user_id)] = { company: m.company_name, role: m.role };
+          });
+          setCompanyByUser(map);
+        }
+      } catch (e) {
+        // attribution is a nicety, never break chat over it
+      }
+    })();
+  }, []);
+  const whoIs = (uid) => companyByUser[String(uid)];
         const hasClientMessages = newMessages.some(
             (msg) => parseInt(msg.from_user_id) !== currentUserId
         );
@@ -677,6 +698,11 @@ const Chat = () => {
                                             <div className="flex items-center gap-2">
                                                 <h3 className="text-[#E5E5E5] font-medium">
                                                     {conversation.other_user_name || "Unknown User"}
+                                                    {whoIs(conversation.other_user_id) ? (
+                                                      <span className="block text-[11px] text-[#9CA3AF] font-normal">
+                                                        {whoIs(conversation.other_user_id).company}
+                                                      </span>
+                                                    ) : null}
                                                 </h3>
                                                 {/* Online Status Indicator */}
                                                 <div className="flex items-center gap-1">
@@ -763,6 +789,13 @@ const Chat = () => {
                                 <div>
                                     <h2 className="text-[#E5E5E5] font-semibold text-lg">
                                         {selectedConversation.other_user_name || "Unknown User"}
+                                        {whoIs(selectedConversation.other_user_id) ? (
+                                          <span className="block text-[12px] text-[#9CA3AF] font-normal">
+                                            {whoIs(selectedConversation.other_user_id).company}
+                                            {" \u00b7 "}
+                                            {whoIs(selectedConversation.other_user_id).role}
+                                          </span>
+                                        ) : null}
                                     </h2>
                                     <div className="flex items-center gap-4 mt-1">
                                         {/* Client Online Status */}
