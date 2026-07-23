@@ -152,21 +152,30 @@ const HireManagement = () => {
     }
   };
 
-  // Calendar month label once a hire has a real start date
+  // Calendar month label — a hire month runs to the day before the same date
+  // next month, so a 21 Feb start makes month 1 end 20 Mar and read "March".
   const monthLabel = (startDate, monthNumber) => {
     if (!startDate) return "Month " + monthNumber;
     const d = new Date(startDate);
-    const target = new Date(d.getFullYear(), d.getMonth() + (monthNumber - 1), 1);
-    return target.toLocaleDateString("en-AU", { month: "long", year: "numeric" });
+    const y = d.getFullYear();
+    const m = d.getMonth();
+    const day = d.getDate();
+    // clamp the day so a 31st start doesn't overflow a shorter month
+    const lastDay = new Date(y, m + monthNumber + 1, 0).getDate();
+    const end = new Date(y, m + monthNumber, Math.min(day, lastDay));
+    end.setDate(end.getDate() - 1);
+    return end.toLocaleDateString("en-AU", { month: "long", year: "numeric" });
   };
 
-  const monthsBetween = (start) => {
+  const monthsBetween = (start, end) => {
     if (!start) return 0;
     try {
       const s = new Date(start);
-      const now = new Date();
-      return Math.max(0, (now.getFullYear() - s.getFullYear()) * 12 + (now.getMonth() - s.getMonth()));
-    } catch (e) {
+      const e = end ? new Date(end) : new Date();
+      let months = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
+      if (e.getDate() < s.getDate()) months -= 1; // part-month doesn't count
+      return Math.max(0, months);
+    } catch (err) {
       return 0;
     }
   };
@@ -271,9 +280,10 @@ const HireManagement = () => {
                     const bp = parseFloat(item.custom_base_price || item.base_price || 0);
                     const months = parseInt(item.produce_quote_for || termMonths);
                     const isCompleted = item.hire_status === "completed";
-                    const monthsIn = isCompleted && item.hire_end_date
-                      ? Math.max(0, (new Date(item.hire_end_date).getFullYear() - new Date(item.hire_start_date).getFullYear()) * 12 + (new Date(item.hire_end_date).getMonth() - new Date(item.hire_start_date).getMonth()))
-                      : monthsBetween(item.hire_start_date);
+                    const monthsIn = monthsBetween(
+                      item.hire_start_date,
+                      isCompleted ? item.hire_end_date : null
+                    );
                     const clampedMonths = Math.min(monthsIn, months);
                     const progressPct = months > 0 ? Math.min(100, Math.round((clampedMonths / months) * 100)) : 0;
                     const isActive = item.hire_status === "active";
