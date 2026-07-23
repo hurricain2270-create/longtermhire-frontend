@@ -88,6 +88,16 @@ const ClientManagement = () => {
     loadInitialData(1, debouncedSearchData, true);
   }, [debouncedSearchData]);
 
+  const handleResendMember = async (member) => {
+    if (!window.confirm("Send " + member.member_name + " new login details? This resets their password and emails it to " + member.member_email + ".")) return;
+    try {
+      await clientApi.resendInvitation(member.user_id);
+      toast.success("New login details sent to " + member.member_email);
+    } catch (e) {
+      toast.error(e?.message || "Failed to resend invitation");
+    }
+  };
+
   // Additional users on the same company as this owner
   const membersForOwner = (ownerUserId) =>
     companyMembers.filter(
@@ -587,6 +597,13 @@ const ClientManagement = () => {
                           <span className="text-[#9CA3AF] font-[Inter] text-[11px] px-2 py-0.5 rounded-full bg-[#292A2B] border border-[#333333]">
                             {m.role}
                           </span>
+                          <button
+                            onClick={() => handleResendMember(m)}
+                            title="Reset password and email new login details"
+                            className="text-[#FDCE06] font-[Inter] font-medium text-[11px] hover:underline transition-all"
+                          >
+                            Resend login
+                          </button>
                         </div>
                       </td>
                     </tr>
