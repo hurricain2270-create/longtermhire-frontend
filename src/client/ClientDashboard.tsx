@@ -1449,9 +1449,6 @@ function ClientDashboard() {
               </div>
             )}
 
-            {/* Current Hires */}
-            <ClientHires userRole={getUserRole()} />
-
             {/* Dynamic Equipment Sections */}
             {Object.keys(equipmentData).length === 0 ? (
               <section className="mb-12 lg:mb-16">
@@ -1491,6 +1488,9 @@ function ClientDashboard() {
                 </section>
               ))
             )}
+
+            {/* Current Hires */}
+            <ClientHires userRole={getUserRole()} />
           </div>
         </main>
 
