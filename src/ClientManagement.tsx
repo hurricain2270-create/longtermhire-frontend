@@ -169,11 +169,17 @@ const ClientManagement = () => {
   };
 
   const handleResendInvitation = async (client) => {
+    const firstTime = !client.invited_at;
     try {
-      const res = await clientApi.resendInvitation(client.user_id);
-      toast.success(`Invitation resent to ${client.email || client.client_name}!`);
+      await clientApi.resendInvitation(client.user_id);
+      toast.success(
+        (firstTime ? "Invitation sent to " : "New login details sent to ") +
+          (client.email || client.client_name)
+      );
+      // Refresh so the invited badge and button state update straight away
+      loadInitialData(currentPage, searchData);
     } catch (error) {
-      toast.error(error.message || "Failed to resend invitation");
+      toast.error(error.message || "Failed to send invitation");
     }
   };
 
