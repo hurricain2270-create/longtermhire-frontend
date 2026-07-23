@@ -1,6 +1,7 @@
 // @ts-nocheck
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { ClipLoader } from "react-spinners";
+import api from "./services/api";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AddClientModal from "./components/AddClientModal";
@@ -48,6 +49,7 @@ const ClientManagement = () => {
 
   // API data states
   const [clients, setClients] = useState([]);
+  const [companyMembers, setCompanyMembers] = useState([]);
   const [equipment, setEquipment] = useState([]);
 
   // Track equipment assignments per client
@@ -86,6 +88,14 @@ const ClientManagement = () => {
     loadInitialData(1, debouncedSearchData, true);
   }, [debouncedSearchData]);
 
+  // Additional users on the same company as this owner
+  const membersForOwner = (ownerUserId) =>
+    companyMembers.filter(
+      (m) =>
+        String(m.owner_user_id) === String(ownerUserId) &&
+        String(m.user_id) !== String(ownerUserId)
+    );
+
   const loadInitialData = async (
     page = 1,
     searchFilters = {},
@@ -98,6 +108,18 @@ const ClientManagement = () => {
       const clientsRes = await clientApi.getClients(page, 200, searchFilters);
       const clientsData = clientsRes.data || [];
       setClients(clientsData);
+
+      // Company members, so additional users group under their owner
+      try {
+        const membersRes = await api.get(
+          "/v1/api/longtermhire/super_admin/company-members"
+        );
+        if (membersRes?.data && !membersRes.data.error) {
+          setCompanyMembers(membersRes.data.data || []);
+        }
+      } catch (e) {
+        // grouping is a nicety — never block the client list on it
+      }
 
       // Update pagination info
       if (clientsRes.pagination) {
@@ -460,8 +482,8 @@ const ClientManagement = () => {
                 </tr>
               ) : (
                 clients.map((client, index) => (
+                  <Fragment key={client.id}>
                   <tr
-                    key={client.id}
                     className={`${index < clients.length - 1
                       ? "border-b border-[#333333]"
                       : ""
@@ -548,6 +570,28 @@ const ClientManagement = () => {
                       </div>
                     </td>
                   </tr>
+                  {membersForOwner(client.user_id).map((m) => (
+                    <tr
+                      key={"member-" + m.id}
+                      className="border-b border-[#333333] bg-[#1A1A1B]"
+                    >
+                      <td colSpan={7} className="px-4 py-2">
+                        <div className="flex items-center gap-3 pl-10">
+                          <span className="text-[#555] text-[13px]">&#8627;</span>
+                          <span className="text-[#9CA3AF] font-[Inter] font-medium text-[13px]">
+                            {m.member_name}
+                          </span>
+                          <span className="text-[#6B7280] font-[Inter] text-[12px]">
+                            {m.member_email}
+                          </span>
+                          <span className="text-[#9CA3AF] font-[Inter] text-[11px] px-2 py-0.5 rounded-full bg-[#292A2B] border border-[#333333]">
+                            {m.role}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  </Fragment>
                 ))
               )}
             </tbody>
