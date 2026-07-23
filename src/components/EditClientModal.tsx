@@ -14,7 +14,10 @@ const EditClientModal = ({
     companyName: "",
     email: "",
     phone: "",
-    address: "",
+    street: "",
+    suburb: "",
+    state: "",
+    postcode: "",
   });
 
   // Update form data when client prop changes
@@ -25,7 +28,10 @@ const EditClientModal = ({
         companyName: client.company_name || "",
         email: client.email || "",
         phone: client.phone || "",
-        address: client.address || "",
+        street: client.street || "",
+        suburb: client.suburb || "",
+        state: client.state || "",
+        postcode: client.postcode || "",
       });
     }
   }, [client]);
@@ -52,12 +58,25 @@ const EditClientModal = ({
     e.preventDefault();
 
     // Prepare data for API
+    const postalAddress = [
+      formData.street,
+      formData.suburb,
+      formData.state,
+      formData.postcode,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
     const clientData = {
       client_name: formData.clientName,
       company_name: formData.companyName,
       email: formData.email,
       phone: formData.phone,
-      address: formData.address,
+      address: postalAddress,
+      street: formData.street,
+      suburb: formData.suburb,
+      state: formData.state,
+      postcode: formData.postcode,
     };
 
     try {
@@ -77,7 +96,10 @@ const EditClientModal = ({
         companyName: client.company_name || "",
         email: client.email || "",
         phone: client.phone || "",
-        address: client.address || "",
+        street: client.street || "",
+        suburb: client.suburb || "",
+        state: client.state || "",
+        postcode: client.postcode || "",
       });
     }
   };
@@ -95,7 +117,7 @@ const EditClientModal = ({
             {/* Client Name Field */}
             <div>
               <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
-                Client Name
+                Name
               </label>
               <input
                 type="text"
@@ -154,19 +176,71 @@ const EditClientModal = ({
             </div>
           </div>
 
-          {/* Address Field (Full Width) */}
+          {/* Postal Address */}
           <div>
             <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
-              Address
+              Street
             </label>
             <input
               type="text"
-              name="address"
-              value={formData.address}
+              name="street"
+              value={formData.street}
               onChange={handleInputChange}
               required
               className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors font-[Inter] text-base"
             />
+          </div>
+
+          <div className="grid grid-cols-3 gap-x-6">
+            <div>
+              <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
+                Suburb
+              </label>
+              <input
+                type="text"
+                name="suburb"
+                value={formData.suburb}
+                onChange={handleInputChange}
+                required
+                className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors font-[Inter] text-base"
+              />
+            </div>
+            <div>
+              <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
+                State
+              </label>
+              <select
+                name="state"
+                value={formData.state}
+                onChange={handleInputChange}
+                required
+                className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors font-[Inter] text-base"
+              >
+                <option value="">Select</option>
+                <option value="QLD">QLD</option>
+                <option value="NSW">NSW</option>
+                <option value="VIC">VIC</option>
+                <option value="SA">SA</option>
+                <option value="WA">WA</option>
+                <option value="TAS">TAS</option>
+                <option value="NT">NT</option>
+                <option value="ACT">ACT</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
+                Postcode
+              </label>
+              <input
+                type="text"
+                name="postcode"
+                value={formData.postcode}
+                onChange={handleInputChange}
+                maxLength={4}
+                required
+                className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors font-[Inter] text-base"
+              />
+            </div>
           </div>
 
           {/* Action Buttons */}
