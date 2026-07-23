@@ -229,14 +229,14 @@ const HireManagement = () => {
                                 <>
                                   <button
                                     onClick={() => setExpandedItem(isExpanded ? null : item.assignment_id)}
-                                    className="px-3 py-1.5 border border-[#4CAF50] rounded text-[#4CAF50] font-[Inter] font-bold text-[13px] hover:bg-[#4CAF50]/10 transition-colors"
+                                    className="px-3 py-1.5 border border-[#4CAF50] rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#3d9e43] transition-colors"
                                   >
                                     {isExpanded ? "Hide" : "View schedule"}
                                   </button>
                                   <button
                                     onClick={() => endHire(item.assignment_id, item.equipment_name)}
                                     disabled={startingId === item.assignment_id}
-                                    className="px-3 py-1.5 border border-[#ef4444] rounded text-[#ef4444] font-[Inter] font-bold text-[13px] hover:bg-[#ef4444]/10 disabled:opacity-50 transition-colors"
+                                    className="px-3 py-1.5 border border-[#ef4444] rounded bg-[#ef4444] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#d63a3a] disabled:opacity-50 transition-colors"
                                   >
                                     End Hire
                                   </button>
