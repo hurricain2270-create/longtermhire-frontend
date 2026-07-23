@@ -140,10 +140,10 @@ const HireManagement = () => {
   }
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="p-6">
       <div className="mb-6">
         <h1 className="text-[#E5E5E5] font-[Inter] font-bold text-[36px] leading-[1.11em] mb-1">Hire Management</h1>
-        <p className="text-[#9CA3AF] text-sm">Active equipment hires, invoiced to date, and forecast to end of term.</p>
+        <p className="text-[#9CA3AF] font-[Inter] text-sm mt-1">Active equipment hires, invoiced to date, and forecast to end of term.</p>
       </div>
 
       {Object.keys(grouped).length === 0 ? (
@@ -160,7 +160,7 @@ const HireManagement = () => {
               <div className="flex items-center justify-between px-4 py-3 border-b border-[#2A2A2A]">
                 <div>
                   <div className="text-[#FDCE06] font-semibold text-[15px]">{companyName}</div>
-                  <div className="text-[#9CA3AF] text-xs mt-0.5">{group.email} &nbsp;·&nbsp; {group.items.length} item(s) assigned</div>
+                  <div className="text-[#9CA3AF] font-[Inter] text-xs mt-0.5">{group.email} &nbsp;·&nbsp; {group.items.length} item(s) assigned</div>
                 </div>
                 <span className={"text-xs px-3 py-1 rounded-full font-medium border " + (activeItems.length > 0 ? "bg-[#1a3a1a] text-[#4CAF50] border-[#2d5a2d]" : "bg-[#3a2e00] text-[#FDCE06] border-[#5a4800]")}>
                   {activeItems.length > 0 ? "Active" : "Pending"}
@@ -221,7 +221,7 @@ const HireManagement = () => {
                                 <button
                                   onClick={() => startHire(item.assignment_id)}
                                   disabled={startingId === item.assignment_id}
-                                  className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-bold text-[13px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors"
+                                  className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors"
                                 >
                                   {startingId === item.assignment_id ? "Starting..." : "Start Hire"}
                                 </button>
@@ -229,14 +229,14 @@ const HireManagement = () => {
                                 <>
                                   <button
                                     onClick={() => setExpandedItem(isExpanded ? null : item.assignment_id)}
-                                    className="px-3 py-1.5 border border-[#4CAF50] rounded text-[#4CAF50] font-bold text-[13px] hover:bg-[#4CAF50]/10 transition-colors"
+                                    className="px-3 py-1.5 border border-[#4CAF50] rounded text-[#4CAF50] font-[Inter] font-bold text-[13px] hover:bg-[#4CAF50]/10 transition-colors"
                                   >
                                     {isExpanded ? "Hide" : "View schedule"}
                                   </button>
                                   <button
                                     onClick={() => endHire(item.assignment_id, item.equipment_name)}
                                     disabled={startingId === item.assignment_id}
-                                    className="px-3 py-1.5 border border-[#ef4444] rounded text-[#ef4444] font-bold text-[13px] hover:bg-[#ef4444]/10 disabled:opacity-50 transition-colors"
+                                    className="px-3 py-1.5 border border-[#ef4444] rounded text-[#ef4444] font-[Inter] font-bold text-[13px] hover:bg-[#ef4444]/10 disabled:opacity-50 transition-colors"
                                   >
                                     End Hire
                                   </button>
