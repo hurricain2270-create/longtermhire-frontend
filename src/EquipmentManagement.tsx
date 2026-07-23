@@ -514,7 +514,7 @@ const EquipmentManagement = () => {
                           </button>
                           <button
                             onClick={() => handleEditEquipment(item)}
-                            className="text-[#FDCE06] font-inter font-medium text-sm hover:underline transition-all"
+                            className="px-3 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] transition-colors"
                           >
                             Edit
                           </button>
