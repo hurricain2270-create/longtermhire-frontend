@@ -258,7 +258,6 @@ const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
               name="street"
               value={formData.street}
               onChange={handleInputChange}
-              placeholder="8 Shale Crt"
               required
               className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors font-[Inter] text-base"
             />
@@ -274,7 +273,6 @@ const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
                 name="suburb"
                 value={formData.suburb}
                 onChange={handleInputChange}
-                placeholder="Bli Bli"
                 required
                 className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors font-[Inter] text-base"
               />
@@ -310,7 +308,6 @@ const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
                 name="postcode"
                 value={formData.postcode}
                 onChange={handleInputChange}
-                placeholder="4560"
                 maxLength={4}
                 required
                 className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors font-[Inter] text-base"
