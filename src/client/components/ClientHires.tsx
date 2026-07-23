@@ -244,7 +244,7 @@ const ClientHires = ({ userRole = "member" }) => {
                         <tr className="text-[#666] text-xs">
                           <th className="text-left pb-2 font-medium">Month</th>
                           <th className="text-right pb-2 font-medium">Rate</th>
-                          <th className="text-right pb-2 font-medium whitespace-nowrap">Est. fees</th>
+                          <th className="text-right pb-2 font-medium whitespace-nowrap">Additional est. fees</th>
                           <th className="text-right pb-2 font-medium">Running total</th>
                           <th className="text-right pb-2 font-medium w-24">Status</th>
                         </tr>
