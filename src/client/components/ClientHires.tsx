@@ -40,6 +40,14 @@ const ClientHires = ({ userRole = "member" }) => {
     return "$" + num.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
   };
 
+  // Calendar month label once a hire has a real start date
+  const monthLabel = (startDate, monthNumber) => {
+    if (!startDate) return "Month " + monthNumber;
+    const d = new Date(startDate);
+    const target = new Date(d.getFullYear(), d.getMonth() + (monthNumber - 1), 1);
+    return target.toLocaleDateString("en-AU", { month: "long", year: "numeric" });
+  };
+
   const monthsBetween = (start, end) => {
     if (!start) return 0;
     const s = new Date(start);
@@ -161,7 +169,9 @@ const ClientHires = ({ userRole = "member" }) => {
                 <div className="mb-4">
                   <div className="flex justify-between text-xs text-[#9CA3AF] mb-1.5">
                     <span>
-                      Month {Math.min(monthsIn + (isCompleted ? 0 : 1), months)} of {months}
+                      {monthLabel(h.hire_start_date, Math.min(monthsIn + (isCompleted ? 0 : 1), months))}
+                      {" · "}
+                      {Math.min(monthsIn + (isCompleted ? 0 : 1), months)} of {months}
                     </span>
                     <span>{progressPct}%</span>
                   </div>
@@ -222,7 +232,7 @@ const ClientHires = ({ userRole = "member" }) => {
                       <tbody>
                         {withCumulative.map((r) => (
                           <tr key={r.month} className="border-t border-[#222]">
-                            <td className="py-1.5 text-[#9CA3AF]">Month {r.month}</td>
+                            <td className="py-1.5 text-[#9CA3AF] whitespace-nowrap">{monthLabel(h.hire_start_date, r.month)}</td>
                             <td className="py-1.5 text-right text-[#E5E5E5]">{fmt(r.price)}</td>
                             <td className="py-1.5 text-right text-[#E5E5E5]">{fmt(r.cumulative)}</td>
                             <td className="py-1.5 text-right">
