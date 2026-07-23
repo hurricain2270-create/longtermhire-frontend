@@ -5,78 +5,40 @@ import "react-toastify/dist/ReactToastify.css";
 import ClipLoader from "react-spinners/ClipLoader";
 import api from "./services/api";
 
-const fmt = (n) => {
-  const num = parseFloat(n || 0);
-  const cents = Math.round(num * 100);
-  const dollars = Math.floor(Math.abs(cents) / 100);
-  const centsStr = String(Math.abs(cents) % 100).padStart(2, "0");
-  const dollarsStr = String(dollars).split("").reverse().reduce((acc, d, i) => {
-    return d + (i > 0 && i % 3 === 0 ? "," : "") + acc;
-  }, "");
-  return (num < 0 ? "-$" : "$") + dollarsStr + "." + centsStr;
-};
-
-const monthsBetween = (start) => {
-  if (!start) return 0;
-  const s = new Date(start);
-  const now = new Date();
-  return Math.max(0, (now.getFullYear() - s.getFullYear()) * 12 + (now.getMonth() - s.getMonth()));
-};
-
-const calcSchedule = (basePrice, discount, discountType, compDiscount, compDiscountType, months) => {
-  let price = parseFloat(basePrice || 0);
-  const disc = parseFloat(discount || 0);
-  const comp = parseFloat(compDiscount || 0);
-  const total = parseInt(months || 12);
-
-  if (discountType === "%" || discountType === "percentage") {
-    price = price - (price * disc / 100);
-  } else {
-    price = price - disc;
-  }
-
-  let cumulative = 0;
-  const schedule = [];
-  for (let m = 1; m <= total; m++) {
-    cumulative += price;
-    schedule.push({ month: m, price: parseFloat(price.toFixed(2)), cumulative: parseFloat(cumulative.toFixed(2)) });
-    if (comp > 0) {
-      if (compDiscountType === "%" || compDiscountType === "percentage") {
-        price = price - (price * comp / 100);
-      } else {
-        price = price - comp;
-      }
-    }
-  }
-  return schedule;
-};
-
 const HireManagement = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [startingId, setStartingId] = useState(null);
   const [expandedItem, setExpandedItem] = useState(null);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const loadData = async () => {
-    setLoading(true);
     try {
+      setLoading(true);
+      setError(null);
       const res = await api.get("/v1/api/longtermhire/super_admin/hire-management");
-      if (!res.data.error) setData(res.data.data || []);
+      if (res && res.data && !res.data.error) {
+        setData(res.data.data || []);
+      } else {
+        setError("Failed to load hire data");
+      }
     } catch (e) {
-      toast.error("Failed to load hire data");
+      console.error("Hire management error:", e);
+      setError(e.message || "Failed to load hire data");
     } finally {
       setLoading(false);
     }
   };
 
   const startHire = async (assignmentId) => {
-    setStartingId(assignmentId);
     try {
-      await api.post(`/v1/api/longtermhire/super_admin/start-hire/${assignmentId}`, {
-        start_date: new Date().toISOString().slice(0, 10)
-      });
+      setStartingId(assignmentId);
+      const today = new Date().toISOString().slice(0, 10);
+      await api.post("/v1/api/longtermhire/super_admin/start-hire/" + assignmentId, { start_date: today });
       toast.success("Hire started");
       loadData();
     } catch (e) {
@@ -86,18 +48,78 @@ const HireManagement = () => {
     }
   };
 
+  const fmt = (n) => {
+    try {
+      const num = parseFloat(n || 0);
+      return "$" + num.toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, "$1,");
+    } catch (e) {
+      return "$0.00";
+    }
+  };
+
+  const monthsBetween = (start) => {
+    if (!start) return 0;
+    try {
+      const s = new Date(start);
+      const now = new Date();
+      return Math.max(0, (now.getFullYear() - s.getFullYear()) * 12 + (now.getMonth() - s.getMonth()));
+    } catch (e) {
+      return 0;
+    }
+  };
+
+  const calcMonthlyPrice = (basePrice, discount, discountType, compDiscount, compDiscountType, month) => {
+    try {
+      let price = parseFloat(basePrice || 0);
+      const disc = parseFloat(discount || 0);
+      const comp = parseFloat(compDiscount || 0);
+      if (discountType === "%" || discountType === "percentage") {
+        price = price - (price * disc / 100);
+      } else if (disc > 0) {
+        price = price - disc;
+      }
+      for (let i = 1; i < month; i++) {
+        if (comp > 0) {
+          if (compDiscountType === "%" || compDiscountType === "percentage") {
+            price = price - (price * comp / 100);
+          } else {
+            price = price - comp;
+          }
+        }
+      }
+      return Math.max(0, price);
+    } catch (e) {
+      return 0;
+    }
+  };
+
   // Group by company
-  const grouped = data.reduce((acc, item) => {
-    const key = item.company_name;
-    if (!acc[key]) acc[key] = { email: item.email, items: [] };
-    acc[key].items.push(item);
-    return acc;
-  }, {});
+  const grouped = {};
+  if (Array.isArray(data)) {
+    data.forEach((item) => {
+      const key = item.company_name || "Unknown";
+      if (!grouped[key]) grouped[key] = { email: item.email, items: [] };
+      grouped[key].items.push(item);
+    });
+  }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <ClipLoader color="#FDCE06" size={40} />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <div className="bg-[#1F1F20] border border-[#333] rounded-lg p-6 text-center">
+          <p className="text-red-400 mb-3">{error}</p>
+          <button onClick={loadData} className="px-4 py-2 bg-[#FDCE06] text-[#1F1F20] rounded font-bold text-sm">
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
@@ -113,166 +135,134 @@ const HireManagement = () => {
         <div className="bg-[#1F1F20] border border-[#333] rounded-lg p-8 text-center text-[#9CA3AF]">
           No equipment assigned to clients yet.
         </div>
-      ) : Object.entries(grouped).map(([companyName, group]) => {
-        const activeItems = group.items.filter(i => i.hire_status === "active");
-        const totalInvoiced = activeItems.reduce((sum, item) => {
-          const months = monthsBetween(item.hire_start_date);
-          const schedule = calcSchedule(item.custom_base_price || item.base_price, item.discount, item.discount_type, item.compounding_discount, item.compounding_discount_type, item.produce_quote_for || 12);
-          return sum + (schedule.slice(0, months).reduce((s, r) => s + r.price, 0));
-        }, 0);
-        const totalForecast = activeItems.reduce((sum, item) => {
-          const schedule = calcSchedule(item.custom_base_price || item.base_price, item.discount, item.discount_type, item.compounding_discount, item.compounding_discount_type, item.produce_quote_for || 12);
-          return sum + (schedule[schedule.length - 1]?.cumulative || 0);
-        }, 0);
-        const thisMonth = activeItems.reduce((sum, item) => {
-          const months = monthsBetween(item.hire_start_date);
-          const schedule = calcSchedule(item.custom_base_price || item.base_price, item.discount, item.discount_type, item.compounding_discount, item.compounding_discount_type, item.produce_quote_for || 12);
-          return sum + (schedule[months]?.price || schedule[0]?.price || 0);
-        }, 0);
+      ) : (
+        Object.entries(grouped).map(([companyName, group]) => {
+          const activeItems = group.items.filter((i) => i.hire_status === "active");
+          const termMonths = 12;
 
-        return (
-          <div key={companyName} className="bg-[#1F1F20] border border-[#333] rounded-lg overflow-hidden mb-6">
-            {/* Client header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-[#2A2A2A]">
-              <div>
-                <div className="text-[#FDCE06] font-[Inter] font-semibold text-[15px]">{companyName}</div>
-                <div className="text-[#9CA3AF] text-xs mt-0.5">{group.email} &nbsp;·&nbsp; {group.items.length} {group.items.length === 1 ? "item" : "items"} assigned</div>
+          return (
+            <div key={companyName} className="bg-[#1F1F20] border border-[#333] rounded-lg overflow-hidden mb-6">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-[#2A2A2A]">
+                <div>
+                  <div className="text-[#FDCE06] font-semibold text-[15px]">{companyName}</div>
+                  <div className="text-[#9CA3AF] text-xs mt-0.5">{group.email} &nbsp;·&nbsp; {group.items.length} item(s) assigned</div>
+                </div>
+                <span className={"text-xs px-3 py-1 rounded-full font-medium border " + (activeItems.length > 0 ? "bg-[#1a3a1a] text-[#4CAF50] border-[#2d5a2d]" : "bg-[#3a2e00] text-[#FDCE06] border-[#5a4800]")}>
+                  {activeItems.length > 0 ? "Active" : "Pending"}
+                </span>
               </div>
-              <span className={`text-xs px-3 py-1 rounded-full font-medium border ${activeItems.length > 0 ? "bg-[#1a3a1a] text-[#4CAF50] border-[#2d5a2d]" : "bg-[#3a2e00] text-[#FDCE06] border-[#5a4800]"}`}>
-                {activeItems.length > 0 ? "Active" : "Pending"}
-              </span>
-            </div>
 
-            {/* Summary stats */}
-            {activeItems.length > 0 && (
-              <div className="grid grid-cols-4 border-b border-[#2A2A2A]">
-                {[
-                  { label: "Invoiced to date", value: fmt(totalInvoiced), color: "#4CAF50" },
-                  { label: "This month", value: fmt(thisMonth), color: "#E5E5E5" },
-                  { label: "Forecast to term end", value: fmt(totalForecast), color: "#FDCE06" },
-                  { label: "Items on hire", value: activeItems.length.toString(), color: "#E5E5E5" },
-                ].map((s, i) => (
-                  <div key={i} className={`px-4 py-3 ${i < 3 ? "border-r border-[#2A2A2A]" : ""}`}>
-                    <div className="text-[#9CA3AF] text-[11px] mb-1">{s.label}</div>
-                    <div className="text-[16px] font-medium" style={{ color: s.color }}>{s.value}</div>
-                  </div>
-                ))}
-              </div>
-            )}
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-[#2A2A2A]">
+                    <th className="text-left px-4 py-2.5 text-xs font-medium text-[#9CA3AF] w-[25%]">Equipment</th>
+                    <th className="text-left px-4 py-2.5 text-xs font-medium text-[#9CA3AF] w-[10%]">ID</th>
+                    <th className="text-left px-4 py-2.5 text-xs font-medium text-[#9CA3AF] w-[12%]">Start date</th>
+                    <th className="text-left px-4 py-2.5 text-xs font-medium text-[#9CA3AF] w-[18%]">Progress</th>
+                    <th className="text-right px-4 py-2.5 text-xs font-medium text-[#9CA3AF] w-[15%]">Month 1 rate</th>
+                    <th className="text-right px-4 py-2.5 text-xs font-medium text-[#9CA3AF] w-[20%]"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {group.items.map((item) => {
+                    const bp = parseFloat(item.custom_base_price || item.base_price || 0);
+                    const months = parseInt(item.produce_quote_for || termMonths);
+                    const monthsIn = monthsBetween(item.hire_start_date);
+                    const clampedMonths = Math.min(monthsIn, months);
+                    const progressPct = months > 0 ? Math.min(100, Math.round((clampedMonths / months) * 100)) : 0;
+                    const isActive = item.hire_status === "active";
+                    const isExpanded = expandedItem === item.assignment_id;
+                    const month1Price = calcMonthlyPrice(bp, item.discount, item.discount_type, item.compounding_discount, item.compounding_discount_type, 1);
 
-            {/* Equipment rows */}
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-[#2A2A2A]">
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-[#9CA3AF] w-[22%]">Equipment</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-[#9CA3AF] w-[8%]">ID</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-[#9CA3AF] w-[12%]">Start date</th>
-                  <th className="text-left px-4 py-2.5 text-xs font-medium text-[#9CA3AF] w-[16%]">Progress</th>
-                  <th className="text-right px-4 py-2.5 text-xs font-medium text-[#9CA3AF] w-[12%]">Month 1 rate</th>
-                  <th className="text-right px-4 py-2.5 text-xs font-medium text-[#9CA3AF] w-[12%]">Invoiced</th>
-                  <th className="text-right px-4 py-2.5 text-xs font-medium text-[#9CA3AF] w-[12%]">Forecast total</th>
-                  <th className="text-right px-4 py-2.5 text-xs font-medium text-[#9CA3AF] w-[14%]"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {group.items.map((item) => {
-                  const termMonths = parseInt(item.produce_quote_for || 12);
-                  const schedule = calcSchedule(item.custom_base_price || item.base_price, item.discount, item.discount_type, item.compounding_discount, item.compounding_discount_type, termMonths);
-                  const monthsIn = monthsBetween(item.hire_start_date);
-                  const clampedMonths = Math.min(monthsIn, termMonths);
-                  const invoiced = schedule.slice(0, clampedMonths).reduce((s, r) => s + r.price, 0);
-                  const forecast = schedule[schedule.length - 1]?.cumulative || 0;
-                  const progressPct = termMonths > 0 ? Math.min(100, Math.round((clampedMonths / termMonths) * 100)) : 0;
-                  const isActive = item.hire_status === "active";
-                  const isExpanded = expandedItem === item.assignment_id;
-
-                  return (
-                    <React.Fragment key={item.assignment_id}>
-                      <tr className="border-b border-[#1a1a1a] last:border-0">
-                        <td className="px-4 py-3 text-sm font-medium" style={{ color: isActive ? "#E5E5E5" : "#666" }}>{item.equipment_name}</td>
-                        <td className="px-4 py-3 text-xs text-[#9CA3AF]">{item.equip_code}</td>
-                        <td className="px-4 py-3 text-sm text-[#9CA3AF]">
-                          {item.hire_start_date ? new Date(item.hire_start_date).toLocaleDateString("en-AU") : <span className="text-[#666]">—</span>}
-                        </td>
-                        <td className="px-4 py-3">
-                          {isActive ? (
-                            <>
-                              <div className="text-[11px] text-[#9CA3AF] mb-1">{clampedMonths} of {termMonths} months</div>
-                              <div className="bg-[#2A2A2A] rounded h-1.5 w-full">
-                                <div className="h-1.5 rounded" style={{ width: `${progressPct}%`, background: progressPct >= 75 ? "#FDCE06" : "#4CAF50" }} />
+                    return (
+                      <React.Fragment key={item.assignment_id}>
+                        <tr className="border-b border-[#1a1a1a] last:border-0">
+                          <td className="px-4 py-3 text-sm font-medium" style={{ color: isActive ? "#E5E5E5" : "#666" }}>{item.equipment_name}</td>
+                          <td className="px-4 py-3 text-xs text-[#9CA3AF]">{item.equip_code}</td>
+                          <td className="px-4 py-3 text-sm text-[#9CA3AF]">
+                            {item.hire_start_date ? new Date(item.hire_start_date).toLocaleDateString("en-AU") : <span className="text-[#666]">—</span>}
+                          </td>
+                          <td className="px-4 py-3">
+                            {isActive ? (
+                              <div>
+                                <div className="text-[11px] text-[#9CA3AF] mb-1">{clampedMonths} of {months} months</div>
+                                <div className="bg-[#2A2A2A] rounded h-1.5 w-full">
+                                  <div className="h-1.5 rounded" style={{ width: progressPct + "%", background: progressPct >= 75 ? "#FDCE06" : "#4CAF50" }} />
+                                </div>
                               </div>
-                            </>
-                          ) : (
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-[#3a2e00] text-[#FDCE06] border border-[#5a4800]">Not started</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 text-sm text-right text-[#E5E5E5]">{fmt(schedule[0]?.price || 0)}</td>
-                        <td className="px-4 py-3 text-sm text-right" style={{ color: isActive ? "#4CAF50" : "#666" }}>{isActive ? fmt(invoiced) : "—"}</td>
-                        <td className="px-4 py-3 text-sm text-right" style={{ color: isActive ? "#FDCE06" : "#666" }}>{isActive ? fmt(forecast) : "—"}</td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex gap-2 justify-end">
-                            {!isActive ? (
-                              <button
-                                onClick={() => startHire(item.assignment_id)}
-                                disabled={startingId === item.assignment_id}
-                                className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors"
-                              >
-                                {startingId === item.assignment_id ? "Starting..." : "Start Hire"}
-                              </button>
                             ) : (
-                              <button
-                                onClick={() => setExpandedItem(isExpanded ? null : item.assignment_id)}
-                                className="px-3 py-1.5 border border-[#4CAF50] rounded text-[#4CAF50] font-[Inter] font-bold text-[13px] hover:bg-[#4CAF50]/10 transition-colors"
-                              >
-                                {isExpanded ? "Hide" : "View"}
-                              </button>
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-[#3a2e00] text-[#FDCE06] border border-[#5a4800]">Not started</span>
                             )}
-                          </div>
-                        </td>
-                      </tr>
-                      {isExpanded && (
-                        <tr>
-                          <td colSpan={8} className="px-4 pb-4 bg-[#181818]">
-                            <div className="pt-3">
-                              <div className="text-[#9CA3AF] text-xs mb-2 font-medium">Month-by-month schedule</div>
-                              <table className="w-full text-xs">
-                                <thead>
-                                  <tr>
-                                    <th className="text-left text-[#666] pb-1 w-20">Month</th>
-                                    <th className="text-right text-[#666] pb-1">Monthly rate</th>
-                                    <th className="text-right text-[#666] pb-1">Accumulative</th>
-                                    <th className="text-right text-[#666] pb-1 w-20">Status</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {schedule.map((row) => (
-                                    <tr key={row.month}>
-                                      <td className="py-0.5 text-[#9CA3AF]">Month {row.month}</td>
-                                      <td className="py-0.5 text-right text-[#E5E5E5]">{fmt(row.price)}</td>
-                                      <td className="py-0.5 text-right text-[#E5E5E5]">{fmt(row.cumulative)}</td>
-                                      <td className="py-0.5 text-right">
-                                        {row.month <= clampedMonths ? (
-                                          <span className="text-[#4CAF50]">Invoiced</span>
-                                        ) : (
-                                          <span className="text-[#666]">Forecast</span>
-                                        )}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
+                          </td>
+                          <td className="px-4 py-3 text-sm text-right text-[#E5E5E5]">{fmt(month1Price)}</td>
+                          <td className="px-4 py-3 text-right">
+                            <div className="flex gap-2 justify-end">
+                              {!isActive ? (
+                                <button
+                                  onClick={() => startHire(item.assignment_id)}
+                                  disabled={startingId === item.assignment_id}
+                                  className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-bold text-[13px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors"
+                                >
+                                  {startingId === item.assignment_id ? "Starting..." : "Start Hire"}
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => setExpandedItem(isExpanded ? null : item.assignment_id)}
+                                  className="px-3 py-1.5 border border-[#4CAF50] rounded text-[#4CAF50] font-bold text-[13px] hover:bg-[#4CAF50]/10 transition-colors"
+                                >
+                                  {isExpanded ? "Hide" : "View schedule"}
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        );
-      })}
+                        {isExpanded && (
+                          <tr>
+                            <td colSpan={6} className="px-4 pb-4 bg-[#181818]">
+                              <div className="pt-3">
+                                <div className="text-[#9CA3AF] text-xs mb-2 font-medium uppercase tracking-wide">Month-by-month schedule</div>
+                                <table className="w-full text-xs">
+                                  <thead>
+                                    <tr>
+                                      <th className="text-left text-[#666] pb-1 w-20">Month</th>
+                                      <th className="text-right text-[#666] pb-1">Monthly rate</th>
+                                      <th className="text-right text-[#666] pb-1">Accumulative</th>
+                                      <th className="text-right text-[#666] pb-1 w-24">Status</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {Array.from({ length: months }, (_, i) => {
+                                      const m = i + 1;
+                                      const price = calcMonthlyPrice(bp, item.discount, item.discount_type, item.compounding_discount, item.compounding_discount_type, m);
+                                      const cumulative = Array.from({ length: m }, (_, j) =>
+                                        calcMonthlyPrice(bp, item.discount, item.discount_type, item.compounding_discount, item.compounding_discount_type, j + 1)
+                                      ).reduce((a, b) => a + b, 0);
+                                      return (
+                                        <tr key={m}>
+                                          <td className="py-0.5 text-[#9CA3AF]">Month {m}</td>
+                                          <td className="py-0.5 text-right text-[#E5E5E5]">{fmt(price)}</td>
+                                          <td className="py-0.5 text-right text-[#E5E5E5]">{fmt(cumulative)}</td>
+                                          <td className="py-0.5 text-right">
+                                            {m <= clampedMonths ? <span className="text-[#4CAF50]">Invoiced</span> : <span className="text-[#666]">Forecast</span>}
+                                          </td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          );
+        })
+      )}
 
       <ToastContainer position="top-right" autoClose={3000} theme="dark" />
     </div>
