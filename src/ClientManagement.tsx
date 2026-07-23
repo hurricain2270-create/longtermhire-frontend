@@ -504,6 +504,11 @@ const ClientManagement = () => {
                     </td>
                     <td className="text-[#E5E5E5] font-[Inter] font-medium text-[14px] leading-[1.21em] px-4 py-4">
                       {client.client_name}
+                      {!client.invited_at ? (
+                        <span className="block mt-1 text-[11px] text-[#FDCE06] font-[Inter] font-normal">
+                          Not yet invited
+                        </span>
+                      ) : null}
                     </td>
                     <td className="text-[#E5E5E5] font-[Inter] font-normal text-[14px] leading-[1.21em] px-4 py-4">
                       {client.email}
@@ -573,9 +578,18 @@ const ClientManagement = () => {
                         </button>
                         <button
                           onClick={() => handleResendInvitation(client)}
-                          className="text-[#FDCE06] font-[Inter] font-medium text-[14px] leading-[1.43em] hover:underline transition-all"
+                          title={
+                            client.invited_at
+                              ? "Reset password and email new login details"
+                              : "Send this client their login details for the first time"
+                          }
+                          className={
+                            client.invited_at
+                              ? "text-[#9CA3AF] font-[Inter] font-medium text-[14px] leading-[1.43em] hover:underline transition-all"
+                              : "px-3 py-1 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] transition-all"
+                          }
                         >
-                          Resend
+                          {client.invited_at ? "Resend" : "Send invite"}
                         </button>
                       </div>
                     </td>
