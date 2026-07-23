@@ -14,6 +14,7 @@ import ContentManagement from "./ContentManagement";
 import ContentDetails from "./ContentDetails";
 import QuoteManagement from "./QuoteManagement";
 import HireManagement from "./HireManagement";
+import Reporting from "./Reporting";
 import Profile from "./Profile";
 import Chat from "./components/Chat";
 import PrivateRoute from "./components/PrivateRoute";
@@ -156,6 +157,16 @@ function App() {
             <PrivateRoute allowedRoles={["super_admin"]}>
               <DashboardLayout>
                 <HireManagement />
+              </DashboardLayout>
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/reporting"
+          element={
+            <PrivateRoute allowedRoles={["super_admin"]}>
+              <DashboardLayout>
+                <Reporting />
               </DashboardLayout>
             </PrivateRoute>
           }
