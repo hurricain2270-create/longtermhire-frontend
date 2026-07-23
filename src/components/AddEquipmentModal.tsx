@@ -8,6 +8,7 @@ const AddEquipmentModal = ({ isOpen, onClose, onSave }) => {
     equipmentName: "",
     basePrice: "",
     minimumDuration: "3",
+    ownershipStatus: "owned",
     position: "",
     description: "",
   });
@@ -112,6 +113,7 @@ const AddEquipmentModal = ({ isOpen, onClose, onSave }) => {
     onSave({
       ...formData,
       availability: true,
+      ownership_status: formData.ownershipStatus,
       // equipmentId intentionally omitted — backend auto-generates it
       // using the category's first letter + sequential number (e.g. E001, S001)
     });
@@ -122,6 +124,7 @@ const AddEquipmentModal = ({ isOpen, onClose, onSave }) => {
       equipmentName: "",
       basePrice: "",
       minimumDuration: "3",
+    ownershipStatus: "owned",
       position: "",
       description: "",
     });
@@ -357,6 +360,24 @@ const AddEquipmentModal = ({ isOpen, onClose, onSave }) => {
                 Months
               </span>
             </div>
+          </div>
+
+          {/* Ownership Field */}
+          <div>
+            <label className="block text-[#D1D5DB] font-[Inter] font-medium text-[14px] leading-[20px] mb-2">
+              Ownership
+            </label>
+            <select
+              value={formData.ownershipStatus}
+              onChange={(e) => handleInputChange("ownershipStatus", e.target.value)}
+              className="w-full h-[46px] bg-[#292A2B] border border-[#333333] rounded-[6px] text-[#E5E5E5] text-[16px] font-[Inter] px-3 outline-none focus:border-[#FDCE06] transition-colors"
+            >
+              <option value="owned">Owned</option>
+              <option value="prospective">Not purchased yet</option>
+            </select>
+            <p className="text-[#6B7280] font-[Inter] text-[12px] mt-1">
+              Internal only. Clients never see this.
+            </p>
           </div>
 
           {/* Position Field */}
