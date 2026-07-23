@@ -195,7 +195,7 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
                             </div>
                         </div>
                     ) : quoteData ? (
-                        <PDFViewer width="100%" height="100%" className="border-none">
+                        <PDFViewer showToolbar={false} width="100%" height="100%" className="border-none">
                             <QuotePDF quoteData={quoteData} />
                         </PDFViewer>
                     ) : (
