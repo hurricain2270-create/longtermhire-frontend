@@ -60,6 +60,21 @@ const Chat = () => {
     } = useChat((newMessages) => {
         // Check if any of the new messages are from clients (not from current admin)
         const currentUserId = parseInt(localStorage.getItem("userId"));
+        const hasClientMessages = newMessages.some(
+            (msg) => parseInt(msg.from_user_id) !== currentUserId
+        );
+
+        if (hasClientMessages) {
+            console.log("📨 New client messages from polling - setting unread flag");
+            setHasUnreadFromPolling(true);
+        }
+    });
+
+    // Use global online status
+    const { adminOnline, adminStatus } = useOnlineStatus();
+
+    // Get current admin user ID
+    const currentUserId = parseInt(localStorage.getItem("userId"));
 
   // Which company each person belongs to, so names aren't ambiguous
   const [companyByUser, setCompanyByUser] = useState({});
@@ -80,21 +95,6 @@ const Chat = () => {
     })();
   }, []);
   const whoIs = (uid) => companyByUser[String(uid)];
-        const hasClientMessages = newMessages.some(
-            (msg) => parseInt(msg.from_user_id) !== currentUserId
-        );
-
-        if (hasClientMessages) {
-            console.log("📨 New client messages from polling - setting unread flag");
-            setHasUnreadFromPolling(true);
-        }
-    });
-
-    // Use global online status
-    const { adminOnline, adminStatus } = useOnlineStatus();
-
-    // Get current admin user ID
-    const currentUserId = parseInt(localStorage.getItem("userId"));
 
     // Filter conversations based on search query
     const filteredConversations = conversations.filter((conversation) =>
