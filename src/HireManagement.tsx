@@ -14,6 +14,7 @@ const HireManagement = () => {
   const [invoices, setInvoices] = useState({});
   const [owingEdits, setOwingEdits] = useState({});
   const [savingInvoice, setSavingInvoice] = useState(null);
+  const [confirmAction, setConfirmAction] = useState(null);
 
   useEffect(() => {
     loadData();
@@ -52,7 +53,6 @@ const HireManagement = () => {
   };
 
   const endHire = async (assignmentId, equipmentName) => {
-    if (!window.confirm("End the hire for " + equipmentName + "? Invoicing stops from today. This cannot be undone from this page.")) return;
     try {
       setStartingId(assignmentId);
       const today = new Date().toISOString().slice(0, 10);
@@ -67,7 +67,6 @@ const HireManagement = () => {
   };
 
   const restartHire = async (assignmentId, equipmentName) => {
-    if (!window.confirm("Restart the hire for " + equipmentName + "? It will resume from the original start date and invoicing continues.")) return;
     try {
       setStartingId(assignmentId);
       await api.post("/v1/api/longtermhire/super_admin/restart-hire/" + assignmentId, {});
@@ -81,7 +80,6 @@ const HireManagement = () => {
   };
 
   const deleteHire = async (assignmentId, equipmentName) => {
-    if (!window.confirm("Delete the hire record for " + equipmentName + "?\n\nThis permanently removes all logged invoices and payment history for this hire, and resets it to Not started. This cannot be undone.")) return;
     try {
       setStartingId(assignmentId);
       await api.post("/v1/api/longtermhire/super_admin/delete-hire/" + assignmentId, {});
@@ -134,6 +132,15 @@ const HireManagement = () => {
     } finally {
       setSavingInvoice(null);
     }
+  };
+
+  const runConfirmedAction = () => {
+    if (!confirmAction) return;
+    const { type, assignmentId, equipmentName } = confirmAction;
+    setConfirmAction(null);
+    if (type === "end") endHire(assignmentId, equipmentName);
+    else if (type === "restart") restartHire(assignmentId, equipmentName);
+    else if (type === "delete") deleteHire(assignmentId, equipmentName);
   };
 
   const fmt = (n) => {
@@ -309,14 +316,14 @@ const HireManagement = () => {
                                     {isExpanded ? "Hide" : "View schedule"}
                                   </button>
                                   <button
-                                    onClick={() => restartHire(item.assignment_id, item.equipment_name)}
+                                    onClick={() => setConfirmAction({ type: "restart", assignmentId: item.assignment_id, equipmentName: item.equipment_name })}
                                     disabled={startingId === item.assignment_id}
                                     className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors"
                                   >
                                     {startingId === item.assignment_id ? "..." : "Restart Hire"}
                                   </button>
                                   <button
-                                    onClick={() => deleteHire(item.assignment_id, item.equipment_name)}
+                                    onClick={() => { loadInvoices(item.assignment_id); setConfirmAction({ type: "delete", assignmentId: item.assignment_id, equipmentName: item.equipment_name }); }}
                                     disabled={startingId === item.assignment_id}
                                     className="px-3 py-1.5 border border-[#ef4444] rounded bg-[#ef4444] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#d63a3a] disabled:opacity-50 transition-colors"
                                   >
@@ -340,7 +347,7 @@ const HireManagement = () => {
                                     {isExpanded ? "Hide" : "View schedule"}
                                   </button>
                                   <button
-                                    onClick={() => endHire(item.assignment_id, item.equipment_name)}
+                                    onClick={() => setConfirmAction({ type: "end", assignmentId: item.assignment_id, equipmentName: item.equipment_name })}
                                     disabled={startingId === item.assignment_id}
                                     className="px-3 py-1.5 border border-[#ef4444] rounded bg-[#ef4444] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#d63a3a] disabled:opacity-50 transition-colors"
                                   >
@@ -446,6 +453,68 @@ const HireManagement = () => {
           );
         })
       )}
+
+      {/* Confirmation Modal */}
+      {confirmAction && (() => {
+        const invCount = Object.keys(invoices[confirmAction.assignmentId] || {}).length;
+        const cfg = {
+          end: {
+            title: "End hire",
+            body: "Invoicing for " + confirmAction.equipmentName + " will stop from today. The hire is marked completed and its schedule stays viewable.",
+            note: null,
+            label: "End hire",
+            btn: "bg-[#ef4444] hover:bg-[#d63a3a] border-[#ef4444]",
+          },
+          restart: {
+            title: "Restart hire",
+            body: confirmAction.equipmentName + " will resume from its original start date and invoicing continues. Logged invoices and payments are kept.",
+            note: null,
+            label: "Restart hire",
+            btn: "bg-[#FDCE06] hover:bg-[#E5B800] border-[#FDCE06]",
+          },
+          delete: {
+            title: "Delete hire record",
+            body: "This permanently removes the hire history for " + confirmAction.equipmentName + " and resets it to Not started. The equipment stays assigned to the client.",
+            note: invCount > 0
+              ? invCount + " logged invoice" + (invCount === 1 ? "" : "s") + " and all payment records will be deleted. This cannot be undone."
+              : "This cannot be undone.",
+            label: "Delete hire",
+            btn: "bg-[#ef4444] hover:bg-[#d63a3a] border-[#ef4444]",
+          },
+        }[confirmAction.type];
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
+            <div className="bg-[#1F1F20] border border-[#333] rounded-lg w-full max-w-md">
+              <div className="px-5 py-4 border-b border-[#333]">
+                <h3 className="text-[#E5E5E5] font-[Inter] font-bold text-[18px]">{cfg.title}</h3>
+              </div>
+              <div className="px-5 py-4">
+                <p className="text-[#9CA3AF] font-[Inter] text-sm leading-relaxed">{cfg.body}</p>
+                {cfg.note && (
+                  <div className="mt-3 px-3 py-2 rounded bg-[#2a1616] border border-[#5a2d2d]">
+                    <p className="text-[#ef4444] font-[Inter] text-xs leading-relaxed">{cfg.note}</p>
+                  </div>
+                )}
+              </div>
+              <div className="px-5 py-4 border-t border-[#333] flex justify-end gap-3">
+                <button
+                  onClick={() => setConfirmAction(null)}
+                  className="px-4 py-1.5 border border-[#444] rounded text-[#E5E5E5] font-[Inter] font-bold text-[13px] hover:border-[#666] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={runConfirmedAction}
+                  className={"px-4 py-1.5 border rounded text-[#1F1F20] font-[Inter] font-bold text-[13px] transition-colors " + cfg.btn}
+                >
+                  {cfg.label}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       <ToastContainer position="top-right" autoClose={3000} theme="dark" />
     </div>
