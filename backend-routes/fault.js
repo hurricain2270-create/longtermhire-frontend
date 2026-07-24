@@ -1,5 +1,7 @@
 const TokenMiddleware = require("../../../baas/middleware/TokenMiddleware");
 const RoleMiddleware = require("../middleware/RoleMiddleware");
+const UploadService = require("../../../baas/services/UploadService");
+const { getLocalPath } = require("../../../baas/services/UtilService");
 
 module.exports = function (app) {
   const sdkFor = () => {
@@ -79,12 +81,35 @@ module.exports = function (app) {
     );
   }
 
+  // Photo upload for faults — same S3 path chat already uses
+  app.post("/v1/api/longtermhire/client/fault-upload", TokenMiddleware(), function (req, res) {
+    const config = app.get("configuration");
+    const uploadMiddleware = config.upload_type === "s3"
+      ? UploadService.s3_upload().single("file")
+      : UploadService.local_upload().single("file");
+
+    uploadMiddleware(req, res, function (err) {
+      if (err) {
+        console.error("Fault photo upload error:", err);
+        return res.status(500).json({ error: true, message: "Upload failed: " + err.message });
+      }
+      if (!req.file) {
+        return res.status(400).json({ error: true, message: "No file uploaded" });
+      }
+      const fileUrl = config.upload_type === "s3" ? req.file.location : getLocalPath(req.file.path);
+      return res.status(200).json({
+        error: false,
+        data: { url: fileUrl, name: req.file.originalname, type: req.file.mimetype },
+      });
+    });
+  });
+
   // ---------------- client ----------------
 
   app.post("/v1/api/longtermhire/client/faults", TokenMiddleware(), async (req, res) => {
     try {
       const sdk = sdkFor();
-      const { equipment_id, reported_severity, title, message } = req.body;
+      const { equipment_id, reported_severity, title, message, attachments } = req.body;
       if (!equipment_id || !title) {
         return res.status(400).json({ error: true, message: "equipment_id and a description are required" });
       }
@@ -107,7 +132,13 @@ module.exports = function (app) {
         "reported_severity, title, status, reported_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         [faultNo, equipment_id, owner, req.user_id, name, pick, title, "reported", now]
       );
-      await addEntry(sdk, result.insertId, req.user_id, name, "client", "reported", message || title);
+      const photos = Array.isArray(attachments) && attachments.length
+        ? JSON.stringify(attachments) : null;
+      await sdk.rawQuery(
+        "INSERT INTO longtermhire_fault_update (fault_id, user_id, author_name, author_side, event_type, message, attachments) " +
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [result.insertId, req.user_id, name, "client", "reported", message || title, photos]
+      );
 
       return res.status(201).json({ error: false, message: "Reported", data: { id: result.insertId, fault_no: faultNo } });
     } catch (e) {
