@@ -13,6 +13,12 @@ const BOX =
 const NEED =
   "w-full bg-[#3a2e00] border border-[#5a4800] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-[13px] outline-none focus:border-[#FDCE06] transition-colors";
 
+const PAYMENT_TERMS = [
+  "Payment before Delivery",
+  "Due on Invoice",
+  "30 days from end of Month",
+];
+
 const BLANK = {
   client_user_id: "",
   equipment_id: "",
@@ -36,7 +42,7 @@ const BLANK = {
   // write-back fields, held here but saved to the client / equipment record
   abn: "",
   contact_position: "",
-  payment_terms: "",
+  payment_terms: "30 days from end of Month",
   model: "",
   year_made: "",
   fuel_type: "",
@@ -117,7 +123,7 @@ const ContractSetup = () => {
       client_user_id: userId,
       abn: c?.abn || "",
       contact_position: c?.contact_position || "",
-      payment_terms: c?.payment_terms || "30 days from end of month",
+      payment_terms: c?.payment_terms || "30 days from end of Month",
     }));
   };
 
@@ -347,7 +353,18 @@ const ContractSetup = () => {
                 onChange={(e) => set("abn", e.target.value)} placeholder="00 000 000 000" />
             </Row>
             <Row label="Payment terms" tag={<Tag kind={client.payment_terms ? "auto" : "need"} />}>
-              <input className={BOX} value={form.payment_terms} onChange={(e) => set("payment_terms", e.target.value)} />
+              <select
+                className={BOX}
+                value={form.payment_terms}
+                onChange={(e) => set("payment_terms", e.target.value)}
+              >
+                {form.payment_terms && !PAYMENT_TERMS.includes(form.payment_terms) && (
+                  <option value={form.payment_terms}>{form.payment_terms}</option>
+                )}
+                {PAYMENT_TERMS.map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
             </Row>
           </>
         )}
