@@ -174,6 +174,15 @@ const AdminSidebar = ({ isOpen, onClose }) => {
       ),
     },
     {
+      path: "/maintenance",
+      name: "Maintenance",
+      icon: (
+        <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9.4 2.2a3 3 0 0 0-3.9 3.6L2 9.3a1.4 1.4 0 1 0 2 2l3.5-3.5a3 3 0 0 0 3.6-3.9L9.7 5.6 8 5.3 7.7 3.6l1.7-1.4Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+        </svg>
+      ),
+    },
+    {
       path: "/reporting",
       name: "Reporting",
       icon: (
