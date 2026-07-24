@@ -156,7 +156,7 @@ const ClientHires = ({ userRole = "member" }) => {
               className="bg-[#1F1F20] border border-[#333333] rounded-lg overflow-hidden"
             >
               <div className="p-4 sm:p-5">
-                <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
+                <div className="flex flex-wrap items-start justify-between gap-2 sm:gap-3 mb-4">
                   <div>
                     <div className="text-[#E5E5E5] text-lg font-semibold">
                       {h.equipment_name}
@@ -206,23 +206,23 @@ const ClientHires = ({ userRole = "member" }) => {
                 </div>
 
                 <div className="grid grid-cols-3 gap-3 mb-4">
-                  <div className="bg-[#292A2B] rounded p-3">
-                    <div className="text-[#9CA3AF] text-[11px] mb-1">
+                  <div className="bg-[#292A2B] rounded p-2 sm:p-3">
+                    <div className="text-[#9CA3AF] text-[10px] sm:text-[11px] mb-1">
                       {isCompleted ? "Final rate" : "This month"}
                     </div>
-                    <div className="text-[#E5E5E5] text-[15px] font-semibold">
+                    <div className="text-[#E5E5E5] text-[13px] sm:text-[15px] font-semibold">
                       {fmt(currentRate)}
                     </div>
                   </div>
-                  <div className="bg-[#292A2B] rounded p-3">
-                    <div className="text-[#9CA3AF] text-[11px] mb-1">Invoiced to date</div>
-                    <div className="text-[#4CAF50] text-[15px] font-semibold">
+                  <div className="bg-[#292A2B] rounded p-2 sm:p-3">
+                    <div className="text-[#9CA3AF] text-[10px] sm:text-[11px] mb-1">Invoiced to date</div>
+                    <div className="text-[#4CAF50] text-[13px] sm:text-[15px] font-semibold">
                       {fmt(paidToDate)}
                     </div>
                   </div>
-                  <div className="bg-[#292A2B] rounded p-3">
-                    <div className="text-[#9CA3AF] text-[11px] mb-1">Full term</div>
-                    <div className="text-[#FDCE06] text-[15px] font-semibold">
+                  <div className="bg-[#292A2B] rounded p-2 sm:p-3">
+                    <div className="text-[#9CA3AF] text-[10px] sm:text-[11px] mb-1">Full term</div>
+                    <div className="text-[#FDCE06] text-[13px] sm:text-[15px] font-semibold">
                       {fmt(termTotal)}
                     </div>
                   </div>
@@ -239,7 +239,7 @@ const ClientHires = ({ userRole = "member" }) => {
               {isExpanded && (
                 <div className="border-t border-[#333333] bg-[#181818] p-4 sm:p-5">
                   <div className="overflow-x-auto">
-                    <table className="w-full text-sm min-w-[380px]">
+                    <table className="w-full text-sm min-w-[560px]">
                       <thead>
                         <tr className="text-[#666] text-xs">
                           <th className="text-left pb-2 font-medium">Month</th>
