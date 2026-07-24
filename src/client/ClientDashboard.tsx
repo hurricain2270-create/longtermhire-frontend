@@ -1502,6 +1502,7 @@ function ClientDashboard() {
             {/* Term calculator */}
             <TermCalculator
               equipment={Object.values(equipmentData || {}).flat()}
+              userRole={getUserRole()}
             />
 
             {/* Dynamic Equipment Sections */}
