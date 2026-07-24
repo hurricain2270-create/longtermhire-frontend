@@ -177,11 +177,11 @@ const ClientSite = ({ userRole = "member" }) => {
                           className="h-1.5 rounded transition-all"
                           style={{
                             width: s.pct + "%",
-                            background: s.overdue ? "#ef4444" : s.due ? "#FDCE06" : "#4CAF50",
+                            background: s.overdue || s.pct >= 90 ? "#ef4444" : s.pct >= 65 ? "#F59E0B" : "#4CAF50",
                           }}
                         />
                       </div>
-                      <div className={"text-xs " + (s.overdue ? "text-[#ef4444]" : s.due ? "text-[#FDCE06]" : "text-[#9CA3AF]")}>
+                      <div className={"text-xs " + (s.overdue || s.pct >= 90 ? "text-[#ef4444]" : s.pct >= 65 ? "text-[#F59E0B]" : "text-[#9CA3AF]")}>
                         {s.label}
                       </div>
                     </>
