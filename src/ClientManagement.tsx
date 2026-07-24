@@ -50,6 +50,7 @@ const ClientManagement = () => {
   // API data states
   const [clients, setClients] = useState([]);
   const [companyMembers, setCompanyMembers] = useState([]);
+  const [inviteTarget, setInviteTarget] = useState(null);
   const [equipment, setEquipment] = useState([]);
 
   // Track equipment assignments per client
@@ -166,6 +167,26 @@ const ClientManagement = () => {
     } catch (error) {
       console.error("Error processing client equipment:", error);
     }
+  };
+
+  // Onboarding checklist — add to this as more setup steps appear
+  const setupStatus = (client) => {
+    const items = [
+      { label: "Quote terms", done: Number(client.has_terms) > 0 },
+      { label: "Equipment assigned", done: Number(client.equipment_count) > 0 },
+      {
+        label: "Pricing",
+        done:
+          !!client.pricing_package_id || Number(client.has_custom_discounts) > 0,
+      },
+      { label: "Welcome note", done: Number(client.has_welcome) > 0 },
+    ];
+    return {
+      items,
+      missing: items.filter((i) => !i.done),
+      done: items.filter((i) => i.done).length,
+      total: items.length,
+    };
   };
 
   const handleResendInvitation = async (client) => {
@@ -515,6 +536,11 @@ const ClientManagement = () => {
                           Not yet invited
                         </span>
                       ) : null}
+                      {setupStatus(client).done < setupStatus(client).total ? (
+                        <span className="block mt-0.5 text-[11px] text-[#9CA3AF] font-[Inter] font-normal">
+                          {setupStatus(client).done} of {setupStatus(client).total} set up
+                        </span>
+                      ) : null}
                     </td>
                     <td className="text-[#E5E5E5] font-[Inter] font-normal text-[14px] leading-[1.21em] px-4 py-4">
                       {client.email}
@@ -583,7 +609,7 @@ const ClientManagement = () => {
                           Delete
                         </button>
                         <button
-                          onClick={() => handleResendInvitation(client)}
+                          onClick={() => setInviteTarget(client)}
                           title={
                             client.invited_at
                               ? "Reset password and email new login details"
@@ -741,6 +767,58 @@ const ClientManagement = () => {
       />
 
       {/* Toast Container */}
+      {inviteTarget && (() => {
+        const s = setupStatus(inviteTarget);
+        const firstTime = !inviteTarget.invited_at;
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
+            <div className="bg-[#1F1F20] border border-[#333] rounded-lg w-full max-w-md">
+              <div className="px-5 py-4 border-b border-[#333]">
+                <h3 className="text-[#E5E5E5] font-[Inter] font-bold text-[18px]">
+                  {firstTime ? "Send invite" : "Send new login details"}
+                </h3>
+              </div>
+              <div className="px-5 py-4">
+                <p className="text-[#9CA3AF] font-[Inter] text-sm leading-relaxed">
+                  {inviteTarget.client_name} at {inviteTarget.company_name} will be
+                  emailed login details at {inviteTarget.email}.
+                  {firstTime ? "" : " This resets their current password."}
+                </p>
+                {s.missing.length > 0 && (
+                  <div className="mt-3 px-3 py-2 rounded bg-[#3a2e00] border border-[#5a4800]">
+                    <p className="text-[#FDCE06] font-[Inter] text-xs font-medium mb-1">
+                      Not set up yet: {s.missing.map((m) => m.label.toLowerCase()).join(", ")}
+                    </p>
+                    <p className="text-[#9CA3AF] font-[Inter] text-xs leading-relaxed">
+                      They can still log in, but anything missing will fall back to
+                      defaults.
+                    </p>
+                  </div>
+                )}
+              </div>
+              <div className="px-5 py-4 border-t border-[#333] flex justify-end gap-3">
+                <button
+                  onClick={() => setInviteTarget(null)}
+                  className="px-4 py-1.5 border border-[#444] rounded text-[#E5E5E5] font-[Inter] font-bold text-[13px] hover:border-[#666] transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    const t = inviteTarget;
+                    setInviteTarget(null);
+                    handleResendInvitation(t);
+                  }}
+                  className="px-4 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] transition-colors"
+                >
+                  {s.missing.length > 0 ? "Send anyway" : "Send"}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       <ToastContainer
         position="top-right"
         autoClose={3000}
