@@ -43,6 +43,146 @@ const stamp = (d) => {
   } catch (e) { return ""; }
 };
 
+// At module scope — declaring these inside the component remounts them on every
+// keystroke, which destroys the input and loses focus.
+const inputCls =
+  "flex-1 bg-[#292A2B] border border-[#3A3A3C] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-[13px] outline-none focus:border-[#FDCE06]";
+
+const Card = ({
+  f, open, detail, busy, reply, setReply,
+  resolveHours, setResolveHours,
+  openFault, classify, stage, send,
+}) => {
+  const band = BANDS.find((b) => b.key === f.severity);
+  const isOpen = open === f.id;
+  const d = isOpen && detail ? detail.fault : f;
+  const updates = isOpen && detail ? detail.updates : [];
+
+  return (
+    <div className="bg-[#1F1F20] border border-[#333] rounded-xl p-4 sm:p-5 mb-3">
+      <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
+        <div>
+          <div className="text-[#E5E5E5] font-[Inter] text-[15px] font-semibold">{f.title}</div>
+          <div className="text-[#6B7280] font-[Inter] text-[11px] mt-0.5">
+            {f.fault_no} · {f.plant_code} {f.equipment_name} · {f.company_name} · {stamp(f.reported_at)}
+          </div>
+          <div className="text-[#6B7280] font-[Inter] text-[11px] mt-0.5">
+            {f.reported_by_name} called it &ldquo;{REPORTED_AS[f.reported_severity] || f.reported_severity}&rdquo;
+          </div>
+        </div>
+        <div className="text-right">
+          {band ? (
+            <span className="text-[11px] px-2.5 py-1 rounded-full font-[Inter] font-bold"
+              style={{ background: band.colour + "22", color: band.colour, border: "1px solid " + band.colour + "55" }}>
+              {band.label} · {band.window}
+            </span>
+          ) : (
+            <span className="text-[11px] px-2.5 py-1 rounded-full bg-[#3a2e00] text-[#FDCE06] border border-[#5a4800] font-[Inter] font-bold">
+              Needs assessing
+            </span>
+          )}
+          <div className="text-[#9CA3AF] font-[Inter] text-[11px] mt-1.5 tabular-nums">
+            {f.resolved_at ? "took " + human(hrs(f.reported_at, f.resolved_at)) : human(hrs(f.reported_at)) + " open"}
+          </div>
+        </div>
+      </div>
+
+      <button onClick={() => openFault(f)}
+        className="text-[#FDCE06] font-[Inter] text-[13px] font-medium hover:underline">
+        {isOpen ? "Close" : "Open"}
+      </button>
+
+      {isOpen && detail && (
+        <div className="mt-4 border-t border-[#2A2A2A] pt-4">
+          {!d.severity && (
+            <div className="mb-4">
+              <div className="text-[#9CA3AF] font-[Inter] text-[11px] uppercase tracking-[0.06em] mb-2">
+                Assess it — this is what shows the bar to the client
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {BANDS.map((b) => (
+                  <button key={b.key} onClick={() => classify(d.id, b.key)} disabled={busy}
+                    className="px-3 py-1.5 rounded border font-[Inter] font-bold text-[12px] transition-colors disabled:opacity-50"
+                    style={{ borderColor: b.colour + "66", color: b.colour, background: b.colour + "18" }}>
+                    {b.label} · {b.window}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="mb-4">
+            {updates.map((u, i) => {
+              const prev = updates[i - 1];
+              const gap = prev ? hrs(prev.created_at, u.created_at) : null;
+              return (
+                <div key={u.id}>
+                  {gap !== null && (
+                    <div className="border-l border-dashed border-[#333] ml-[5px] pl-4 py-1.5 text-[#6B7280] font-[Inter] text-[11px]">
+                      {u.author_side === prev.author_side ? "then " : "replied in "}
+                      <span className="text-[#9CA3AF]">{human(gap)}</span>
+                    </div>
+                  )}
+                  <div className="flex gap-3">
+                    <span className="w-2.5 h-2.5 rounded-full mt-1.5 flex-none"
+                      style={{ background: u.author_side === "admin" ? "#4CAF50" : "#F59E0B" }} />
+                    <div className="flex-1">
+                      <div className="text-[#6B7280] font-[Inter] text-[11px]">
+                        {u.author_side === "admin" ? "You" : u.author_name}
+                        {EVENT_LABEL[u.event_type] ? " · " + EVENT_LABEL[u.event_type] : ""}
+                        {" · " + stamp(u.created_at)}
+                      </div>
+                      {u.message ? (
+                        <div className="text-[#E5E5E5] font-[Inter] text-[13px] leading-relaxed mt-0.5">{u.message}</div>
+                      ) : null}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {!d.resolved_at && (
+            <>
+              <div className="flex gap-2 mb-3">
+                <input value={reply} onChange={(e) => setReply(e.target.value)}
+                  placeholder="Add an update…" className={inputCls} />
+                <button onClick={() => send(d.id)} disabled={busy}
+                  className="px-4 py-2 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] disabled:opacity-50 whitespace-nowrap">
+                  Send
+                </button>
+              </div>
+
+              <div className="flex flex-wrap gap-2 items-center">
+                {!d.actioned_at && (
+                  <button onClick={() => stage(d.id, "actioned")} disabled={busy}
+                    className="px-3 py-1.5 rounded border border-[#444] text-[#E5E5E5] font-[Inter] font-bold text-[12px] hover:border-[#666] disabled:opacity-50">
+                    Actioned
+                  </button>
+                )}
+                {!d.attended_at && (
+                  <button onClick={() => stage(d.id, "attended")} disabled={busy}
+                    className="px-3 py-1.5 rounded border border-[#444] text-[#E5E5E5] font-[Inter] font-bold text-[12px] hover:border-[#666] disabled:opacity-50">
+                    On site
+                  </button>
+                )}
+                <input value={resolveHours} onChange={(e) => setResolveHours(e.target.value)}
+                  placeholder="hrs at handback"
+                  className="w-36 bg-[#292A2B] border border-[#3A3A3C] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-[13px] outline-none focus:border-[#FDCE06]" />
+                <button onClick={() => stage(d.id, "resolved", { hours: resolveHours })} disabled={busy}
+                  className="px-3 py-1.5 rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[12px] hover:bg-[#3d9e43] disabled:opacity-50">
+                  Back in service
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+
 const Faults = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -134,139 +274,6 @@ const Faults = () => {
   const doneRows = rows.filter((r) => r.status === "resolved");
   const undiagnosed = openRows.filter((r) => !r.severity).length;
 
-  const inputCls =
-    "flex-1 bg-[#292A2B] border border-[#3A3A3C] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-[13px] outline-none focus:border-[#FDCE06]";
-
-  const Card = ({ f }) => {
-    const band = BANDS.find((b) => b.key === f.severity);
-    const isOpen = open === f.id;
-    const d = isOpen && detail ? detail.fault : f;
-    const updates = isOpen && detail ? detail.updates : [];
-
-    return (
-      <div className="bg-[#1F1F20] border border-[#333] rounded-xl p-4 sm:p-5 mb-3">
-        <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
-          <div>
-            <div className="text-[#E5E5E5] font-[Inter] text-[15px] font-semibold">{f.title}</div>
-            <div className="text-[#6B7280] font-[Inter] text-[11px] mt-0.5">
-              {f.fault_no} · {f.plant_code} {f.equipment_name} · {f.company_name} · {stamp(f.reported_at)}
-            </div>
-            <div className="text-[#6B7280] font-[Inter] text-[11px] mt-0.5">
-              {f.reported_by_name} called it &ldquo;{REPORTED_AS[f.reported_severity] || f.reported_severity}&rdquo;
-            </div>
-          </div>
-          <div className="text-right">
-            {band ? (
-              <span className="text-[11px] px-2.5 py-1 rounded-full font-[Inter] font-bold"
-                style={{ background: band.colour + "22", color: band.colour, border: "1px solid " + band.colour + "55" }}>
-                {band.label} · {band.window}
-              </span>
-            ) : (
-              <span className="text-[11px] px-2.5 py-1 rounded-full bg-[#3a2e00] text-[#FDCE06] border border-[#5a4800] font-[Inter] font-bold">
-                Needs assessing
-              </span>
-            )}
-            <div className="text-[#9CA3AF] font-[Inter] text-[11px] mt-1.5 tabular-nums">
-              {f.resolved_at ? "took " + human(hrs(f.reported_at, f.resolved_at)) : human(hrs(f.reported_at)) + " open"}
-            </div>
-          </div>
-        </div>
-
-        <button onClick={() => openFault(f)}
-          className="text-[#FDCE06] font-[Inter] text-[13px] font-medium hover:underline">
-          {isOpen ? "Close" : "Open"}
-        </button>
-
-        {isOpen && detail && (
-          <div className="mt-4 border-t border-[#2A2A2A] pt-4">
-            {!d.severity && (
-              <div className="mb-4">
-                <div className="text-[#9CA3AF] font-[Inter] text-[11px] uppercase tracking-[0.06em] mb-2">
-                  Assess it — this is what shows the bar to the client
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {BANDS.map((b) => (
-                    <button key={b.key} onClick={() => classify(d.id, b.key)} disabled={busy}
-                      className="px-3 py-1.5 rounded border font-[Inter] font-bold text-[12px] transition-colors disabled:opacity-50"
-                      style={{ borderColor: b.colour + "66", color: b.colour, background: b.colour + "18" }}>
-                      {b.label} · {b.window}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="mb-4">
-              {updates.map((u, i) => {
-                const prev = updates[i - 1];
-                const gap = prev ? hrs(prev.created_at, u.created_at) : null;
-                return (
-                  <div key={u.id}>
-                    {gap !== null && (
-                      <div className="border-l border-dashed border-[#333] ml-[5px] pl-4 py-1.5 text-[#6B7280] font-[Inter] text-[11px]">
-                        {u.author_side === prev.author_side ? "then " : "replied in "}
-                        <span className="text-[#9CA3AF]">{human(gap)}</span>
-                      </div>
-                    )}
-                    <div className="flex gap-3">
-                      <span className="w-2.5 h-2.5 rounded-full mt-1.5 flex-none"
-                        style={{ background: u.author_side === "admin" ? "#4CAF50" : "#F59E0B" }} />
-                      <div className="flex-1">
-                        <div className="text-[#6B7280] font-[Inter] text-[11px]">
-                          {u.author_side === "admin" ? "You" : u.author_name}
-                          {EVENT_LABEL[u.event_type] ? " · " + EVENT_LABEL[u.event_type] : ""}
-                          {" · " + stamp(u.created_at)}
-                        </div>
-                        {u.message ? (
-                          <div className="text-[#E5E5E5] font-[Inter] text-[13px] leading-relaxed mt-0.5">{u.message}</div>
-                        ) : null}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {!d.resolved_at && (
-              <>
-                <div className="flex gap-2 mb-3">
-                  <input value={reply} onChange={(e) => setReply(e.target.value)}
-                    placeholder="Add an update…" className={inputCls} />
-                  <button onClick={() => send(d.id)} disabled={busy}
-                    className="px-4 py-2 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] disabled:opacity-50 whitespace-nowrap">
-                    Send
-                  </button>
-                </div>
-
-                <div className="flex flex-wrap gap-2 items-center">
-                  {!d.actioned_at && (
-                    <button onClick={() => stage(d.id, "actioned")} disabled={busy}
-                      className="px-3 py-1.5 rounded border border-[#444] text-[#E5E5E5] font-[Inter] font-bold text-[12px] hover:border-[#666] disabled:opacity-50">
-                      Actioned
-                    </button>
-                  )}
-                  {!d.attended_at && (
-                    <button onClick={() => stage(d.id, "attended")} disabled={busy}
-                      className="px-3 py-1.5 rounded border border-[#444] text-[#E5E5E5] font-[Inter] font-bold text-[12px] hover:border-[#666] disabled:opacity-50">
-                      On site
-                    </button>
-                  )}
-                  <input value={resolveHours} onChange={(e) => setResolveHours(e.target.value)}
-                    placeholder="hrs at handback"
-                    className="w-36 bg-[#292A2B] border border-[#3A3A3C] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-[13px] outline-none focus:border-[#FDCE06]" />
-                  <button onClick={() => stage(d.id, "resolved", { hours: resolveHours })} disabled={busy}
-                    className="px-3 py-1.5 rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[12px] hover:bg-[#3d9e43] disabled:opacity-50">
-                    Back in service
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
-
   return (
     <div className="p-6">
       <h1 className="text-[#E5E5E5] font-[Inter] font-bold text-[36px] leading-[1.11em] mb-1">Faults</h1>
@@ -293,11 +300,11 @@ const Faults = () => {
         </div>
       ) : (
         <>
-          {openRows.map((f) => <Card key={f.id} f={f} />)}
+          {openRows.map((f) => <Card key={f.id} f={f} open={open} detail={detail} busy={busy} reply={reply} setReply={setReply} resolveHours={resolveHours} setResolveHours={setResolveHours} openFault={openFault} classify={classify} stage={stage} send={send} />)}
           {doneRows.length > 0 && (
             <div className="text-[#6B7280] font-[Inter] text-[11px] uppercase tracking-[0.06em] mt-7 mb-3">Resolved</div>
           )}
-          {doneRows.map((f) => <Card key={f.id} f={f} />)}
+          {doneRows.map((f) => <Card key={f.id} f={f} open={open} detail={detail} busy={busy} reply={reply} setReply={setReply} resolveHours={resolveHours} setResolveHours={setResolveHours} openFault={openFault} classify={classify} stage={stage} send={send} />)}
         </>
       )}
 
