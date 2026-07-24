@@ -67,7 +67,13 @@ const BANDS = [
   { key: "none", title: "No schedule set" },
 ];
 
-const COLOUR = { overdue: "#ef4444", soon: "#FDCE06", ok: "#4CAF50" };
+// Green to 65%, orange to 90%, red beyond
+const barColour = (band, pct) => {
+  if (band === "none" || band === "waiting") return null;
+  if (band === "overdue" || pct >= 90) return "#ef4444";
+  if (pct >= 65) return "#F59E0B";
+  return "#4CAF50";
+};
 
 // Defined at module scope so React keeps the same input elements between
 // renders — declaring these inside the component remounts them on every
@@ -220,12 +226,12 @@ const Maintenance = () => {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        {COLOUR[r.s.band] && (
+                        {barColour(r.s.band, r.s.pct) && (
                           <div className="bg-[#2F2F31] rounded h-1.5 w-full mb-1.5">
-                            <div className="h-1.5 rounded" style={{ width: r.s.pct + "%", background: COLOUR[r.s.band] }} />
+                            <div className="h-1.5 rounded" style={{ width: r.s.pct + "%", background: barColour(r.s.band, r.s.pct) }} />
                           </div>
                         )}
-                        <div className="font-[Inter] text-[11.5px]" style={{ color: COLOUR[r.s.band] || "#6B7280" }}>
+                        <div className="font-[Inter] text-[11.5px]" style={{ color: barColour(r.s.band, r.s.pct) || "#6B7280" }}>
                           {r.s.label}
                         </div>
                       </td>
