@@ -46,6 +46,9 @@ const ClientFaults = () => {
   const [form, setForm] = useState({ equipment_id: "", reported_severity: "", title: "" });
   const [reply, setReply] = useState("");
   const [busy, setBusy] = useState(false);
+  const [photos, setPhotos] = useState([]);
+  const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [, tick] = useState(0);
 
   useEffect(() => { load(); loadMachines(); }, []);
@@ -88,6 +91,32 @@ const ClientFaults = () => {
     } catch (e) { /* quiet */ }
   };
 
+  const addPhotos = async (files) => {
+    const list = Array.from(files || []).filter((f) => f.type.startsWith("image/"));
+    if (!list.length) return;
+    setUploading(true);
+    for (const file of list) {
+      try {
+        const body = new FormData();
+        body.append("file", file);
+        const res = await fetch(API + "/v1/api/longtermhire/client/fault-upload", {
+          method: "POST",
+          headers: { Authorization: "Bearer " + token() },
+          body,
+        });
+        const j = await res.json();
+        if (j && !j.error && j.data?.url) {
+          setPhotos((p) => [...p, j.data.url]);
+        } else {
+          toast.error("That photo wouldn't upload");
+        }
+      } catch (e) {
+        toast.error("That photo wouldn't upload");
+      }
+    }
+    setUploading(false);
+  };
+
   const submit = async () => {
     if (!form.equipment_id) { toast.error("Which machine?"); return; }
     if (!form.reported_severity) { toast.error("Pick what's happened"); return; }
@@ -97,13 +126,14 @@ const ClientFaults = () => {
       const res = await fetch(API + "/v1/api/longtermhire/client/faults", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: "Bearer " + token() },
-        body: JSON.stringify({ ...form, message: form.title }),
+        body: JSON.stringify({ ...form, message: form.title, attachments: photos }),
       });
       const j = await res.json();
       if (j.error) { toast.error(j.message || "Could not report that"); return; }
       toast.success("Reported — we're on it");
       setReporting(false);
       setForm({ equipment_id: "", reported_severity: "", title: "" });
+      setPhotos([]);
       load();
     } catch (e) {
       toast.error("Could not report that");
@@ -297,7 +327,44 @@ const ClientFaults = () => {
 
               <textarea value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })}
                 rows={3} placeholder="What are you seeing?"
-                className={inputCls + " resize-none"} />
+                className={inputCls + " resize-none mb-5"} />
+
+              <label className="block text-[#9CA3AF] text-[11px] uppercase tracking-[0.06em] mb-2">
+                Photos
+              </label>
+              <div
+                onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={(e) => { e.preventDefault(); setDragging(false); addPhotos(e.dataTransfer.files); }}
+                className={"rounded-xl border-2 border-dashed p-3 transition-colors " +
+                  (dragging ? "border-[#FDCE06] bg-[#2A2718]" : "border-[#3A3A3C]")}
+              >
+                <div className="grid grid-cols-4 gap-2">
+                  {photos.map((src, i) => (
+                    <div key={i} className="relative aspect-square rounded-lg overflow-hidden bg-[#292A2B]">
+                      <img src={src} alt="" className="w-full h-full object-cover" />
+                      <button type="button"
+                        onClick={() => setPhotos((p) => p.filter((_, n) => n !== i))}
+                        className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/70 text-white text-[12px] leading-none flex items-center justify-center">
+                        ×
+                      </button>
+                    </div>
+                  ))}
+
+                  <label className="aspect-square rounded-lg border border-[#3A3A3C] bg-[#232325] flex flex-col items-center justify-center cursor-pointer hover:border-[#FDCE06] transition-colors">
+                    <span className="text-[#FDCE06] text-[26px] leading-none font-light">+</span>
+                    <span className="text-[#6B7280] text-[10px] mt-1">
+                      {uploading ? "…" : "photo"}
+                    </span>
+                    <input type="file" accept="image/*" capture="environment" multiple
+                      onChange={(e) => { addPhotos(e.target.files); e.target.value = ""; }}
+                      className="hidden" />
+                  </label>
+                </div>
+                <p className="text-[#4A4A4C] text-[11px] mt-2 hidden sm:block">
+                  Drag photos in, or tap the square.
+                </p>
+              </div>
             </div>
             <div className="px-5 py-4 border-t border-[#333] flex justify-end gap-3">
               <button onClick={() => setReporting(false)}
