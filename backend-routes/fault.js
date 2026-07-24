@@ -73,11 +73,13 @@ module.exports = function (app) {
     );
   }
 
-  async function addEntry(sdk, faultId, userId, name, side, type, message) {
+  async function addEntry(sdk, faultId, userId, name, side, type, message, attachments) {
+    const photos = Array.isArray(attachments) && attachments.length
+      ? JSON.stringify(attachments) : null;
     await sdk.rawQuery(
-      "INSERT INTO longtermhire_fault_update (fault_id, user_id, author_name, author_side, event_type, message) " +
-      "VALUES (?, ?, ?, ?, ?, ?)",
-      [faultId, userId || null, name || null, side, type, message || null]
+      "INSERT INTO longtermhire_fault_update (fault_id, user_id, author_name, author_side, event_type, message, attachments) " +
+      "VALUES (?, ?, ?, ?, ?, ?, ?)",
+      [faultId, userId || null, name || null, side, type, message || null, photos]
     );
   }
 
@@ -189,9 +191,13 @@ module.exports = function (app) {
       const owner = await ownerFor(sdk, req.user_id);
       const rows = await sdk.rawQuery("SELECT id FROM longtermhire_fault WHERE id = ? AND client_user_id = ? LIMIT 1", [req.params.id, owner]);
       if (!rows || !rows.length) return res.status(404).json({ error: true, message: "Not found" });
-      if (!req.body.message) return res.status(400).json({ error: true, message: "Message required" });
+      const hasPhotos = Array.isArray(req.body.attachments) && req.body.attachments.length > 0;
+      if (!req.body.message && !hasPhotos) {
+        return res.status(400).json({ error: true, message: "Add a message or a photo" });
+      }
       const name = await nameFor(sdk, req.user_id);
-      await addEntry(sdk, req.params.id, req.user_id, name, "client", "message", req.body.message);
+      await addEntry(sdk, req.params.id, req.user_id, name, "client", "message",
+        req.body.message, req.body.attachments);
       return res.status(200).json({ error: false, message: "Sent" });
     } catch (e) {
       console.error("Client reply error:", e);
@@ -247,8 +253,12 @@ module.exports = function (app) {
   app.post("/v1/api/longtermhire/super_admin/faults/:id/reply", TokenMiddleware(), RoleMiddleware(["super_admin"]), async (req, res) => {
     try {
       const sdk = sdkFor();
-      if (!req.body.message) return res.status(400).json({ error: true, message: "Message required" });
-      await addEntry(sdk, req.params.id, req.user_id, "Long Term Hire", "admin", "message", req.body.message);
+      const hasPhotos = Array.isArray(req.body.attachments) && req.body.attachments.length > 0;
+      if (!req.body.message && !hasPhotos) {
+        return res.status(400).json({ error: true, message: "Add a message or a photo" });
+      }
+      await addEntry(sdk, req.params.id, req.user_id, "Long Term Hire", "admin", "message",
+        req.body.message, req.body.attachments);
       return res.status(200).json({ error: false, message: "Sent" });
     } catch (e) {
       console.error("Admin reply error:", e);
