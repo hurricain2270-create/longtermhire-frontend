@@ -1501,11 +1501,11 @@ function ClientDashboard() {
               </div>
             )}
 
-            {/* Your site */}
-            <ClientSite userRole={getUserRole()} />
-
             {/* Faults */}
             <ClientFaults />
+
+            {/* Your site */}
+            <ClientSite userRole={getUserRole()} />
 
             {/* Term calculator */}
             <TermCalculator
