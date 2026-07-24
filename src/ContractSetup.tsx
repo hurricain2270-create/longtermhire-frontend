@@ -6,6 +6,8 @@ import ClipLoader from "react-spinners/ClipLoader";
 import api from "./services/api";
 import { PDFViewer } from "@react-pdf/renderer";
 import ContractPDF from "./components/ContractPDF";
+import { PDFViewer } from "@react-pdf/renderer";
+import ContractPDF from "./components/ContractPDF";
 import { clientApi } from "./services/clientApi";
 import { equipmentApi } from "./services/equipmentApi";
 
@@ -89,9 +91,11 @@ const ContractSetup = () => {
   const [equipment, setEquipment] = useState([]);
   const [form, setForm] = useState(BLANK);
   const [editingId, setEditingId] = useState(null);
+  const [editingContractNo, setEditingContractNo] = useState(null);
   const [contractNo, setContractNo] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [executeDoc, setExecuteDoc] = useState(null);
   const [executeDoc, setExecuteDoc] = useState(null);
 
   useEffect(() => { loadAll(); }, []);
@@ -163,6 +167,7 @@ const ContractSetup = () => {
     setForm({ ...BLANK, agreement_date: new Date().toISOString().slice(0, 10) });
     setContractNo("");
     setEditingId(null);
+    setEditingContractNo(null);
     setView("edit");
   };
 
@@ -186,6 +191,7 @@ const ContractSetup = () => {
     });
     setContractNo(row.contract_no || "");
     setEditingId(row.id);
+    setEditingContractNo(row.contract_no);
     setView("edit");
   };
 
@@ -260,6 +266,26 @@ const ContractSetup = () => {
       environmental_levy: "1.50",
       damage_waiver_rate: "7.50",
     });
+  };
+
+  // Everything the document needs, pulled from the record and the two lookups
+  const buildDoc = () => {
+    const attachment = equipment.find(
+      (e) => String(e.id) === String(form.attachment_equipment_id)
+    );
+    return {
+      ...form,
+      contract_no: editingContractNo,
+      company_name: client?.company_name,
+      client_name: client?.client_name,
+      email: client?.email,
+      plant_code: plant?.equipment_id,
+      equipment_name: plant?.equipment_name,
+      attachment_name: attachment
+        ? attachment.equipment_id + " — " + attachment.equipment_name
+        : null,
+      logo: "/login-logo.png",
+    };
   };
 
   const save = async () => {
@@ -523,6 +549,18 @@ const ContractSetup = () => {
           className="px-4 py-2 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors whitespace-nowrap">
           {saving ? "Saving..." : editingId ? "Save changes" : "Save draft"}
         </button>
+        <button
+          onClick={() => {
+            if (!form.client_user_id || !form.equipment_id) {
+              toast.error("Choose a company and a plant item first");
+              return;
+            }
+            setExecuteDoc(buildDoc());
+          }}
+          className="px-4 py-2 rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#3d9e43] transition-colors whitespace-nowrap"
+        >
+          Execute
+        </button>
         <button onClick={execute}
           className="px-4 py-2 rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#3d9e43] transition-colors whitespace-nowrap">
           Execute
@@ -547,6 +585,30 @@ const ContractSetup = () => {
             <div className="flex-1 bg-[#525659]">
               <PDFViewer width="100%" height="100%" style={{ border: "none" }}>
                 <ContractPDF data={executeDoc} />
+              </PDFViewer>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {executeDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+          <div className="bg-[#1F1F20] border border-[#333] rounded-lg w-full max-w-5xl h-[92vh] flex flex-col">
+            <div className="px-5 py-3 border-b border-[#333] flex items-center justify-between">
+              <div>
+                <h3 className="text-[#E5E5E5] font-[Inter] font-bold text-[16px]">
+                  Hire Agreement {executeDoc.contract_no || "(draft)"}
+                </h3>
+                <p className="text-[#6B7280] font-[Inter] text-xs mt-0.5">
+                  {executeDoc.company_name} · {executeDoc.equipment_name}
+                </p>
+              </div>
+              <button onClick={() => setExecuteDoc(null)}
+                className="text-[#9CA3AF] hover:text-white text-xl leading-none px-2">✕</button>
+            </div>
+            <div className="flex-1 bg-[#525659]">
+              <PDFViewer width="100%" height="100%" style={{ border: "none" }}>
+                <ContractPDF contract={executeDoc} />
               </PDFViewer>
             </div>
           </div>
