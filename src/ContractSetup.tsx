@@ -94,7 +94,6 @@ const ContractSetup = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [executeDoc, setExecuteDoc] = useState(null);
-  const [executeDoc, setExecuteDoc] = useState(null);
 
   useEffect(() => { loadAll(); }, []);
 
