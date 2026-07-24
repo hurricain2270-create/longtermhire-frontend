@@ -356,13 +356,13 @@ const ClientFaults = () => {
                     <span className="text-[#6B7280] text-[10px] mt-1">
                       {uploading ? "…" : "photo"}
                     </span>
-                    <input type="file" accept="image/*" capture="environment" multiple
+                    <input type="file" accept="image/*" multiple
                       onChange={(e) => { addPhotos(e.target.files); e.target.value = ""; }}
                       className="hidden" />
                   </label>
                 </div>
                 <p className="text-[#4A4A4C] text-[11px] mt-2 hidden sm:block">
-                  Drag photos in, or tap the square.
+                  Drag photos in, or click the square.
                 </p>
               </div>
             </div>
