@@ -59,6 +59,7 @@ const ClientFaults = () => {
   const [photos, setPhotos] = useState([]);
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [replyPhotos, setReplyPhotos] = useState([]);
   const [, tick] = useState(0);
 
   useEffect(() => { load(); loadMachines(); }, []);
@@ -99,6 +100,34 @@ const ClientFaults = () => {
       const j = await res.json();
       if (j && !j.error) setThread(j.data.updates || []);
     } catch (e) { /* quiet */ }
+  };
+
+  const uploadOne = async (file) => {
+    const body = new FormData();
+    body.append("file", file);
+    const res = await fetch(API + "/v1/api/longtermhire/client/fault-upload", {
+      method: "POST",
+      headers: { Authorization: "Bearer " + token() },
+      body,
+    });
+    const j = await res.json();
+    if (j && !j.error && j.data?.url) return j.data.url;
+    throw new Error("upload failed");
+  };
+
+  const addReplyPhotos = async (files) => {
+    const list = Array.from(files || []).filter((f) => f.type.startsWith("image/"));
+    if (!list.length) return;
+    setUploading(true);
+    for (const file of list) {
+      try {
+        const url = await uploadOne(file);
+        setReplyPhotos((p) => [...p, url]);
+      } catch (e) {
+        toast.error("That photo wouldn't upload");
+      }
+    }
+    setUploading(false);
   };
 
   const addPhotos = async (files) => {
@@ -151,15 +180,16 @@ const ClientFaults = () => {
   };
 
   const sendReply = async (id) => {
-    if (!reply.trim()) return;
+    if (!reply.trim() && replyPhotos.length === 0) return;
     try {
       setBusy(true);
       await fetch(API + "/v1/api/longtermhire/client/faults/" + id + "/reply", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: "Bearer " + token() },
-        body: JSON.stringify({ message: reply }),
+        body: JSON.stringify({ message: reply, attachments: replyPhotos }),
       });
       setReply("");
+      setReplyPhotos([]);
       const res = await fetch(API + "/v1/api/longtermhire/client/faults/" + id, {
         headers: { Authorization: "Bearer " + token() },
       });
@@ -293,15 +323,39 @@ const ClientFaults = () => {
                     </div>
                   ))}
                   {!f.resolved_at && (
-                    <div className="flex gap-2 mt-4">
-                      <input value={reply} onChange={(e) => setReply(e.target.value)}
-                        placeholder="Add an update…"
-                        className="flex-1 bg-[#D8D8D6] border border-[#BFBFBD] rounded-lg px-3 py-2.5 text-[#1F1F20] text-[14px] outline-none focus:border-[#FDCE06] placeholder:text-[#6B6B69] transition-colors" />
-                      <button onClick={() => sendReply(f.id)} disabled={busy}
-                        className="px-4 py-2 rounded-lg bg-[#FDCE06] text-[#1F1F20] font-bold text-sm hover:bg-[#E5B800] disabled:opacity-50 transition-colors whitespace-nowrap">
-                        Send
-                      </button>
-                    </div>
+                    <>
+                      {replyPhotos.length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-4">
+                          {replyPhotos.map((src, n) => (
+                            <div key={n} className="relative w-16 h-16 rounded-lg overflow-hidden bg-[#292A2B]">
+                              <img src={src} alt="" className="w-full h-full object-cover" />
+                              <button type="button"
+                                onClick={() => setReplyPhotos((p) => p.filter((_, x) => x !== n))}
+                                className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/70 text-white text-[11px] leading-none flex items-center justify-center">
+                                ×
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      <div className="flex gap-2 mt-4">
+                        <label className="w-11 h-11 flex-none rounded-lg border border-[#3A3A3C] bg-[#232325] flex items-center justify-center cursor-pointer hover:border-[#FDCE06] transition-colors">
+                          <span className="text-[#FDCE06] text-[20px] leading-none font-light">
+                            {uploading ? "…" : "+"}
+                          </span>
+                          <input type="file" accept="image/*" multiple
+                            onChange={(e) => { addReplyPhotos(e.target.files); e.target.value = ""; }}
+                            className="hidden" />
+                        </label>
+                        <input value={reply} onChange={(e) => setReply(e.target.value)}
+                          placeholder="Add an update…"
+                          className="flex-1 bg-[#D8D8D6] border border-[#BFBFBD] rounded-lg px-3 py-2.5 text-[#1F1F20] text-[14px] outline-none focus:border-[#FDCE06] placeholder:text-[#6B6B69] transition-colors" />
+                        <button onClick={() => sendReply(f.id)} disabled={busy}
+                          className="px-4 py-2 rounded-lg bg-[#FDCE06] text-[#1F1F20] font-bold text-sm hover:bg-[#E5B800] disabled:opacity-50 transition-colors whitespace-nowrap">
+                          Send
+                        </button>
+                      </div>
+                    </>
                   )}
                 </div>
               )}
