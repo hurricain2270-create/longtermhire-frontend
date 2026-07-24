@@ -15,6 +15,7 @@ import ContentDetails from "./ContentDetails";
 import QuoteManagement from "./QuoteManagement";
 import HireManagement from "./HireManagement";
 import Reporting from "./Reporting";
+import ContractSetup from "./ContractSetup";
 import Profile from "./Profile";
 import Chat from "./components/Chat";
 import PrivateRoute from "./components/PrivateRoute";
@@ -171,6 +172,7 @@ function App() {
             </PrivateRoute>
           }
         />
+        <Route path="/contract-setup" element={<PrivateRoute allowedRoles={["super_admin"]}><DashboardLayout><ContractSetup /></DashboardLayout></PrivateRoute>} />
         <Route
           path="/chat"
           element={
