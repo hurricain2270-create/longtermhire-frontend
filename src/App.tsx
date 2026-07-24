@@ -17,6 +17,7 @@ import HireManagement from "./HireManagement";
 import Reporting from "./Reporting";
 import ContractSetup from "./ContractSetup";
 import Maintenance from "./Maintenance";
+import Faults from "./Faults";
 import Profile from "./Profile";
 import Chat from "./components/Chat";
 import PrivateRoute from "./components/PrivateRoute";
@@ -175,6 +176,7 @@ function App() {
         />
         <Route path="/contract-setup" element={<PrivateRoute allowedRoles={["super_admin"]}><DashboardLayout><ContractSetup /></DashboardLayout></PrivateRoute>} />
         <Route path="/maintenance" element={<PrivateRoute allowedRoles={["super_admin"]}><DashboardLayout><Maintenance /></DashboardLayout></PrivateRoute>} />
+        <Route path="/faults" element={<PrivateRoute allowedRoles={["super_admin"]}><DashboardLayout><Faults /></DashboardLayout></PrivateRoute>} />
         <Route
           path="/chat"
           element={
