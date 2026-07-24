@@ -43,7 +43,7 @@ const ClientFaults = () => {
   const [open, setOpen] = useState(null);
   const [thread, setThread] = useState([]);
   const [reporting, setReporting] = useState(false);
-  const [form, setForm] = useState({ equipment_id: "", reported_severity: "stopped", title: "" });
+  const [form, setForm] = useState({ equipment_id: "", reported_severity: "", title: "" });
   const [reply, setReply] = useState("");
   const [busy, setBusy] = useState(false);
   const [, tick] = useState(0);
@@ -90,7 +90,8 @@ const ClientFaults = () => {
 
   const submit = async () => {
     if (!form.equipment_id) { toast.error("Which machine?"); return; }
-    if (!form.title.trim()) { toast.error("Tell us what's happened"); return; }
+    if (!form.reported_severity) { toast.error("Pick what's happened"); return; }
+    if (!form.title.trim()) { toast.error("Tell us what you're seeing"); return; }
     try {
       setBusy(true);
       const res = await fetch(API + "/v1/api/longtermhire/client/faults", {
@@ -102,7 +103,7 @@ const ClientFaults = () => {
       if (j.error) { toast.error(j.message || "Could not report that"); return; }
       toast.success("Reported — we're on it");
       setReporting(false);
-      setForm({ equipment_id: "", reported_severity: "stopped", title: "" });
+      setForm({ equipment_id: "", reported_severity: "", title: "" });
       load();
     } catch (e) {
       toast.error("Could not report that");
