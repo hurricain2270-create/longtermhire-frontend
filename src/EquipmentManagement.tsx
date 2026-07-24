@@ -79,6 +79,29 @@ const EquipmentManagement = () => {
     fetchEquipment(1, debouncedSearchData);
   }, [debouncedSearchData]);
 
+  // Which equipment is currently out on hire
+  const [onHireIds, setOnHireIds] = useState(new Set());
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await api.get("/v1/api/longtermhire/super_admin/fleet-report");
+        if (res && res.data && !res.data.error) {
+          const hires = (res.data.data && res.data.data.hires) || [];
+          setOnHireIds(
+            new Set(
+              hires
+                .filter((h) => h.hire_status === "active")
+                .map((h) => String(h.equipment_id))
+            )
+          );
+        }
+      } catch (e) {
+        // colour coding is a nicety, never block the list on it
+      }
+    })();
+  }, []);
+  const isOnHire = (item) => onHireIds.has(String(item.id));
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setSearchData((prev) => ({
@@ -398,10 +421,7 @@ const EquipmentManagement = () => {
                       <span>Name</span>
                     </div>
                   </th>
-                  <th className="text-[#E5E5E5] font-inter font-bold text-xs lg:text-sm text-center px-3 py-4">
-                    View
-                  </th>
-                  <th className="text-[#E5E5E5] font-inter font-bold text-xs lg:text-sm text-left px-3 py-4">
+                                    <th className="text-[#E5E5E5] font-inter font-bold text-xs lg:text-sm text-left px-3 py-4">
                     Position
                   </th>
                   <th className="text-[#E5E5E5] font-inter font-bold text-xs lg:text-sm text-left px-3 py-4">
@@ -487,15 +507,7 @@ const EquipmentManagement = () => {
                       <td className="text-[#E5E5E5] font-inter font-normal text-sm px-3 py-4">
                         {item.equipment_name}
                       </td>
-                      <td className="text-[#E5E5E5] font-inter font-normal text-sm px-3 py-4 flex justify-center">
-                        <button
-                          onClick={() => handleViewDetails(item)}
-                          className="px-3 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] transition-colors"
-                        >
-                          View
-                        </button>
-                      </td>
-                      <td className="text-[#E5E5E5] font-inter font-normal text-sm px-3 py-4">
+                                            <td className="text-[#E5E5E5] font-inter font-normal text-sm px-3 py-4">
                         {item.position || "N/A"}
                       </td>
                       <td className="text-[#E5E5E5] font-inter font-normal text-sm px-3 py-4">
@@ -508,13 +520,13 @@ const EquipmentManagement = () => {
                         <div className="flex flex-wrap gap-2 items-center">
                           <button
                             onClick={() => handleViewDetails(item)}
-                            className="px-3 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] transition-colors"
+                            className={isOnHire(item) ? "px-3 py-1.5 rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#3d9e43] transition-colors" : "px-3 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] transition-colors"}
                           >
                             View
                           </button>
                           <button
                             onClick={() => handleEditEquipment(item)}
-                            className="px-3 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] transition-colors"
+                            className={isOnHire(item) ? "px-3 py-1.5 rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#3d9e43] transition-colors" : "px-3 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] transition-colors"}
                           >
                             Edit
                           </button>
