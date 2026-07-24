@@ -69,6 +69,19 @@ const BANDS = [
 
 const COLOUR = { overdue: "#ef4444", soon: "#FDCE06", ok: "#4CAF50" };
 
+// Defined at module scope so React keeps the same input elements between
+// renders — declaring these inside the component remounts them on every
+// keystroke and the field loses focus.
+const inputCls =
+  "w-full bg-[#292A2B] border border-[#333] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-sm outline-none focus:border-[#FDCE06]";
+
+const Field = ({ label, children }) => (
+  <div className="mb-4">
+    <label className="block text-[#9CA3AF] font-[Inter] text-xs mb-1.5">{label}</label>
+    {children}
+  </div>
+);
+
 const Maintenance = () => {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -143,15 +156,6 @@ const Maintenance = () => {
     ok: withState.filter((r) => r.s.band === "ok").length,
     none: withState.filter((r) => r.s.band === "none" || r.s.band === "waiting").length,
   };
-
-  const Field = ({ label, children }) => (
-    <div className="mb-4">
-      <label className="block text-[#9CA3AF] font-[Inter] text-xs mb-1.5">{label}</label>
-      {children}
-    </div>
-  );
-  const inputCls =
-    "w-full bg-[#292A2B] border border-[#333] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-sm outline-none focus:border-[#FDCE06]";
 
   return (
     <div className="p-6">
