@@ -154,6 +154,16 @@ const AdminSidebar = ({ isOpen, onClose }) => {
       ),
     },
     {
+      path: "/contract-setup",
+      name: "Contract Set Up",
+      icon: (
+        <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 1.75h5.5L11.5 4.75v8.5a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5V2.25a.5.5 0 0 1 .5-.5Z" stroke="currentColor" strokeWidth="1.2"/>
+          <path d="M8.25 1.75v3.25h3.25M4.75 8.25h4.5M4.75 10.75h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+        </svg>
+      ),
+    },
+    {
       path: "/hire-management",
       name: "Hire Management",
       icon: (
