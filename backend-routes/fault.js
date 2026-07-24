@@ -120,7 +120,11 @@ module.exports = function (app) {
     try {
       const sdk = sdkFor();
       const owner = await ownerFor(sdk, req.user_id);
-      const rows = await sdk.rawQuery(LIST_SQL + "WHERE f.client_user_id = ? ORDER BY f.id DESC", [owner]);
+      // resolved faults leave the supervisor's view entirely — they stay on the admin side
+      const rows = await sdk.rawQuery(
+        LIST_SQL + "WHERE f.client_user_id = ? AND f.status <> ? ORDER BY f.id DESC",
+        [owner, "resolved"]
+      );
       return res.status(200).json({ error: false, data: rows.map((r) => ({ ...r, band: r.severity ? BANDS[r.severity] : null })) });
     } catch (e) {
       console.error("Client faults error:", e);
@@ -132,7 +136,10 @@ module.exports = function (app) {
     try {
       const sdk = sdkFor();
       const owner = await ownerFor(sdk, req.user_id);
-      const rows = await sdk.rawQuery(LIST_SQL + "WHERE f.id = ? AND f.client_user_id = ? LIMIT 1", [req.params.id, owner]);
+      const rows = await sdk.rawQuery(
+        LIST_SQL + "WHERE f.id = ? AND f.client_user_id = ? AND f.status <> ? LIMIT 1",
+        [req.params.id, owner, "resolved"]
+      );
       if (!rows || !rows.length) return res.status(404).json({ error: true, message: "Not found" });
       const f = rows[0];
       return res.status(200).json({
