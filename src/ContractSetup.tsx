@@ -42,6 +42,38 @@ const BLANK = {
   fuel_type: "",
 };
 
+// At module scope so inputs keep focus while typing — see Maintenance.tsx
+const Row = ({ label, children, tag }) => (
+  <div className="grid grid-cols-[170px_1fr_110px] gap-3 items-center py-2 border-b border-[#252525] last:border-0">
+    <span className={LBL}>{label}</span>
+    <div>{children}</div>
+    <div className="text-right">{tag}</div>
+  </div>
+);
+
+const Tag = ({ kind }) => {
+  const map = {
+    auto: ["from system", "bg-[#1a3a1a] text-[#4CAF50] border-[#2d5a2d]"],
+    need: ["saves back", "bg-[#3a2e00] text-[#FDCE06] border-[#5a4800]"],
+    hire: ["this hire", "bg-[#292A2B] text-[#9CA3AF] border-[#333]"],
+    fixed: ["fixed", "bg-[#252525] text-[#666] border-[#333]"],
+  };
+  const [text, cls] = map[kind] || map.hire;
+  return <span className={"text-[10px] px-2 py-0.5 rounded-full border font-[Inter] " + cls}>{text}</span>;
+};
+
+const Section = ({ n, title, children, note }) => (
+  <div className="mb-6">
+    <div className="flex items-center gap-2 mb-2">
+      <span className="w-5 h-5 rounded-full bg-[#292A2B] text-[#9CA3AF] text-[11px] flex items-center justify-center font-[Inter]">{n}</span>
+      <h2 className="text-[#E5E5E5] font-[Inter] font-bold text-[15px]">{title}</h2>
+      {note ? <span className="ml-auto text-[11px] text-[#6B7280] font-[Inter]">{note}</span> : null}
+    </div>
+    <div className="bg-[#1F1F20] border border-[#333] rounded-lg px-4 py-1">{children}</div>
+  </div>
+);
+
+
 const ContractSetup = () => {
   const [view, setView] = useState("list");
   const [contracts, setContracts] = useState([]);
@@ -220,36 +252,6 @@ const ContractSetup = () => {
       setSaving(false);
     }
   };
-
-  const Row = ({ label, children, tag }) => (
-    <div className="grid grid-cols-[170px_1fr_110px] gap-3 items-center py-2 border-b border-[#252525] last:border-0">
-      <span className={LBL}>{label}</span>
-      <div>{children}</div>
-      <div className="text-right">{tag}</div>
-    </div>
-  );
-
-  const Tag = ({ kind }) => {
-    const map = {
-      auto: ["from system", "bg-[#1a3a1a] text-[#4CAF50] border-[#2d5a2d]"],
-      need: ["saves back", "bg-[#3a2e00] text-[#FDCE06] border-[#5a4800]"],
-      hire: ["this hire", "bg-[#292A2B] text-[#9CA3AF] border-[#333]"],
-      fixed: ["fixed", "bg-[#252525] text-[#666] border-[#333]"],
-    };
-    const [text, cls] = map[kind] || map.hire;
-    return <span className={"text-[10px] px-2 py-0.5 rounded-full border font-[Inter] " + cls}>{text}</span>;
-  };
-
-  const Section = ({ n, title, children, note }) => (
-    <div className="mb-6">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="w-5 h-5 rounded-full bg-[#292A2B] text-[#9CA3AF] text-[11px] flex items-center justify-center font-[Inter]">{n}</span>
-        <h2 className="text-[#E5E5E5] font-[Inter] font-bold text-[15px]">{title}</h2>
-        {note ? <span className="ml-auto text-[11px] text-[#6B7280] font-[Inter]">{note}</span> : null}
-      </div>
-      <div className="bg-[#1F1F20] border border-[#333] rounded-lg px-4 py-1">{children}</div>
-    </div>
-  );
 
   if (loading) {
     return <div className="flex items-center justify-center h-64"><ClipLoader color="#FDCE06" size={40} /></div>;
