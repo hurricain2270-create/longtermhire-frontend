@@ -126,7 +126,8 @@ const STICKY_COLOURS = [
 
 const stickyColourForNow = () => {
   const d = new Date();
-  const months = d.getFullYear() * 12 + d.getMonth();
+  // offset by 2 so the rotation opens on pink
+  const months = d.getFullYear() * 12 + d.getMonth() + 2;
   return STICKY_COLOURS[months % STICKY_COLOURS.length];
 };
 
