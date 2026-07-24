@@ -1,13 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { authApi } from "./services/authApi";
 import { useCompanyLogo } from "./hooks/useCompanyLogo";
 import { chatApi } from "./services/chatApi";
+import api from "./services/api";
 
 const AdminSidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { companyLogo } = useCompanyLogo();
+
+  // Open faults, so the tab can carry a count without anyone checking it
+  const [openFaults, setOpenFaults] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    const check = async () => {
+      try {
+        const res = await api.get("/v1/api/longtermhire/super_admin/faults");
+        if (alive && res?.data && !res.data.error) {
+          setOpenFaults(res.data.open_count || 0);
+        }
+      } catch (e) {
+        // a missing count shouldn't break the sidebar
+      }
+    };
+    check();
+    const t = setInterval(check, 60000);
+    return () => { alive = false; clearInterval(t); };
+  }, []);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -312,6 +332,11 @@ const AdminSidebar = ({ isOpen, onClose }) => {
               >
                 {item.name}
               </span>
+              {item.badge === "faults" && openFaults > 0 && (
+                <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-[#ef4444] text-white text-[11px] font-bold flex items-center justify-center">
+                  {openFaults}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
