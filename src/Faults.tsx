@@ -60,6 +60,7 @@ const inputCls =
 
 const Card = ({
   f, open, detail, busy, reply, setReply,
+  replyPhotos, setReplyPhotos, uploading, addReplyPhotos,
   resolveHours, setResolveHours,
   openFault, classify, stage, send,
 }) => {
@@ -215,7 +216,29 @@ const Card = ({
 
           {!d.resolved_at && (
             <>
+              {replyPhotos.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {replyPhotos.map((src, n) => (
+                    <div key={n} className="relative w-16 h-16 rounded overflow-hidden bg-[#292A2B]">
+                      <img src={src} alt="" className="w-full h-full object-cover" />
+                      <button type="button"
+                        onClick={() => setReplyPhotos((p) => p.filter((_, x) => x !== n))}
+                        className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/70 text-white text-[11px] leading-none flex items-center justify-center">
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="flex gap-2 mb-3">
+                <label className="w-10 h-10 flex-none rounded border border-[#3A3A3C] bg-[#232325] flex items-center justify-center cursor-pointer hover:border-[#FDCE06] transition-colors">
+                  <span className="text-[#FDCE06] text-[18px] leading-none font-light">
+                    {uploading ? "…" : "+"}
+                  </span>
+                  <input type="file" accept="image/*" multiple
+                    onChange={(e) => { addReplyPhotos(e.target.files); e.target.value = ""; }}
+                    className="hidden" />
+                </label>
                 <input value={reply} onChange={(e) => setReply(e.target.value)}
                   placeholder="Add an update…" className={inputCls} />
                 <button onClick={() => send(d.id)} disabled={busy}
@@ -262,6 +285,8 @@ const Faults = () => {
   const [reply, setReply] = useState("");
   const [resolveHours, setResolveHours] = useState("");
   const [busy, setBusy] = useState(false);
+  const [replyPhotos, setReplyPhotos] = useState([]);
+  const [uploading, setUploading] = useState(false);
   const [, tick] = useState(0);
 
   useEffect(() => { load(); }, []);
@@ -324,12 +349,34 @@ const Faults = () => {
     } finally { setBusy(false); }
   };
 
+  const addReplyPhotos = async (files) => {
+    const list = Array.from(files || []).filter((f) => f.type.startsWith("image/"));
+    if (!list.length) return;
+    setUploading(true);
+    for (const file of list) {
+      try {
+        const body = new FormData();
+        body.append("file", file);
+        const res = await api.post("/v1/api/longtermhire/client/fault-upload", body, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        const url = res?.data?.data?.url;
+        if (url) setReplyPhotos((p) => [...p, url]);
+        else toast.error("That photo wouldn't upload");
+      } catch (e) {
+        toast.error("That photo wouldn't upload");
+      }
+    }
+    setUploading(false);
+  };
+
   const send = async (id) => {
-    if (!reply.trim()) return;
+    if (!reply.trim() && replyPhotos.length === 0) return;
     try {
       setBusy(true);
-      await api.post("/v1/api/longtermhire/super_admin/faults/" + id + "/reply", { message: reply });
+      await api.post("/v1/api/longtermhire/super_admin/faults/" + id + "/reply", { message: reply, attachments: replyPhotos });
       setReply("");
+      setReplyPhotos([]);
       const res = await api.get("/v1/api/longtermhire/super_admin/faults/" + id);
       if (res?.data && !res.data.error) setDetail(res.data.data);
     } catch (e) {
@@ -371,7 +418,7 @@ const Faults = () => {
         </div>
       ) : (
         <>
-          {openRows.map((f) => <Card key={f.id} f={f} open={open} detail={detail} busy={busy} reply={reply} setReply={setReply} resolveHours={resolveHours} setResolveHours={setResolveHours} openFault={openFault} classify={classify} stage={stage} send={send} />)}
+          {openRows.map((f) => <Card key={f.id} f={f} open={open} detail={detail} busy={busy} reply={reply} setReply={setReply} replyPhotos={replyPhotos} setReplyPhotos={setReplyPhotos} uploading={uploading} addReplyPhotos={addReplyPhotos} resolveHours={resolveHours} setResolveHours={setResolveHours} openFault={openFault} classify={classify} stage={stage} send={send} />)}
           {doneRows.length > 0 && (
             <div className="text-[#6B7280] font-[Inter] text-[11px] uppercase tracking-[0.06em] mt-7 mb-3">Resolved</div>
           )}
