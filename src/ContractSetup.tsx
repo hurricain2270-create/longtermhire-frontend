@@ -4,6 +4,8 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ClipLoader from "react-spinners/ClipLoader";
 import api from "./services/api";
+import { PDFViewer } from "@react-pdf/renderer";
+import ContractPDF from "./components/ContractPDF";
 import { clientApi } from "./services/clientApi";
 import { equipmentApi } from "./services/equipmentApi";
 
@@ -87,8 +89,10 @@ const ContractSetup = () => {
   const [equipment, setEquipment] = useState([]);
   const [form, setForm] = useState(BLANK);
   const [editingId, setEditingId] = useState(null);
+  const [contractNo, setContractNo] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [executeDoc, setExecuteDoc] = useState(null);
 
   useEffect(() => { loadAll(); }, []);
 
@@ -157,6 +161,7 @@ const ContractSetup = () => {
 
   const startNew = () => {
     setForm({ ...BLANK, agreement_date: new Date().toISOString().slice(0, 10) });
+    setContractNo("");
     setEditingId(null);
     setView("edit");
   };
@@ -179,6 +184,7 @@ const ContractSetup = () => {
       delivery_date: (row.delivery_date || "").slice(0, 10),
       hire_start_date: (row.hire_start_date || "").slice(0, 10),
     });
+    setContractNo(row.contract_no || "");
     setEditingId(row.id);
     setView("edit");
   };
@@ -231,6 +237,31 @@ const ContractSetup = () => {
     }
   };
 
+  const execute = () => {
+    if (!client || !plant) {
+      toast.error("Choose a company and a plant item first");
+      return;
+    }
+    const attach = equipment.find(
+      (e) => String(e.id) === String(form.attachment_equipment_id)
+    );
+    setExecuteDoc({
+      ...form,
+      contract_no: contractNo || "Draft",
+      company_name: client.company_name,
+      client_name: client.client_name,
+      email: client.email,
+      plant_code: plant.equipment_id,
+      equipment_name: plant.equipment_name,
+      attachment_name: attach
+        ? attach.equipment_id + " — " + attach.equipment_name
+        : null,
+      maintenance_levy: "3.50",
+      environmental_levy: "1.50",
+      damage_waiver_rate: "7.50",
+    });
+  };
+
   const save = async () => {
     if (!form.client_user_id || !form.equipment_id) {
       toast.error("Choose a company and a plant item first");
@@ -247,7 +278,9 @@ const ContractSetup = () => {
         toast.success("Contract updated");
       } else {
         const res = await api.post("/v1/api/longtermhire/super_admin/contracts", body);
-        toast.success("Contract created — " + (res?.data?.data?.contract_no || ""));
+        const made = res?.data?.data?.contract_no || "";
+        setContractNo(made);
+        toast.success("Contract created — " + made);
       }
       await writeBack();
       await loadAll();
@@ -490,7 +523,35 @@ const ContractSetup = () => {
           className="px-4 py-2 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors whitespace-nowrap">
           {saving ? "Saving..." : editingId ? "Save changes" : "Save draft"}
         </button>
+        <button onClick={execute}
+          className="px-4 py-2 rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#3d9e43] transition-colors whitespace-nowrap">
+          Execute
+        </button>
       </div>
+
+      {executeDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
+          <div className="bg-[#1F1F20] border border-[#333] rounded-lg w-full max-w-4xl h-[92vh] flex flex-col">
+            <div className="px-5 py-3 border-b border-[#333] flex items-center justify-between">
+              <div>
+                <h3 className="text-[#E5E5E5] font-[Inter] font-bold text-[16px]">
+                  Hire Agreement — {executeDoc.contract_no}
+                </h3>
+                <p className="text-[#6B7280] font-[Inter] text-xs mt-0.5">
+                  Use the viewer controls to save or print.
+                </p>
+              </div>
+              <button onClick={() => setExecuteDoc(null)}
+                className="text-[#9CA3AF] hover:text-white text-xl leading-none px-2">✕</button>
+            </div>
+            <div className="flex-1 bg-[#525659]">
+              <PDFViewer width="100%" height="100%" style={{ border: "none" }}>
+                <ContractPDF data={executeDoc} />
+              </PDFViewer>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ToastContainer position="top-right" autoClose={3000} theme="dark" />
     </div>
