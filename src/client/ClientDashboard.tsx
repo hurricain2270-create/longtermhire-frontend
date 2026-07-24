@@ -1538,24 +1538,22 @@ function ClientDashboard() {
                 } transition-all duration-300 ease-in-out`}
             >
               <div
-                className="p-6 relative"
+                className="px-6 pt-6 pb-9 relative"
                 style={{
-                  background: "linear-gradient(160deg, #FFB3E8 0%, #FF8FD6 45%, #F76BC4 80%, #E84FAE 100%)",
-                  transform: "rotate(-1.6deg)",
-                  borderRadius: "2px 2px 18px 2px",
+                  background: "linear-gradient(#FFBEE7 0%, #FBACDE 100%)",
+                  transform: "rotate(-1.2deg)",
+                  borderRadius: "0",
                   boxShadow:
-                    "0 -1px 2px rgba(255,255,255,0.4) inset, 2px 2px 4px rgba(0,0,0,0.12) inset, 1px 2px 2px rgba(0,0,0,0.2), 4px 10px 16px -6px rgba(0,0,0,0.4), 10px 26px 34px -14px rgba(0,0,0,0.3)",
+                    "0 1px 1px rgba(0,0,0,0.3), 0 14px 20px -12px rgba(0,0,0,0.55)",
                 }}
               >
-                {/* Peeling corner fold */}
+                {/* Sheet lifting slightly at the base */}
                 <div
-                  className="absolute top-0 left-0 pointer-events-none"
+                  className="absolute left-0 right-0 bottom-0 pointer-events-none"
                   style={{
-                    width: "56px",
-                    height: "56px",
-                    background: "linear-gradient(315deg, transparent 45%, rgba(0,0,0,0.18) 46%, #D6539F 50%, #FFCBEE 75%, #FFEDFB 100%)",
-                    borderTopLeftRadius: "18px",
-                    filter: "drop-shadow(1px 2px 2px rgba(0,0,0,0.25))",
+                    height: "26px",
+                    background:
+                      "linear-gradient(to top, rgba(0,0,0,0.07), transparent)",
                   }}
                 />
                 {/* Sticky note content with handwritten font */}
@@ -1565,7 +1563,7 @@ function ClientDashboard() {
                   const autoSize = plainLen < 20 ? 52 : plainLen < 40 ? 42 : plainLen < 70 ? 34 : plainLen < 120 ? 26 : 20;
                   return (
                     <div
-                      className="text-[#0033FF]"
+                      className="text-[#123A5E]"
                       style={{
                         fontFamily: "'Caveat','Dancing Script','Kalam', cursive",
                         fontWeight: 700,
