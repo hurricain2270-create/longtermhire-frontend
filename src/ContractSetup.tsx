@@ -6,8 +6,6 @@ import ClipLoader from "react-spinners/ClipLoader";
 import api from "./services/api";
 import { PDFViewer } from "@react-pdf/renderer";
 import ContractPDF from "./components/ContractPDF";
-import { PDFViewer } from "@react-pdf/renderer";
-import ContractPDF from "./components/ContractPDF";
 import { clientApi } from "./services/clientApi";
 import { equipmentApi } from "./services/equipmentApi";
 
