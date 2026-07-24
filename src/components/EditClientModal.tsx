@@ -14,6 +14,9 @@ const EditClientModal = ({
     companyName: "",
     email: "",
     phone: "",
+    contactPosition: "",
+    abn: "",
+    paymentTerms: "30 days from end of month",
     street: "",
     suburb: "",
     state: "",
@@ -28,6 +31,9 @@ const EditClientModal = ({
         companyName: client.company_name || "",
         email: client.email || "",
         phone: client.phone || "",
+        contactPosition: client.contact_position || "",
+        abn: client.abn || "",
+        paymentTerms: client.payment_terms || "30 days from end of month",
         street: client.street || "",
         suburb: client.suburb || "",
         state: client.state || "",
@@ -72,6 +78,9 @@ const EditClientModal = ({
       company_name: formData.companyName,
       email: formData.email,
       phone: formData.phone,
+      contact_position: formData.contactPosition,
+      abn: formData.abn,
+      payment_terms: formData.paymentTerms,
       address: postalAddress,
       street: formData.street,
       suburb: formData.suburb,
@@ -96,6 +105,9 @@ const EditClientModal = ({
         companyName: client.company_name || "",
         email: client.email || "",
         phone: client.phone || "",
+        contactPosition: client.contact_position || "",
+        abn: client.abn || "",
+        paymentTerms: client.payment_terms || "30 days from end of month",
         street: client.street || "",
         suburb: client.suburb || "",
         state: client.state || "",
@@ -174,6 +186,46 @@ const EditClientModal = ({
                 className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors font-[Inter] text-base"
               />
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-x-6">
+            <div>
+              <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
+                Position
+              </label>
+              <input
+                type="text"
+                name="contactPosition"
+                value={formData.contactPosition}
+                onChange={handleInputChange}
+                className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors font-[Inter] text-base"
+              />
+            </div>
+            <div>
+              <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
+                ABN
+              </label>
+              <input
+                type="text"
+                name="abn"
+                value={formData.abn}
+                onChange={handleInputChange}
+                className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors font-[Inter] text-base"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
+              Payment terms
+            </label>
+            <input
+              type="text"
+              name="paymentTerms"
+              value={formData.paymentTerms}
+              onChange={handleInputChange}
+              className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 outline-none focus:border-[#FDCE06] transition-colors font-[Inter] text-base"
+            />
           </div>
 
           {/* Postal Address */}
