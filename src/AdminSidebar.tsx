@@ -183,6 +183,17 @@ const AdminSidebar = ({ isOpen, onClose }) => {
       ),
     },
     {
+      path: "/faults",
+      name: "Faults",
+      badge: "faults",
+      icon: (
+        <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 1.75 13 12.25H1L7 1.75Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
+          <path d="M7 6v3M7 10.75v.01" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+        </svg>
+      ),
+    },
+    {
       path: "/reporting",
       name: "Reporting",
       icon: (
