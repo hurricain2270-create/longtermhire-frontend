@@ -4,6 +4,7 @@ import AddEquipmentModal from "./components/AddEquipmentModal";
 import EditEquipmentModal from "./components/EditEquipmentModal";
 import EquipmentDetailsModal from "./components/EquipmentDetailsModal";
 import { equipmentApi } from "./services/equipmentApi";
+import api from "./services/api";
 import ClipLoader from "react-spinners/ClipLoader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -96,7 +97,7 @@ const EquipmentManagement = () => {
           );
         }
       } catch (e) {
-        // colour coding is a nicety, never block the list on it
+        console.error("Could not load hire status for colour coding:", e);
       }
     })();
   }, []);
