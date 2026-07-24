@@ -22,6 +22,16 @@ const EVENT_LABEL = {
   actioned: "Actioned", attended: "On site", resolved: "Back in service", message: "",
 };
 
+const photosOf = (raw) => {
+  if (!raw) return [];
+  try {
+    const p = typeof raw === "string" ? JSON.parse(raw) : raw;
+    return Array.isArray(p) ? p : [];
+  } catch (e) {
+    return [];
+  }
+};
+
 const hrs = (a, b) => {
   if (!a) return 0;
   const s = new Date(String(a).replace(" ", "T"));
@@ -186,6 +196,16 @@ const Card = ({
                       {u.message ? (
                         <div className="text-[#E5E5E5] font-[Inter] text-[13px] leading-relaxed mt-0.5">{u.message}</div>
                       ) : null}
+                      {photosOf(u.attachments).length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {photosOf(u.attachments).map((src, n) => (
+                            <a key={n} href={src} target="_blank" rel="noreferrer"
+                              className="block w-24 h-24 rounded-lg overflow-hidden border border-[#333] hover:border-[#FDCE06] transition-colors">
+                              <img src={src} alt="" className="w-full h-full object-cover" />
+                            </a>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
