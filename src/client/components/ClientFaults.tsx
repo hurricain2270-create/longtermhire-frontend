@@ -11,6 +11,16 @@ const OPTIONS = [
   { key: "attention", label: "Needs attention", hint: "Tyre, light, hose — that sort of thing", colour: "#4CAF50" },
 ];
 
+const photosOf = (raw) => {
+  if (!raw) return [];
+  try {
+    const p = typeof raw === "string" ? JSON.parse(raw) : raw;
+    return Array.isArray(p) ? p : [];
+  } catch (e) {
+    return [];
+  }
+};
+
 const hoursBetween = (a, b) => {
   if (!a) return 0;
   const start = new Date(String(a).replace(" ", "T"));
@@ -270,6 +280,16 @@ const ClientFaults = () => {
                       {u.message ? (
                         <div className="text-[#E5E5E5] text-[13px] leading-relaxed">{u.message}</div>
                       ) : null}
+                      {photosOf(u.attachments).length > 0 && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {photosOf(u.attachments).map((src, n) => (
+                            <a key={n} href={src} target="_blank" rel="noreferrer"
+                              className="block w-24 h-24 rounded-lg overflow-hidden border border-[#333] hover:border-[#FDCE06] transition-colors">
+                              <img src={src} alt="" className="w-full h-full object-cover" />
+                            </a>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                   {!f.resolved_at && (
