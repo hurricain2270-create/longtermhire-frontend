@@ -115,6 +115,21 @@ const HeaderTicker = ({ text }: { text: string }) => {
   );
 };
 
+// Sticky note colour, rotating each month so the portal doesn't feel static
+const STICKY_COLOURS = [
+  { top: "#FFBEE7", bottom: "#FBACDE" }, // pink
+  { top: "#FFE0B0", bottom: "#FBD094" }, // amber
+  { top: "#C7EFDC", bottom: "#B3E6CC" }, // mint
+  { top: "#F2EFE4", bottom: "#E6E1D0" }, // manila
+  { top: "#C3DDF3", bottom: "#B3D3EE" }, // light blue
+];
+
+const stickyColourForNow = () => {
+  const d = new Date();
+  const months = d.getFullYear() * 12 + d.getMonth();
+  return STICKY_COLOURS[months % STICKY_COLOURS.length];
+};
+
 function ClientDashboard() {
   const [user, setUser] = useState(null);
   const [selectedEquipment, setSelectedEquipment] = useState(
@@ -1540,7 +1555,7 @@ function ClientDashboard() {
               <div
                 className="px-6 pt-6 pb-9 relative"
                 style={{
-                  background: "linear-gradient(#FFBEE7 0%, #FBACDE 100%)",
+                  background: `linear-gradient(${stickyColourForNow().top} 0%, ${stickyColourForNow().bottom} 100%)`,
                   transform: "rotate(-1.2deg)",
                   borderRadius: "0",
                   boxShadow:
