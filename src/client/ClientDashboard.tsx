@@ -16,6 +16,7 @@ import QuickViewModal from "./components/QuickViewModal";
 import CategoryFilter from "./components/CategoryFilter";
 import ClientHires from "./components/ClientHires";
 import TermCalculator from "./components/TermCalculator";
+import ClientSite from "./components/ClientSite";
 import { calculateMonthlyPrices } from "../utils/pricingCalculator";
 
 // Add custom CSS for scrollbar hiding and range input styling
@@ -1498,6 +1499,9 @@ function ClientDashboard() {
                 </div>
               </div>
             )}
+
+            {/* Your site */}
+            <ClientSite userRole={getUserRole()} />
 
             {/* Term calculator */}
             <TermCalculator
