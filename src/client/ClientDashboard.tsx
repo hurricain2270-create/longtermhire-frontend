@@ -15,6 +15,7 @@ import EquipmentCard from "./components/EquipmentCard";
 import QuickViewModal from "./components/QuickViewModal";
 import CategoryFilter from "./components/CategoryFilter";
 import ClientHires from "./components/ClientHires";
+import TermCalculator from "./components/TermCalculator";
 import { calculateMonthlyPrices } from "../utils/pricingCalculator";
 
 // Add custom CSS for scrollbar hiding and range input styling
@@ -1497,6 +1498,11 @@ function ClientDashboard() {
                 </div>
               </div>
             )}
+
+            {/* Term calculator */}
+            <TermCalculator
+              equipment={Object.values(equipmentData || {}).flat()}
+            />
 
             {/* Dynamic Equipment Sections */}
             {Object.keys(equipmentData).length === 0 ? (
