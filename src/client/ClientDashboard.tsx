@@ -17,6 +17,7 @@ import CategoryFilter from "./components/CategoryFilter";
 import ClientHires from "./components/ClientHires";
 import TermCalculator from "./components/TermCalculator";
 import ClientSite from "./components/ClientSite";
+import ClientFaults from "./components/ClientFaults";
 import { calculateMonthlyPrices } from "../utils/pricingCalculator";
 
 // Add custom CSS for scrollbar hiding and range input styling
@@ -1502,6 +1503,9 @@ function ClientDashboard() {
 
             {/* Your site */}
             <ClientSite userRole={getUserRole()} />
+
+            {/* Faults */}
+            <ClientFaults />
 
             {/* Term calculator */}
             <TermCalculator
