@@ -19,6 +19,12 @@ const EditEquipmentModal = ({
     position: "",
     availability: true,
     ownershipStatus: "owned",
+    model: "",
+    year_made: "",
+    fuel_type: "",
+    previous_code: "",
+    waiver_excess: "",
+
     description: "",
   });
 
@@ -35,6 +41,11 @@ const EditEquipmentModal = ({
         position: equipment.position || "",
         availability: equipment.availability,
         ownershipStatus: equipment.ownership_status || "owned",
+        model: equipment.model || "",
+        year_made: equipment.year_made || "",
+        fuel_type: equipment.fuel_type || "",
+        previous_code: equipment.previous_code || "",
+        waiver_excess: equipment.waiver_excess || "",
         description: equipment.description || "",
       });
     }
@@ -62,6 +73,11 @@ const EditEquipmentModal = ({
       position: formData.position,
       availability: formData.availability ? 1 : 0,
       ownership_status: formData.ownershipStatus,
+      model: formData.model,
+      year_made: formData.year_made,
+      fuel_type: formData.fuel_type,
+      previous_code: formData.previous_code,
+      waiver_excess: formData.waiver_excess,
       description: formData.description,
     };
 
@@ -232,6 +248,75 @@ const EditEquipmentModal = ({
           </div>
 
           {/* Availability */}
+
+          {/* Plant Detail */}
+          <div>
+            <label className="block text-[#D1D5DB] font-[Inter] font-medium text-[14px] leading-[20px] mb-2">
+              Model
+            </label>
+            <input
+              type="text"
+              name="model"
+              value={formData.model}
+              onChange={handleInputChange}
+              className="w-full h-[46px] bg-[#292A2B] border border-[#333333] rounded-[6px] text-[#E5E5E5] text-[16px] font-[Inter] px-3 outline-none focus:border-[#FDCE06] transition-colors"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-x-6">
+            <div>
+              <label className="block text-[#D1D5DB] font-[Inter] font-medium text-[14px] leading-[20px] mb-2">
+                Year
+              </label>
+              <input
+                type="text"
+                name="year_made"
+                value={formData.year_made}
+                onChange={handleInputChange}
+                className="w-full h-[46px] bg-[#292A2B] border border-[#333333] rounded-[6px] text-[#E5E5E5] text-[16px] font-[Inter] px-3 outline-none focus:border-[#FDCE06] transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-[#D1D5DB] font-[Inter] font-medium text-[14px] leading-[20px] mb-2">
+                Fuel type
+              </label>
+              <input
+                type="text"
+                name="fuel_type"
+                value={formData.fuel_type}
+                onChange={handleInputChange}
+                className="w-full h-[46px] bg-[#292A2B] border border-[#333333] rounded-[6px] text-[#E5E5E5] text-[16px] font-[Inter] px-3 outline-none focus:border-[#FDCE06] transition-colors"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-x-6">
+            <div>
+              <label className="block text-[#D1D5DB] font-[Inter] font-medium text-[14px] leading-[20px] mb-2">
+                Previous code
+              </label>
+              <input
+                type="text"
+                name="previous_code"
+                value={formData.previous_code}
+                onChange={handleInputChange}
+                placeholder="e.g. E475"
+                className="w-full h-[46px] bg-[#292A2B] border border-[#333333] rounded-[6px] text-[#E5E5E5] text-[16px] font-[Inter] px-3 outline-none focus:border-[#FDCE06] transition-colors"
+              />
+            </div>
+            <div>
+              <label className="block text-[#D1D5DB] font-[Inter] font-medium text-[14px] leading-[20px] mb-2">
+                Damage waiver excess
+              </label>
+              <input
+                type="text"
+                name="waiver_excess"
+                value={formData.waiver_excess}
+                onChange={handleInputChange}
+                className="w-full h-[46px] bg-[#292A2B] border border-[#333333] rounded-[6px] text-[#E5E5E5] text-[16px] font-[Inter] px-3 outline-none focus:border-[#FDCE06] transition-colors"
+              />
+            </div>
+          </div>
 
           {/* Ownership */}
           <div>
