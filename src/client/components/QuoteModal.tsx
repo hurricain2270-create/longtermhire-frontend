@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect } from "react";
-import { PDFViewer } from "@react-pdf/renderer";
+import { PDFViewer, PDFDownloadLink } from "@react-pdf/renderer";
 import QuotePDF from "../../components/QuotePDF";
 import { ClipLoader } from "react-spinners";
 import { clientEquipmentApi } from "../../services/clientEquipmentApi";
@@ -20,6 +20,14 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
     const [error, setError] = useState<string | null>(null);
     const [saving, setSaving] = useState(false);
     const [savedQuoteId, setSavedQuoteId] = useState<string | null>(null);
+    const [isNarrow, setIsNarrow] = useState(
+        typeof window !== "undefined" && window.innerWidth < 768
+    );
+    useEffect(() => {
+        const onResize = () => setIsNarrow(window.innerWidth < 768);
+        window.addEventListener("resize", onResize);
+        return () => window.removeEventListener("resize", onResize);
+    }, []);
 
     // Change your useEffect to depend on equipment.id, not the entire object
     useEffect(() => {
@@ -158,7 +166,7 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-75 p-4">
             <div className="bg-[#1F1F20] border border-[#333333] rounded-lg w-full max-w-4xl h-[90vh] flex flex-col">
                 {/* Header */}
-                <div className="p-6 border-b border-[#333333] flex justify-between items-center">
+                <div className="p-4 sm:p-6 border-b border-[#333333] flex justify-between items-center">
                     <h2 className="text-[#E5E5E5] text-xl font-bold">
                         Instant Quote: {equipment?.equipment_name}
                     </h2>
@@ -195,9 +203,28 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
                             </div>
                         </div>
                     ) : quoteData ? (
-                        <PDFViewer showToolbar={false} width="100%" height="100%" className="border-none">
-                            <QuotePDF quoteData={quoteData} />
-                        </PDFViewer>
+                        isNarrow ? (
+                            <div className="h-full flex flex-col items-center justify-center text-center px-6">
+                                <div className="text-[#E5E5E5] text-lg font-semibold mb-1">
+                                    {equipment?.equipment_name}
+                                </div>
+                                <p className="text-[#9CA3AF] text-sm mb-6 max-w-xs">
+                                    Your quote is ready. Download it to read the full
+                                    page, or send it straight through.
+                                </p>
+                                <PDFDownloadLink
+                                    document={<QuotePDF quoteData={quoteData} />}
+                                    fileName={`Quote-${equipment?.equipment_name || "equipment"}.pdf`}
+                                    className="px-5 py-3 bg-[#FDCE06] text-[#1F1F20] rounded font-bold text-sm"
+                                >
+                                    {({ loading }) => (loading ? "Preparing..." : "Download quote")}
+                                </PDFDownloadLink>
+                            </div>
+                        ) : (
+                            <PDFViewer showToolbar={false} width="100%" height="100%" className="border-none">
+                                <QuotePDF quoteData={quoteData} />
+                            </PDFViewer>
+                        )
                     ) : (
                         <div className="absolute inset-0 flex items-center justify-center text-white">
                             Failed to generate quote.
@@ -206,7 +233,7 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-[#333333] flex justify-end gap-3">
+                <div className="p-4 sm:p-6 border-t border-[#333333] flex flex-wrap justify-end gap-3">
                     {savedQuoteId && (
                         <span className="text-[#FDCE06] text-sm font-medium mr-auto">
                             ✅ Saved: {savedQuoteId}
