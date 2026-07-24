@@ -244,6 +244,11 @@ const Maintenance = () => {
                             </button>
                           ) : (
                             <>
+                              <button onClick={() => openSchedule(r)}
+                                title="Change the interval or last service"
+                                className="px-2.5 py-1.5 rounded border border-[#444] text-[#9CA3AF] font-[Inter] font-bold text-[12px] hover:border-[#666] hover:text-[#E5E5E5] transition-colors whitespace-nowrap">
+                                Schedule
+                              </button>
                               <button onClick={() => openHours(r)}
                                 className="px-3 py-1.5 rounded border border-[#444] text-[#E5E5E5] font-[Inter] font-bold text-[12px] hover:border-[#666] transition-colors whitespace-nowrap">
                                 Log hrs
