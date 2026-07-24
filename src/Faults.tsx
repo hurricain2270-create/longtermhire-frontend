@@ -87,6 +87,58 @@ const Card = ({
         </div>
       </div>
 
+      {f.severity && (
+        f.severity === "emergency" ? (
+          <div className="mb-3">
+            <div className="flex justify-between text-[11px] text-[#9CA3AF] font-[Inter] mb-1.5">
+              <span className="uppercase tracking-[0.06em] text-[10px]">Response</span>
+              <span className={f.actioned_at ? "text-[#4CAF50] font-bold" : ""}>
+                {f.actioned_at
+                  ? "actioned in " + human(hrs(f.reported_at, f.actioned_at))
+                  : human(hrs(f.reported_at)) + " so far"}
+              </span>
+            </div>
+            <div className="bg-[#252527] rounded-full h-2 overflow-hidden mb-3">
+              <div className="h-2 transition-all" style={{
+                width: Math.min(100, (hrs(f.reported_at, f.actioned_at) / 24) * 100) + "%",
+                background: f.actioned_at ? "#4CAF50"
+                  : (hrs(f.reported_at) / 24) * 100 > 66 ? "#ef4444" : "#F59E0B",
+              }} />
+            </div>
+            <div className="flex justify-between text-[11px] text-[#9CA3AF] font-[Inter] mb-1.5">
+              <span className="uppercase tracking-[0.06em] text-[10px]">Repair</span>
+              <span>{f.resolved_at ? "back in service" : "in progress"}</span>
+            </div>
+            <div className="bg-[#252527] rounded-full h-2 overflow-hidden">
+              <div className="h-2" style={{
+                width: f.resolved_at ? "100%" : "45%",
+                background: f.resolved_at ? "#4CAF50" : "#F59E0B",
+              }} />
+            </div>
+          </div>
+        ) : (
+          <div className="mb-3">
+            <div className="flex justify-between text-[11px] text-[#9CA3AF] font-[Inter] mb-1.5">
+              <span>{f.resolved_at ? "Back in service" : "Being sorted"}</span>
+              <span>
+                {f.resolved_at
+                  ? "took " + human(hrs(f.reported_at, f.resolved_at))
+                  : Math.round(Math.min(100, (hrs(f.reported_at) / (f.window_hours || 72)) * 100))
+                    + "% of the estimated fault repair timeline"}
+              </span>
+            </div>
+            <div className="bg-[#252527] rounded-full h-2 overflow-hidden">
+              <div className="h-2 transition-all" style={{
+                width: Math.max(2, Math.min(100, (hrs(f.reported_at, f.resolved_at) / (f.window_hours || 72)) * 100)) + "%",
+                background: f.resolved_at ? "#4CAF50"
+                  : (hrs(f.reported_at) / (f.window_hours || 72)) * 100 > 75 ? "#ef4444"
+                  : (hrs(f.reported_at) / (f.window_hours || 72)) * 100 > 40 ? "#F59E0B" : "#4CAF50",
+              }} />
+            </div>
+          </div>
+        )
+      )}
+
       <button onClick={() => openFault(f)}
         className="text-[#FDCE06] font-[Inter] text-[13px] font-medium hover:underline">
         {isOpen ? "Close" : "Open"}
@@ -119,7 +171,6 @@ const Card = ({
                 <div key={u.id}>
                   {gap !== null && (
                     <div className="border-l border-dashed border-[#333] ml-[5px] pl-4 py-1.5 text-[#6B7280] font-[Inter] text-[11px]">
-                      {u.author_side === prev.author_side ? "then " : "replied in "}
                       <span className="text-[#9CA3AF]">{human(gap)}</span>
                     </div>
                   )}
