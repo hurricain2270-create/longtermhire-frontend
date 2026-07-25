@@ -68,10 +68,10 @@ export const useChat = (onNewMessagesFromPolling) => {
   }, []);
 
   // Load messages for a conversation
-  const loadMessages = useCallback(async (conversationId, page = 1) => {
+  const loadMessages = useCallback(async (conversationId, page = 1, silent = false) => {
     try {
       if (page === 1) {
-        setLoadingMessages(true); // Use separate loading state for messages
+        if (!silent) setLoadingMessages(true); // skip the spinner on background polls
         setCurrentPage(1);
       } else {
         setLoadingMore(true);
@@ -107,7 +107,7 @@ export const useChat = (onNewMessagesFromPolling) => {
       setError("Failed to load messages");
       console.error("Load messages error:", err);
     } finally {
-      setLoadingMessages(false); // Use separate loading state for messages
+      if (!silent) setLoadingMessages(false);
       setLoadingMore(false);
     }
   }, []);
@@ -227,52 +227,17 @@ export const useChat = (onNewMessagesFromPolling) => {
       }
 
       pollingInterval.current = setInterval(async () => {
-        try {
-          const response = await chatApi.getMessages(conversationId, 1, 10);
-          if (!response.error && response.data.length > 0) {
-            // Dedupe by message id rather than by parsed timestamp. MySQL
-            // returns "YYYY-MM-DD HH:MM:SS", which is not valid ISO — some
-            // engines parse it as NaN, and every comparison against NaN is
-            // false, so nothing was ever recognised as new.
-            const newMessages = response.data;
+      try {
+        // Reuse the exact path that works on refresh rather than maintaining
+        // separate merge logic. `silent` keeps the spinner from flashing.
+        await loadMessages(conversationId, 1, true);
+        loadConversations(false);
+      } catch (err) {
+        console.error("Polling error:", err);
+      }
+    }, 3000); // Poll every 3 seconds
 
-            if (newMessages.length > 0) {
-              setMessages((prev) => {
-                // Create a Set of existing message IDs to check for duplicates
-                const existingMessageIds = new Set(prev.map((msg) => msg.id));
-
-                // Filter out messages that already exist
-                const uniqueNewMessages = newMessages.filter(
-                  (msg) => !existingMessageIds.has(msg.id)
-                );
-
-                if (uniqueNewMessages.length > 0) {
-                  // Notify that new messages arrived from polling
-                  if (onNewMessagesFromPolling) {
-                    onNewMessagesFromPolling(uniqueNewMessages);
-                  }
-                  return [...prev, ...uniqueNewMessages];
-                }
-                return prev;
-              });
-
-              // Update timestamp only if we actually added new messages
-              const latestMessage = newMessages[newMessages.length - 1];
-              lastMessageTimestamp.current = toTime(latestMessage.created_at);
-
-              // Refresh conversations to update unread counts (without showing loading)
-              // Use a small delay to avoid race conditions
-              setTimeout(() => {
-                loadConversations(false); // Don't show loading spinner on background refresh
-              }, 100);
-            }
-          }
-        } catch (err) {
-          console.error("Polling error:", err);
-        }
-      }, 3000); // Poll every 3 seconds
-
-      setIsConnected(true);
+    setIsConnected(true);
     },
     [] // Remove loadConversations dependency to prevent unnecessary re-renders
   );
