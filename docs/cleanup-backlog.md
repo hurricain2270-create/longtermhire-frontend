@@ -8,17 +8,26 @@ this version**, then ask for the commit to be reverted.
 
 ## Done
 
+- [x] **Error boundary.** One exception used to unmount the whole app and blank
+      every page with nothing on screen to explain it. `App.tsx` now catches it,
+      shows the error text, and keeps the rest of the app working. Added after a
+      blank-screen episode where three rounds of guesswork got nowhere and the
+      boundary found it in one.
+- [x] **B11 (buttons half) — shared button styles.** `src/styles/buttons.ts`.
+      Yellow primary, blue edit, green go, red danger, grey dismiss, in three
+      sizes. All 53 labelled buttons use it. Type scale still outstanding.
+- [x] **B15 (part) — backend routes in the repo.** `fault.js`, `contract.js`,
+      `content.js`. The rest still live only on EC2.
+- [x] **B2 — junk in `public/` removed.** 353 files, 6.7MB: AppImages zips and
+      three unpacked copies, pwa-assets and favicon zips, template wireframes.
+      Repo went from 665 files to 316. Commit `649b5745`.
 - [x] **B1 — dead files removed.** `ClientDashboard copy.tsx`, two sample video
       files (35MB), `new.md`, `_redirects copy`. Commit `3bee9a4e`.
 
 ## Next up — zero risk
 
-- [ ] **B2 — junk in `public/`.** `AppImages.zip` / `(1)` / `(2)` plus both
-      unpacked `AppImages/` directories, two `pwa-assets` zips, three `favicon`
-      zips, and the previous developer's wireframe PNGs
-      (`dashboard-wireframe.png`, `Wireframes-API-1/2.png`,
-      `baas-features-drawer.png`, `scannerview.png`). ~3MB, all verified
-      unreferenced.
+- [ ] **B14 — remove the dead `fault-upload` route from `fault.js`.** Nothing
+      calls it now that faults use the shared upload path. Five minutes.
 
 ## Medium risk — do in batches with a build between each
 
@@ -40,11 +49,11 @@ this version**, then ask for the commit to be reverted.
 
 ## Low risk, mechanical
 
-- [ ] **B6 — one API base URL.** Hardcoded in six files: `ClientDashboard.tsx`,
+- [ ] **B6 — one API base URL.** Hardcoded in seven places: `ClientDashboard.tsx`,
       `ClientHires.tsx`, `ClientSite.tsx`, `Faults.tsx`, `ClientFaults.tsx`,
       `api.ts`. No way to point at a staging backend without editing six files.
 
-- [ ] **B7 — strip debug logging.** 247 `console.log` / `warn` / `error` calls,
+- [ ] **B7 — strip debug logging.** 253 `console.log` / `warn` / `error` calls,
       many with emoji prefixes. Leaks internal state on a public site.
 
 - [ ] **B11 — define shared type and button styles.** No shared sizes, so every page picks
@@ -76,9 +85,6 @@ this version**, then ask for the commit to be reverted.
       the same code twice. A bug fixed in one silently persists in the other —
       exactly what happened with the polling gate.
 
-- [ ] **B14 — remove the dead `fault-upload` backend route.** Nothing calls it
-      now that faults use the shared upload path.
-
 ## Settings — do when nothing else is in flight
 
 - [ ] **B8 — make the repo private, and add `.env*` to `.gitignore`.** No
@@ -98,6 +104,17 @@ this version**, then ask for the commit to be reverted.
       `@ts-nocheck`, so type checking is effectively off across most of the app.
 
 ---
+
+## From the Equipment / Content merge
+
+- [ ] **Retire Content Management properly.** Now greyed and last in the menu
+      (`a1b81428`) pending a month or two of using the merged Equipment
+      Management. To remove: the menu entry, the route in `App.tsx`, and
+      `ContentManagement.tsx`.
+- [ ] **Category on the content list query.** `content.js` joins the equipment
+      table but selects no category, so the merged page derives categories from
+      the equipment list instead. Also worth tidying the duplicated
+      `c.updated_at` and `e.equipment_id` columns in that SELECT.
 
 ## Open question
 
