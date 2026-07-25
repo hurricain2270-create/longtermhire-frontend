@@ -54,6 +54,31 @@ const ContentManagement = () => {
   const [contentData, setContentData] = useState([]);
   const [descFilter, setDescFilter] = useState("all");
   const [imgFilter, setImgFilter] = useState("all");
+  const [specFilter, setSpecFilter] = useState("all");
+  const [hireFilter, setHireFilter] = useState("all");
+
+  // Which machines are currently out on hire. Same source Equipment
+  // Management uses, so the two pages can never disagree.
+  const [onHireIds, setOnHireIds] = useState(new Set());
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await api.get("/v1/api/longtermhire/super_admin/fleet-report");
+        if (res && res.data && !res.data.error) {
+          const hires = (res.data.data && res.data.data.hires) || [];
+          setOnHireIds(
+            new Set(
+              hires
+                .filter((h) => h.hire_status === "active")
+                .map((h) => String(h.equipment_id))
+            )
+          );
+        }
+      } catch (e) {
+        // no hire badges is survivable; the page still works
+      }
+    })();
+  }, []);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -225,23 +250,75 @@ const ContentManagement = () => {
   // What still needs content written. Everything loads in one page and the
   // fleet is small, so this is worked out here rather than on the server.
   const hasDesc = (it) => String(it.description || "").trim().length > 0;
-  const hasImg = (it) =>
-    (Array.isArray(it.images) && it.images.length > 0) || !!it.image_url;
+  const photoCount = (it) =>
+    Array.isArray(it.images) && it.images.length > 0
+      ? it.images.length
+      : it.image_url ? 1 : 0;
+  const hasImg = (it) => photoCount(it) > 0;
+
+  // specs_files comes back from the equipment table as a JSON string.
+  const specCount = (it) => {
+    const raw = it.specs_files;
+    if (!raw) return 0;
+    if (Array.isArray(raw)) return raw.length;
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed.length : parsed ? 1 : 0;
+    } catch (e) {
+      return String(raw).trim() ? 1 : 0;
+    }
+  };
+  const hasSpec = (it) => specCount(it) > 0;
+  const isOnHire = (it) => onHireIds.has(String(it.content_equipment_id));
 
   const matchesDesc = (it) =>
     descFilter === "all" || (descFilter === "yes" ? hasDesc(it) : !hasDesc(it));
   const matchesImg = (it) =>
     imgFilter === "all" || (imgFilter === "yes" ? hasImg(it) : !hasImg(it));
+  const matchesSpec = (it) =>
+    specFilter === "all" || (specFilter === "yes" ? hasSpec(it) : !hasSpec(it));
+  const matchesHire = (it) =>
+    hireFilter === "all" || (hireFilter === "on" ? isOnHire(it) : !isOnHire(it));
 
-  const countDesc = (val) =>
-    contentData.filter((it) => matchesImg(it) &&
-      (val === "all" || (val === "yes" ? hasDesc(it) : !hasDesc(it)))).length;
-  const countImg = (val) =>
-    contentData.filter((it) => matchesDesc(it) &&
-      (val === "all" || (val === "yes" ? hasImg(it) : !hasImg(it)))).length;
+  // Each count reflects the other filters, so a chip shows what clicking it gives.
+  const tally = (pred, skip) =>
+    contentData.filter(
+      (it) =>
+        (skip === "desc" || matchesDesc(it)) &&
+        (skip === "img" || matchesImg(it)) &&
+        (skip === "spec" || matchesSpec(it)) &&
+        (skip === "hire" || matchesHire(it)) &&
+        pred(it)
+    ).length;
+  const countDesc = (v) =>
+    tally((it) => v === "all" || (v === "yes" ? hasDesc(it) : !hasDesc(it)), "desc");
+  const countImg = (v) =>
+    tally((it) => v === "all" || (v === "yes" ? hasImg(it) : !hasImg(it)), "img");
+  const countSpec = (v) =>
+    tally((it) => v === "all" || (v === "yes" ? hasSpec(it) : !hasSpec(it)), "spec");
+  const countHire = (v) =>
+    tally((it) => v === "all" || (v === "on" ? isOnHire(it) : !isOnHire(it)), "hire");
 
-  const visible = contentData.filter((it) => matchesDesc(it) && matchesImg(it));
-  const filtersActive = descFilter !== "all" || imgFilter !== "all";
+  // The query returns newest first; the grid reads better by plant number.
+  const visible = contentData
+    .filter((it) => matchesDesc(it) && matchesImg(it) && matchesSpec(it) && matchesHire(it))
+    .slice()
+    .sort((a, b) =>
+      String(a.equipment_id || "").localeCompare(String(b.equipment_id || ""),
+        undefined, { numeric: true, sensitivity: "base" })
+    );
+
+  const filtersActive =
+    descFilter !== "all" || imgFilter !== "all" ||
+    specFilter !== "all" || hireFilter !== "all";
+
+  const mainPhoto = (it) => {
+    if (Array.isArray(it.images) && it.images.length) {
+      const main = it.images.find((i) => i.is_main === 1 || i.is_main === true);
+      return (main || it.images[0]).image_url;
+    }
+    return it.image_url || null;
+  };
 
   return (
     <div className="p-4 sm:p-8 bg-transparent min-h-screen">
@@ -254,41 +331,34 @@ const ContentManagement = () => {
       </header>
 
       {/* Filters */}
-      <section className="bg-[#1F1F20] border border-[#333333] rounded-lg p-5 mb-8">
-        <div className="mb-3">
-          <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2">
-            Description
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {[
-              { key: "all", label: "All" },
-              { key: "yes", label: "Written" },
-              { key: "no", label: "Missing" },
-            ].map((o) => (
-              <button key={o.key} onClick={() => setDescFilter(o.key)}
-                className={CHIP(descFilter === o.key)}>
-                {o.label} <span className="opacity-60">{countDesc(o.key)}</span>
-              </button>
-            ))}
-          </div>
+      <section className="bg-[#1F1F20] border border-[#333333] rounded-lg p-5 mb-6">
+        <div className="flex flex-wrap gap-2 mb-2">
+          {[
+            { key: "all", label: "All", n: contentData.length, on: descFilter === "all" && imgFilter === "all" && specFilter === "all",
+              act: () => { setDescFilter("all"); setImgFilter("all"); setSpecFilter("all"); } },
+            { key: "desc", label: "No description", n: countDesc("no"), on: descFilter === "no",
+              act: () => setDescFilter(descFilter === "no" ? "all" : "no") },
+            { key: "img", label: "No photos", n: countImg("no"), on: imgFilter === "no",
+              act: () => setImgFilter(imgFilter === "no" ? "all" : "no") },
+            { key: "spec", label: "No spec", n: countSpec("no"), on: specFilter === "no",
+              act: () => setSpecFilter(specFilter === "no" ? "all" : "no") },
+          ].map((o) => (
+            <button key={o.key} onClick={o.act} className={CHIP(o.on)}>
+              {o.label} <span className="opacity-60">{o.n}</span>
+            </button>
+          ))}
         </div>
 
-        <div>
-          <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2">
-            Photos
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {[
-              { key: "all", label: "All" },
-              { key: "yes", label: "Has photos" },
-              { key: "no", label: "None" },
-            ].map((o) => (
-              <button key={o.key} onClick={() => setImgFilter(o.key)}
-                className={CHIP(imgFilter === o.key)}>
-                {o.label} <span className="opacity-60">{countImg(o.key)}</span>
-              </button>
-            ))}
-          </div>
+        <div className="flex flex-wrap gap-2">
+          {[
+            { key: "all", label: "All" },
+            { key: "on", label: "On hire" },
+            { key: "off", label: "Not on hire" },
+          ].map((o) => (
+            <button key={o.key} onClick={() => setHireFilter(o.key)} className={CHIP(hireFilter === o.key)}>
+              {o.label} <span className="opacity-60">{countHire(o.key)}</span>
+            </button>
+          ))}
         </div>
 
         <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#2A2A2A]">
@@ -296,8 +366,10 @@ const ContentManagement = () => {
             Showing {visible.length} of {contentData.length} machines
           </div>
           {filtersActive && (
-            <button onClick={() => { setDescFilter("all"); setImgFilter("all"); }}
-              className={BTN.secondarySm}>
+            <button
+              onClick={() => { setDescFilter("all"); setImgFilter("all"); setSpecFilter("all"); setHireFilter("all"); }}
+              className={BTN.secondarySm}
+            >
               Clear filters
             </button>
           )}
@@ -321,364 +393,81 @@ const ContentManagement = () => {
           </button>
         </div>
 
-        {/* Table Container */}
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[800px]">
-            {/* Table Header */}
-            <thead className="bg-[#292A2B]">
-              <tr>
-                <th className="text-left text-[#E5E5E5] font-[Inter] font-bold text-sm px-3 py-3">
-                  Equipment ID
-                  <span className="inline-block w-2 h-3.5 ml-1">
-                    <svg
-                      width="8.75"
-                      height="14"
-                      viewBox="0 0 9 14"
-                      fill="none"
-                    >
-                      <path
-                        d="M4.375 0.875L8.75 5.25H0L4.375 0.875Z"
-                        fill="#6B7280"
-                      />
-                      <path
-                        d="M4.375 13.125L0 8.75H8.75L4.375 13.125Z"
-                        fill="#6B7280"
-                      />
-                    </svg>
-                  </span>
-                </th>
-                <th className="text-left text-[#E5E5E5] font-[Inter] font-bold text-sm px-3 py-3">
-                  Equipment Name
-                  <span className="inline-block w-2 h-3.5 ml-1">
-                    <svg
-                      width="8.75"
-                      height="14"
-                      viewBox="0 0 9 14"
-                      fill="none"
-                    >
-                      <path
-                        d="M4.375 0.875L8.75 5.25H0L4.375 0.875Z"
-                        fill="#6B7280"
-                      />
-                      <path
-                        d="M4.375 13.125L0 8.75H8.75L4.375 13.125Z"
-                        fill="#6B7280"
-                      />
-                    </svg>
-                  </span>
-                </th>
-                <th className="text-left text-[#E5E5E5] font-[Inter] font-bold text-sm px-3 py-3">
-                  Description
-                  <span className="inline-block w-2 h-3.5 ml-1">
-                    <svg
-                      width="8.75"
-                      height="14"
-                      viewBox="0 0 9 14"
-                      fill="none"
-                    >
-                      <path
-                        d="M4.375 0.875L8.75 5.25H0L4.375 0.875Z"
-                        fill="#6B7280"
-                      />
-                      <path
-                        d="M4.375 13.125L0 8.75H8.75L4.375 13.125Z"
-                        fill="#6B7280"
-                      />
-                    </svg>
-                  </span>
-                </th>
+        {/* Tile grid */}
+        {loading ? (
+          <div className="flex justify-center py-16">
+            <ClipLoader color="#FDCE06" size={40} />
+          </div>
+        ) : visible.length === 0 ? (
+          <div className="text-center py-16 text-[#9CA3AF] font-[Inter] text-[14px]">
+            Nothing matches those filters.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {visible.map((item) => {
+              const photo = mainPhoto(item);
+              const pc = photoCount(item);
+              const sc = specCount(item);
+              const onHire = isOnHire(item);
+              return (
+                <div key={item.id}
+                  className="bg-[#292A2B] border border-[#333333] rounded-xl overflow-hidden">
+                  <div className="relative">
+                    {photo ? (
+                      <img src={photo} alt={item.equipment_name || "Machine"}
+                        className="w-full h-[200px] object-cover border-b border-[#333333]" />
+                    ) : (
+                      <div className="w-full h-[200px] flex flex-col items-center justify-center gap-1.5 bg-[#3a2f14] border-b border-[#333333]">
+                        <span className="text-[#F59E0B] text-[26px] leading-none">⌷</span>
+                        <span className="text-[#F59E0B] font-[Inter] text-[13px]">No photos yet</span>
+                      </div>
+                    )}
+                    {onHire && (
+                      <span className="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-[#14352a] text-[#4CAF50] font-[Inter] text-[12px]">
+                        On hire
+                      </span>
+                    )}
+                  </div>
 
-                <th className="text-left text-[#E5E5E5] font-[Inter] font-bold text-sm px-3 py-3">
-                  Image
-                  <span className="inline-block w-2 h-3.5 ml-1">
-                    <svg
-                      width="8.75"
-                      height="14"
-                      viewBox="0 0 9 14"
-                      fill="none"
-                    >
-                      <path
-                        d="M4.375 0.875L8.75 5.25H0L4.375 0.875Z"
-                        fill="#6B7280"
-                      />
-                      <path
-                        d="M4.375 13.125L0 8.75H8.75L4.375 13.125Z"
-                        fill="#6B7280"
-                      />
-                    </svg>
-                  </span>
-                </th>
-                <th className="text-left text-[#E5E5E5] font-[Inter] font-bold text-sm px-3 py-3">
-                  Action
-                </th>
-              </tr>
-            </thead>
+                  <div className="p-3.5">
+                    <div className="text-[#E5E5E5] font-[Inter] text-[15px] font-semibold">
+                      {item.equipment_name || "Unnamed"}
+                    </div>
+                    <div className="text-[#6B7280] font-[Inter] text-[13px] mt-0.5 mb-2.5">
+                      {item.equipment_id || "—"}
+                    </div>
 
-            {/* Table Body */}
-            <tbody>
-              {loading ? (
-                <tr>
-                  <td colSpan="6" className="text-center py-8">
-                    <div className="flex justify-center items-center">
-                      <ClipLoader color="#FDCE06" size={30} />
-                      <span className="ml-3 text-[#E5E5E5]">
-                        Loading content...
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 font-[Inter] text-[13px] mb-3">
+                      <span className={hasDesc(item) ? "text-[#9CA3AF]" : "text-[#F59E0B]"}>
+                        {hasDesc(item) ? "Written" : "No description"}
+                      </span>
+                      <span className={pc > 0 ? "text-[#9CA3AF]" : "text-[#F59E0B]"}>
+                        {pc} {pc === 1 ? "photo" : "photos"}
+                      </span>
+                      <span className={sc > 0 ? "text-[#9CA3AF]" : "text-[#F59E0B]"}>
+                        {sc > 0 ? sc + (sc === 1 ? " spec" : " specs") : "No spec"}
                       </span>
                     </div>
-                  </td>
-                </tr>
-              ) : error ? (
-                <tr>
-                  <td colSpan="5" className="text-center py-8">
-                    <div className="text-red-500">
-                      <p>{error}</p>
-                      <button
-                        onClick={fetchContent}
-                        className={BTN.primary + " mt-2"}
-                      >
-                        Retry
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ) : contentData.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className="text-center py-8">
-                    <div className="text-[#9CA3AF]">
-                      <p>No content found</p>
-                      <button
-                        onClick={() => console.log("Add first content")}
-                        className="mt-2 px-4 py-2 bg-[#FDCE06] text-[#1F1F20] rounded-md hover:bg-[#E5B800] transition-colors"
-                      >
-                        Add First Content
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                visible.map((item, index) => (
-                  <tr
-                    key={item.id}
-                    className={`cursor-pointer hover:bg-[#292A2B] transition-colors ${index > 0 ? "border-t border-[#333333]" : ""
-                      }`}
-                    onClick={() => handleViewDetails(item)}
-                    style={{
-                      height: index === 0 || index === 4 ? "64.5px" : "65px",
-                    }}
-                  >
-                    <td
-                      className="text-[#E5E5E5]"
-                      style={{
-                        width:
-                          index === 0 || index === 4 ? "129.97px" : "129.97px",
-                        fontFamily: "Inter",
-                        fontWeight: 400,
-                        fontSize: "14px",
-                        lineHeight: "17px",
-                        padding: "12px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          marginTop:
-                            index === 0 || index === 4 ? "9.9px" : "10.4px",
-                        }}
-                      >
-                        {item.equipment_id || "N/A"}
-                      </div>
-                    </td>
-                    <td
-                      className="text-[#E5E5E5]"
-                      style={{
-                        width: "157.14px",
-                        fontFamily: "Inter",
-                        fontWeight: 400,
-                        fontSize: "14px",
-                        lineHeight: "17px",
-                        padding: "12px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          marginTop:
-                            index === 0 || index === 4 ? "9.9px" : "10.4px",
-                        }}
-                      >
-                        {item.equipment_name}
-                      </div>
-                    </td>
-                    <td
-                      className="text-[#E5E5E5]"
-                      style={{
-                        width: "267.5px",
-                        fontFamily: "Inter",
-                        fontWeight: 400,
-                        fontSize: "14px",
-                        lineHeight: "17px",
-                        padding: "12px",
-                      }}
-                    >
-                      {Array.isArray(item.description) ? (
-                        <div>
-                          <div style={{ marginTop: "0.4px" }} dangerouslySetInnerHTML={{ __html: item.description[0] }} />
-                          <div style={{ marginTop: "20px" }} dangerouslySetInnerHTML={{ __html: item.description[1] }} />
-                        </div>
-                      ) : (
-                        <div
-                          style={{
-                            marginTop:
-                              index === 0 || index === 4 ? "9.9px" : "10.4px",
-                          }}
-                          dangerouslySetInnerHTML={{ __html: item.description || '' }}
-                        />
-                      )}
-                    </td>
 
-                    <td
-                      className="text-[#E5E5E5]"
-                      style={{
-                        width: "136.61px",
-                        fontFamily: "Inter",
-                        fontWeight: 400,
-                        fontSize: "14px",
-                        lineHeight: "17px",
-                        padding: "12px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          marginTop:
-                            index === 0 || index === 4 ? "9.9px" : "10.4px",
-                        }}
-                      >
-                        {item.images &&
-                          Array.isArray(item.images) &&
-                          item.images.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
-                            {/* Show only main image in table */}
-                            {(() => {
-                              const mainImage = item.images.find(
-                                (img) =>
-                                  img.is_main === 1 || img.is_main === true
-                              );
-                              if (mainImage) {
-                                return (
-                                  <div className="relative">
-                                    <img
-                                      src={mainImage.image_url}
-                                      alt={mainImage.caption || "Equipment"}
-                                      className="w-16 h-12 object-cover rounded border border-[#333333]"
-                                    />
-                                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-[#FDCE06] rounded-full flex items-center justify-center">
-                                      <svg
-                                        className="w-2 h-2 text-[#1A1A1A]"
-                                        fill="currentColor"
-                                        viewBox="0 0 24 24"
-                                      >
-                                        <path d="M5 13l4 4L19 7" />
-                                      </svg>
-                                    </div>
-                                  </div>
-                                );
-                              }
-                              return null;
-                            })()}
-                          </div>
-                        ) : item.image_url && isImageUrl(item.image_url) ? (
-                          <img
-                            src={item.image_url}
-                            alt="Equipment"
-                            className="w-16 h-12 object-cover rounded border border-[#333333]"
-                          />
-                        ) : (
-                          <div className="w-16 h-12 bg-[#333333] rounded border border-[#444444] flex items-center justify-center">
-                            <svg
-                              className="w-6 h-6 text-[#666666]"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                              />
-                            </svg>
-                          </div>
-                        )}
-                      </div>
-                    </td>
-                    <td
-                      className="text-[#FDCE06]"
-                      style={{
-                        width: "111.28px",
-                        fontFamily: "Inter",
-                        fontWeight: 400,
-                        fontSize: "14px",
-                        lineHeight: "20px",
-                        padding: "12px",
-                      }}
-                    >
-                      <div
-                        style={{
-                          marginTop:
-                            index === 0 || index === 4 ? "8.8px" : "9.3px",
-                        }}
-                      >
-                        <button
-                          onClick={(e) => handleAction("Edit", item, e)}
-                          className="text-[#FDCE06] hover:underline mr-4"
-                          style={{
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            fontFamily: "Inter",
-                            fontWeight: 400,
-                            fontSize: "14px",
-                            lineHeight: "20px",
-                          }}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          onClick={(e) => handleAction("Details", item, e)}
-                          className="text-[#FDCE06] hover:underline mr-4"
-                          style={{
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            fontFamily: "Inter",
-                            fontWeight: 400,
-                            fontSize: "14px",
-                            lineHeight: "20px",
-                          }}
-                        >
-                          Details
-                        </button>
-                        <button
-                          onClick={(e) => handleAction("Delete", item, e)}
-                          className="text-red-500 hover:underline"
-                          style={{
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            fontFamily: "Inter",
-                            fontWeight: 400,
-                            fontSize: "14px",
-                            lineHeight: "20px",
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                    <div className="flex gap-2">
+                      <button onClick={(e) => handleAction("Edit", item, e)} className={BTN.editSm}>
+                        Edit
+                      </button>
+                      <button onClick={(e) => handleAction("Details", item, e)} className={BTN.primarySm}>
+                        Details
+                      </button>
+                      <button onClick={(e) => handleAction("Delete", item, e)}
+                        className={BTN.dangerSm + " ml-auto"}>
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
 
         {/* Pagination */}
         {pagination.totalPages > 1 && (
