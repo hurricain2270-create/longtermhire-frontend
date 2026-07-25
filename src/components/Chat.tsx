@@ -447,6 +447,15 @@ const Chat = () => {
         }
     };
 
+    // Keep polling tied to whichever conversation is open, not just to the
+    // click that opened it — a remount or programmatic selection would
+    // otherwise leave the thread with no live updates at all.
+    useEffect(() => {
+        if (!selectedConversation?.id) return;
+        startPolling(selectedConversation.id);
+        return () => stopPolling();
+    }, [selectedConversation?.id, startPolling, stopPolling]);
+
     // Cleanup polling on unmount
     useEffect(() => {
         return () => {
