@@ -364,32 +364,7 @@ const ClientManagement = () => {
         const selectedEquipmentObjects = selectedEquipmentIds.map(
           (equipmentId) => {
             const fullEquipment = equipment.find((eq) => eq.id === equipmentId);
-            // The whole list arrives in one page (limit 200) and there are tens of
-  // clients, not thousands, so filtering happens here rather than round-tripping.
-  // No search box: the whole client list fits on one screen.
-  const matchesText = () => true;
-  const isInvited = (cl) => !!cl.invited_at;
-  const hasKit = (cl) => Number(cl.equipment_count || 0) > 0;
-
-  const matchesInvite = (cl) =>
-    inviteFilter === "all" || (inviteFilter === "yes" ? isInvited(cl) : !isInvited(cl));
-  const matchesKit = (cl) =>
-    kitFilter === "all" || (kitFilter === "yes" ? hasKit(cl) : !hasKit(cl));
-
-  // Counts reflect the other filters, so a chip shows what clicking it gives you.
-  const countInvite = (val) =>
-    clients.filter((c2) => matchesText(c2) && matchesKit(c2) &&
-      (val === "all" || (val === "yes" ? isInvited(c2) : !isInvited(c2)))).length;
-  const countKit = (val) =>
-    clients.filter((c2) => matchesText(c2) && matchesInvite(c2) &&
-      (val === "all" || (val === "yes" ? hasKit(c2) : !hasKit(c2)))).length;
-
-  const visible = clients.filter(
-    (cl) => matchesText(cl) && matchesInvite(cl) && matchesKit(cl)
-  );
-  const filtersActive = inviteFilter !== "all" || kitFilter !== "all";
-
-  return (
+            return (
               fullEquipment || {
                 id: equipmentId,
                 equipment_id: equipmentId,
@@ -423,6 +398,31 @@ const ClientManagement = () => {
       </div>
     );
   }
+
+  // The whole list arrives in one page (limit 200) and there are tens of
+  // clients, not thousands, so filtering happens here rather than round-tripping.
+  // No search box: the whole client list fits on one screen.
+  const matchesText = () => true;
+  const isInvited = (cl) => !!cl.invited_at;
+  const hasKit = (cl) => Number(cl.equipment_count || 0) > 0;
+
+  const matchesInvite = (cl) =>
+    inviteFilter === "all" || (inviteFilter === "yes" ? isInvited(cl) : !isInvited(cl));
+  const matchesKit = (cl) =>
+    kitFilter === "all" || (kitFilter === "yes" ? hasKit(cl) : !hasKit(cl));
+
+  // Counts reflect the other filters, so a chip shows what clicking it gives you.
+  const countInvite = (val) =>
+    clients.filter((c2) => matchesText(c2) && matchesKit(c2) &&
+      (val === "all" || (val === "yes" ? isInvited(c2) : !isInvited(c2)))).length;
+  const countKit = (val) =>
+    clients.filter((c2) => matchesText(c2) && matchesInvite(c2) &&
+      (val === "all" || (val === "yes" ? hasKit(c2) : !hasKit(c2)))).length;
+
+  const visible = clients.filter(
+    (cl) => matchesText(cl) && matchesInvite(cl) && matchesKit(cl)
+  );
+  const filtersActive = inviteFilter !== "all" || kitFilter !== "all";
 
   return (
     <div className="p-8 bg-[#292A2B] min-h-screen">
