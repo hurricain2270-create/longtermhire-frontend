@@ -5,6 +5,7 @@ import { PDFViewer } from "@react-pdf/renderer";
 import QuotePDF from "./QuotePDF";
 import { equipmentApi } from "../services/equipmentApi";
 import SimpleRichTextEditor from "./SimpleRichTextEditor";
+import { BTN } from "../styles/buttons";
 
 const EditQuoteModal = ({ isOpen, onClose, onSave, quote }) => {
   const [formData, setFormData] = useState({
@@ -272,13 +273,13 @@ const EditQuoteModal = ({ isOpen, onClose, onSave, quote }) => {
         <div className="flex justify-end gap-3 p-6 border-t border-[#333333]">
           <button
             onClick={handleClose}
-            className="bg-[#333333] text-[#E5E5E5] py-2 px-6 rounded-md font-[Inter] font-medium text-sm hover:bg-[#404040] transition-colors"
+            className={BTN.secondary}
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
-            className="bg-[#FDCE06] text-[#1F1F20] py-2 px-6 rounded-md font-[Inter] font-bold text-sm hover:bg-[#E5B800] transition-colors"
+            className={BTN.edit}
           >
             Update Quote
           </button>
