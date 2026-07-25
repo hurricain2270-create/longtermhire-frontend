@@ -1486,6 +1486,18 @@ function ClientDashboard() {
               <HeaderTicker text={newsHeadline || (companySettings.header_ad_text || "").replace(/<[^>]*>/g, "")} />
             )}
 
+            {/* Faults */}
+            <ClientFaults />
+
+            {/* Your site */}
+            <ClientSite userRole={getUserRole()} />
+
+            {/* Term calculator */}
+            <TermCalculator
+              equipment={Object.values(equipmentData || {}).flat()}
+              userRole={getUserRole()}
+            />
+
             {/* Category Filter */}
             {allCategories.length > 0 && (
               <div className="mb-6">
@@ -1501,18 +1513,6 @@ function ClientDashboard() {
                 </div>
               </div>
             )}
-
-            {/* Faults */}
-            <ClientFaults />
-
-            {/* Your site */}
-            <ClientSite userRole={getUserRole()} />
-
-            {/* Term calculator */}
-            <TermCalculator
-              equipment={Object.values(equipmentData || {}).flat()}
-              userRole={getUserRole()}
-            />
 
             {/* Dynamic Equipment Sections */}
             {Object.keys(equipmentData).length === 0 ? (
