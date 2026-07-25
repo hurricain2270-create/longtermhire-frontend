@@ -178,7 +178,7 @@ const Maintenance = () => {
           { l: "No schedule", v: counts.none, c: "#6B7280" },
         ].map((t) => (
           <div key={t.l} className="bg-[#1F1F20] border border-[#333] rounded-lg px-4 py-3">
-            <div className="text-[#9CA3AF] font-[Inter] text-[11px] uppercase tracking-[0.06em] mb-1">{t.l}</div>
+            <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-1">{t.l}</div>
             <div className="font-[Inter] font-bold text-[23px]" style={{ color: t.c }}>{t.v}</div>
           </div>
         ))}
@@ -188,10 +188,10 @@ const Maintenance = () => {
         <table className="w-full">
           <thead>
             <tr className="bg-[#1A1A1B] border-b border-[#2A2A2A]">
-              <th className="text-left px-4 py-2.5 text-[11px] uppercase tracking-[0.05em] text-[#9CA3AF] font-medium w-[24%]">Machine</th>
-              <th className="text-left px-4 py-2.5 text-[11px] uppercase tracking-[0.05em] text-[#9CA3AF] font-medium w-[15%]">Where</th>
-              <th className="text-left px-4 py-2.5 text-[11px] uppercase tracking-[0.05em] text-[#9CA3AF] font-medium w-[14%]">Hours</th>
-              <th className="text-left px-4 py-2.5 text-[11px] uppercase tracking-[0.05em] text-[#9CA3AF] font-medium w-[27%]">Next service</th>
+              <th className="text-left px-4 py-2.5 text-[12px] uppercase tracking-[0.05em] text-[#9CA3AF] font-medium w-[24%]">Machine</th>
+              <th className="text-left px-4 py-2.5 text-[12px] uppercase tracking-[0.05em] text-[#9CA3AF] font-medium w-[15%]">Where</th>
+              <th className="text-left px-4 py-2.5 text-[12px] uppercase tracking-[0.05em] text-[#9CA3AF] font-medium w-[14%]">Hours</th>
+              <th className="text-left px-4 py-2.5 text-[12px] uppercase tracking-[0.05em] text-[#9CA3AF] font-medium w-[27%]">Next service</th>
               <th className="text-right px-4 py-2.5 w-[20%]"></th>
             </tr>
           </thead>
@@ -204,15 +204,15 @@ const Maintenance = () => {
               return (
                 <React.Fragment key={band.key}>
                   <tr>
-                    <td colSpan={5} className="bg-[#1A1A1B] border-b border-[#2A2A2A] px-4 pt-3 pb-1.5 text-[11px] uppercase tracking-[0.06em] text-[#6B7280] font-[Inter]">
+                    <td colSpan={5} className="bg-[#1A1A1B] border-b border-[#2A2A2A] px-4 pt-3 pb-1.5 text-[12px] uppercase tracking-[0.06em] text-[#6B7280] font-[Inter]">
                       {band.title}
                     </td>
                   </tr>
                   {list.map((r) => (
                     <tr key={r.id} className="border-b border-[#1a1a1a] last:border-0">
                       <td className="px-4 py-3">
-                        <div className="text-[#E5E5E5] font-[Inter] text-[13px] font-semibold">{r.equipment_name}</div>
-                        <div className="text-[#6B7280] font-[Inter] text-[11px]">{r.plant_code}</div>
+                        <div className="text-[#E5E5E5] font-[Inter] text-[14px] font-semibold">{r.equipment_name}</div>
+                        <div className="text-[#6B7280] font-[Inter] text-[12px]">{r.plant_code}</div>
                       </td>
                       <td className="px-4 py-3">
                         {r.on_hire_to
@@ -220,8 +220,8 @@ const Maintenance = () => {
                           : <span className="text-[#6B7280] font-[Inter] text-[12px] italic">In yard</span>}
                       </td>
                       <td className="px-4 py-3">
-                        <div className="text-[#E5E5E5] font-[Inter] text-[13px] tabular-nums">{num(r.current_hours)}</div>
-                        <div className="text-[#6B7280] font-[Inter] text-[11px]">
+                        <div className="text-[#E5E5E5] font-[Inter] text-[14px] tabular-nums">{num(r.current_hours)}</div>
+                        <div className="text-[#6B7280] font-[Inter] text-[12px]">
                           {r.current_hours_at ? shortDate(r.current_hours_at) : "never read"}
                         </div>
                       </td>
@@ -335,11 +335,11 @@ const Maintenance = () => {
             </div>
             <div className="px-5 py-4 border-t border-[#333] flex justify-end gap-3">
               <button onClick={() => setModal(null)}
-                className="px-4 py-1.5 border border-[#444] rounded text-[#E5E5E5] font-[Inter] font-bold text-[13px] hover:border-[#666] transition-colors">
+                className="px-4 py-1.5 border border-[#444] rounded text-[#E5E5E5] font-[Inter] font-bold text-[14px] hover:border-[#666] transition-colors">
                 Cancel
               </button>
               <button onClick={save} disabled={busy}
-                className="px-4 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors">
+                className="px-4 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors">
                 {busy ? "Saving..." : "Save"}
               </button>
             </div>
