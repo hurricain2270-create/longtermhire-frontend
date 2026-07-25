@@ -5,6 +5,13 @@ import "react-toastify/dist/ReactToastify.css";
 import ClipLoader from "react-spinners/ClipLoader";
 import api from "./services/api";
 
+const UPLOAD_URL = "https://api.longtermhire.com/v1/api/longtermhire/client/fault-upload";
+
+// Some files (HEIC from iPhone, drags out of Apple Photos) arrive with an
+// empty MIME type, so fall back to the extension rather than dropping them.
+const isImageFile = (f) =>
+  !!f && (f.type ? f.type.startsWith("image/") : /\.(jpe?g|png|gif|webp|heic|heif|bmp|tiff?)$/i.test(f.name || ""));
+
 const BANDS = [
   { key: "emergency", label: "Emergency", window: "24h response", colour: "#B91C1C" },
   { key: "major", label: "Major failure", window: "1 week", colour: "#ef4444" },
@@ -235,7 +242,7 @@ const Card = ({
                   <span className="text-[#FDCE06] text-[18px] leading-none font-light">
                     {uploading ? "…" : "+"}
                   </span>
-                  <input type="file" accept="image/*" multiple
+                  <input type="file" accept="image/*,.heic,.heif" multiple
                     onChange={(e) => { addReplyPhotos(e.target.files); e.target.value = ""; }}
                     className="hidden" />
                 </label>
@@ -350,20 +357,30 @@ const Faults = () => {
   };
 
   const addReplyPhotos = async (files) => {
-    const list = Array.from(files || []).filter((f) => f.type.startsWith("image/"));
-    if (!list.length) return;
+    const list = Array.from(files || []).filter(isImageFile);
+    if (!list.length) {
+      toast.error("That file isn't an image we can read");
+      return;
+    }
     setUploading(true);
     for (const file of list) {
       try {
         const body = new FormData();
         body.append("file", file);
-        const res = await api.post("/v1/api/longtermhire/client/fault-upload", body, {
-          headers: { "Content-Type": "multipart/form-data" },
+        // Plain fetch on purpose. The shared axios instance forces
+        // Content-Type: application/json, which stops multer finding the file.
+        // fetch lets the browser set the multipart boundary itself.
+        const res = await fetch(UPLOAD_URL, {
+          method: "POST",
+          headers: { Authorization: "Bearer " + (localStorage.getItem("authToken") || "") },
+          body,
         });
-        const url = res?.data?.data?.url;
-        if (url) setReplyPhotos((p) => [...p, url]);
-        else toast.error("That photo wouldn't upload");
+        const j = await res.json().catch(() => null);
+        const url = j?.data?.url;
+        if (!res.ok || !url) throw new Error((j && j.message) || ("HTTP " + res.status));
+        setReplyPhotos((p) => [...p, url]);
       } catch (e) {
+        console.error("Fault reply photo upload failed:", e);
         toast.error("That photo wouldn't upload");
       }
     }
