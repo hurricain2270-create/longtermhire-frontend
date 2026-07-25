@@ -10,6 +10,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { isImageUrl } from "./utils/uploadUtils";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BTN } from "./styles/buttons";
+import api from "./services/api";
+import { equipmentApi } from "./services/equipmentApi";
 
 const CHIP = (on) =>
   "px-3 py-1.5 rounded-full font-[Inter] text-[14px] transition-colors border " +
@@ -57,6 +59,21 @@ const ContentManagement = () => {
   const [specFilter, setSpecFilter] = useState("all");
   const [hireFilter, setHireFilter] = useState("all");
 
+  // Every machine, so ones with no content record still get a tile — those
+  // are precisely the ones needing attention, and the content list can't
+  // return them because the row doesn't exist yet.
+  const [allEquipment, setAllEquipment] = useState([]);
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await equipmentApi.getEquipment(1, 200, {});
+        setAllEquipment((res && res.data) || []);
+      } catch (e) {
+        console.error("Could not load equipment list:", e);
+      }
+    })();
+  }, []);
+
   // Which machines are currently out on hire. Same source Equipment
   // Management uses, so the two pages can never disagree.
   const [onHireIds, setOnHireIds] = useState(new Set());
@@ -75,7 +92,7 @@ const ContentManagement = () => {
           );
         }
       } catch (e) {
-        // no hire badges is survivable; the page still works
+        console.error("Could not load hire status:", e);
       }
     })();
   }, []);
@@ -269,7 +286,29 @@ const ContentManagement = () => {
     }
   };
   const hasSpec = (it) => specCount(it) > 0;
-  const isOnHire = (it) => onHireIds.has(String(it.content_equipment_id));
+  const isOnHire = (it) => onHireIds.has(String(it._eqId));
+
+  // One row per machine. Content is merged on where it exists; where it
+  // doesn't, the tile still appears with nothing filled in.
+  const rows = allEquipment.length
+    ? allEquipment.map((eq) => {
+        const found = contentData.find(
+          (ct) => String(ct.content_equipment_id) === String(eq.id)
+        );
+        return found
+          ? { ...found, _eqId: eq.id, equipment_id: eq.equipment_id, equipment_name: eq.equipment_name }
+          : {
+              id: "eq-" + eq.id,
+              _eqId: eq.id,
+              _noContent: true,
+              equipment_id: eq.equipment_id,
+              equipment_name: eq.equipment_name,
+              description: "",
+              images: [],
+              specs_files: eq.specs_files,
+            };
+      })
+    : contentData.map((ct) => ({ ...ct, _eqId: ct.content_equipment_id }));
 
   const matchesDesc = (it) =>
     descFilter === "all" || (descFilter === "yes" ? hasDesc(it) : !hasDesc(it));
@@ -282,7 +321,7 @@ const ContentManagement = () => {
 
   // Each count reflects the other filters, so a chip shows what clicking it gives.
   const tally = (pred, skip) =>
-    contentData.filter(
+    rows.filter(
       (it) =>
         (skip === "desc" || matchesDesc(it)) &&
         (skip === "img" || matchesImg(it)) &&
@@ -300,7 +339,7 @@ const ContentManagement = () => {
     tally((it) => v === "all" || (v === "on" ? isOnHire(it) : !isOnHire(it)), "hire");
 
   // The query returns newest first; the grid reads better by plant number.
-  const visible = contentData
+  const visible = rows
     .filter((it) => matchesDesc(it) && matchesImg(it) && matchesSpec(it) && matchesHire(it))
     .slice()
     .sort((a, b) =>
@@ -334,7 +373,7 @@ const ContentManagement = () => {
       <section className="bg-[#1F1F20] border border-[#333333] rounded-lg p-5 mb-6">
         <div className="flex flex-wrap gap-2 mb-2">
           {[
-            { key: "all", label: "All", n: contentData.length, on: descFilter === "all" && imgFilter === "all" && specFilter === "all",
+            { key: "all", label: "All", n: rows.length, on: descFilter === "all" && imgFilter === "all" && specFilter === "all",
               act: () => { setDescFilter("all"); setImgFilter("all"); setSpecFilter("all"); } },
             { key: "desc", label: "No description", n: countDesc("no"), on: descFilter === "no",
               act: () => setDescFilter(descFilter === "no" ? "all" : "no") },
@@ -363,7 +402,7 @@ const ContentManagement = () => {
 
         <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#2A2A2A]">
           <div className="text-[#9CA3AF] font-[Inter] text-[14px]">
-            Showing {visible.length} of {contentData.length} machines
+            Showing {visible.length} of {rows.length} machines
           </div>
           {filtersActive && (
             <button
@@ -452,16 +491,24 @@ const ContentManagement = () => {
                     </div>
 
                     <div className="flex gap-2">
-                      <button onClick={(e) => handleAction("Edit", item, e)} className={BTN.editSm}>
-                        Edit
-                      </button>
-                      <button onClick={(e) => handleAction("Details", item, e)} className={BTN.primarySm}>
-                        Details
-                      </button>
-                      <button onClick={(e) => handleAction("Delete", item, e)}
-                        className={BTN.dangerSm + " ml-auto"}>
-                        Delete
-                      </button>
+                      {item._noContent ? (
+                        <button onClick={handleAddContent} className={BTN.primarySm}>
+                          Add content
+                        </button>
+                      ) : (
+                        <>
+                          <button onClick={(e) => handleAction("Edit", item, e)} className={BTN.editSm}>
+                            Edit
+                          </button>
+                          <button onClick={(e) => handleAction("Details", item, e)} className={BTN.primarySm}>
+                            Details
+                          </button>
+                          <button onClick={(e) => handleAction("Delete", item, e)}
+                            className={BTN.dangerSm + " ml-auto"}>
+                            Delete
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
