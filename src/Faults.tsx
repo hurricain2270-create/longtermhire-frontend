@@ -384,13 +384,18 @@ const Faults = () => {
           headers: { Authorization: "Bearer " + (localStorage.getItem("authToken") || "") },
           body,
         });
-        const j = await res.json().catch(() => null);
+        const raw = await res.text();
+        let j = null;
+        try { j = JSON.parse(raw); } catch (_) { /* not json */ }
         const url = j?.data?.url;
-        if (!res.ok || !url) throw new Error((j && j.message) || ("HTTP " + res.status));
+        if (!res.ok || !url) {
+          const why = (j && j.message) || raw.slice(0, 120) || "empty response";
+          throw new Error("HTTP " + res.status + " — " + why);
+        }
         setReplyPhotos((p) => [...p, url]);
       } catch (e) {
         console.error("Fault reply photo upload failed:", e);
-        toast.error("That photo wouldn't upload");
+        toast.error("Upload failed: " + (e?.message || "unknown"), { autoClose: 15000 });
       }
     }
     setUploading(false);
