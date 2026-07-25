@@ -4,8 +4,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ClipLoader from "react-spinners/ClipLoader";
 import api from "./services/api";
-
-const UPLOAD_URL = "https://api.longtermhire.com/v1/api/longtermhire/client/fault-upload";
+import { equipmentApi } from "./services/equipmentApi";
 
 // Some files (HEIC from iPhone, drags out of Apple Photos) arrive with an
 // empty MIME type, so fall back to the extension rather than dropping them.
@@ -374,24 +373,10 @@ const Faults = () => {
     setUploading(true);
     for (const file of list) {
       try {
-        const body = new FormData();
-        body.append("file", file);
-        // Plain fetch on purpose. The shared axios instance forces
-        // Content-Type: application/json, which stops multer finding the file.
-        // fetch lets the browser set the multipart boundary itself.
-        const res = await fetch(UPLOAD_URL, {
-          method: "POST",
-          headers: { Authorization: "Bearer " + (localStorage.getItem("authToken") || "") },
-          body,
-        });
-        const raw = await res.text();
-        let j = null;
-        try { j = JSON.parse(raw); } catch (_) { /* not json */ }
-        const url = j?.data?.url;
-        if (!res.ok || !url) {
-          const why = (j && j.message) || raw.slice(0, 120) || "empty response";
-          throw new Error("HTTP " + res.status + " — " + why);
-        }
+        // Same upload path the main chat uses — proven to work on both portals.
+        const up = await equipmentApi.uploadFile(file);
+        const url = up?.url;
+        if (!url) throw new Error("no url returned");
         setReplyPhotos((p) => [...p, url]);
       } catch (e) {
         console.error("Fault reply photo upload failed:", e);
