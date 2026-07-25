@@ -6,6 +6,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import AddClientModal from "./components/AddClientModal";
 import EditClientModal from "./components/EditClientModal";
+import { BTN } from "./styles/buttons";
 import ClientDetailsModal from "./components/ClientDetailsModal";
 import EquipmentPopover from "./components/EquipmentPopover";
 
@@ -589,24 +590,12 @@ const ClientManagement = () => {
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="flex gap-3 items-center justify-center">
-                        <button
-                          onClick={() => handleViewClientDetails(client)}
-                          className="text-[#FDCE06] font-[Inter] font-medium text-[14px] leading-[1.43em] hover:underline transition-all"
-                        >
+                      <div className="flex flex-wrap gap-2 items-center justify-center">
+                        <button onClick={() => handleViewClientDetails(client)} className={BTN.primary}>
                           View
                         </button>
-                        <button
-                          onClick={() => handleEditClient(client)}
-                          className="text-[#FDCE06] font-[Inter] font-medium text-[14px] leading-[1.43em] hover:underline transition-all"
-                        >
+                        <button onClick={() => handleEditClient(client)} className={BTN.secondary}>
                           Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClient(client.id)}
-                          className="text-red-400 font-[Inter] font-medium text-[14px] leading-[1.43em] hover:underline transition-all"
-                        >
-                          Delete
                         </button>
                         <button
                           onClick={() => setInviteTarget(client)}
@@ -615,13 +604,12 @@ const ClientManagement = () => {
                               ? "Reset password and email new login details"
                               : "Send this client their login details for the first time"
                           }
-                          className={
-                            client.invited_at
-                              ? "text-[#9CA3AF] font-[Inter] font-medium text-[14px] leading-[1.43em] hover:underline transition-all"
-                              : "px-3 py-1 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] transition-all"
-                          }
+                          className={BTN.secondary}
                         >
                           {client.invited_at ? "Resend" : "Send invite"}
+                        </button>
+                        <button onClick={() => handleDeleteClient(client.id)} className={BTN.danger}>
+                          Delete
                         </button>
                       </div>
                     </td>
@@ -646,7 +634,7 @@ const ClientManagement = () => {
                           <button
                             onClick={() => handleResendMember(m)}
                             title="Reset password and email new login details"
-                            className="text-[#FDCE06] font-[Inter] font-medium text-[11px] hover:underline transition-all"
+                            className={BTN.secondarySm}
                           >
                             Resend login
                           </button>
