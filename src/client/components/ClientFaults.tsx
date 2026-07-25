@@ -115,9 +115,12 @@ const ClientFaults = () => {
       headers: { Authorization: "Bearer " + token() },
       body,
     });
-    const j = await res.json();
+    const raw = await res.text();
+    let j = null;
+    try { j = JSON.parse(raw); } catch (_) { /* not json */ }
     if (j && !j.error && j.data?.url) return j.data.url;
-    throw new Error("upload failed");
+    const why = (j && j.message) || raw.slice(0, 120) || "empty response";
+    throw new Error("HTTP " + res.status + " — " + why);
   };
 
   const addReplyPhotos = async (files) => {
@@ -129,7 +132,8 @@ const ClientFaults = () => {
         const url = await uploadOne(file);
         setReplyPhotos((p) => [...p, url]);
       } catch (e) {
-        toast.error("That photo wouldn't upload");
+        console.error("Fault reply photo upload failed:", e);
+        toast.error("Upload failed: " + (e?.message || "unknown"), { autoClose: 15000 });
       }
     }
     setUploading(false);
