@@ -11,6 +11,11 @@ const OPTIONS = [
   { key: "attention", label: "Needs attention", hint: "Tyre, light, hose — that sort of thing", colour: "#4CAF50" },
 ];
 
+// Some files (HEIC from iPhone, drags out of Apple Photos) arrive with an
+// empty MIME type, so fall back to the extension rather than dropping them.
+const isImageFile = (f) =>
+  !!f && (f.type ? f.type.startsWith("image/") : /\.(jpe?g|png|gif|webp|heic|heif|bmp|tiff?)$/i.test(f.name || ""));
+
 const photosOf = (raw) => {
   if (!raw) return [];
   try {
@@ -116,7 +121,7 @@ const ClientFaults = () => {
   };
 
   const addReplyPhotos = async (files) => {
-    const list = Array.from(files || []).filter((f) => f.type.startsWith("image/"));
+    const list = Array.from(files || []).filter(isImageFile);
     if (!list.length) return;
     setUploading(true);
     for (const file of list) {
@@ -131,7 +136,7 @@ const ClientFaults = () => {
   };
 
   const addPhotos = async (files) => {
-    const list = Array.from(files || []).filter((f) => f.type.startsWith("image/"));
+    const list = Array.from(files || []).filter(isImageFile);
     if (!list.length) return;
     setUploading(true);
     for (const file of list) {
@@ -343,7 +348,7 @@ const ClientFaults = () => {
                           <span className="text-[#FDCE06] text-[20px] leading-none font-light">
                             {uploading ? "…" : "+"}
                           </span>
-                          <input type="file" accept="image/*" multiple
+                          <input type="file" accept="image/*,.heic,.heif" multiple
                             onChange={(e) => { addReplyPhotos(e.target.files); e.target.value = ""; }}
                             className="hidden" />
                         </label>
@@ -431,7 +436,7 @@ const ClientFaults = () => {
                     <span className="text-[#6B7280] text-[10px] mt-1">
                       {uploading ? "…" : "photo"}
                     </span>
-                    <input type="file" accept="image/*" multiple
+                    <input type="file" accept="image/*,.heic,.heif" multiple
                       onChange={(e) => { addPhotos(e.target.files); e.target.value = ""; }}
                       className="hidden" />
                   </label>
