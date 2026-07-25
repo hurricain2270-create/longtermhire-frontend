@@ -9,11 +9,11 @@ import ContractPDF from "./components/ContractPDF";
 import { clientApi } from "./services/clientApi";
 import { equipmentApi } from "./services/equipmentApi";
 
-const LBL = "text-[#9CA3AF] font-[Inter] text-[13px]";
+const LBL = "text-[#9CA3AF] font-[Inter] text-[14px]";
 const BOX =
-  "w-full bg-[#292A2B] border border-[#333333] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-[13px] outline-none focus:border-[#FDCE06] transition-colors";
+  "w-full bg-[#292A2B] border border-[#333333] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-[14px] outline-none focus:border-[#FDCE06] transition-colors";
 const NEED =
-  "w-full bg-[#3a2e00] border border-[#5a4800] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-[13px] outline-none focus:border-[#FDCE06] transition-colors";
+  "w-full bg-[#3a2e00] border border-[#5a4800] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-[14px] outline-none focus:border-[#FDCE06] transition-colors";
 
 const PAYMENT_TERMS = [
   "Payment before Delivery",
@@ -67,15 +67,15 @@ const Tag = ({ kind }) => {
     fixed: ["fixed", "bg-[#252525] text-[#666] border-[#333]"],
   };
   const [text, cls] = map[kind] || map.hire;
-  return <span className={"text-[10px] px-2 py-0.5 rounded-full border font-[Inter] " + cls}>{text}</span>;
+  return <span className={"text-[11px] px-2 py-0.5 rounded-full border font-[Inter] " + cls}>{text}</span>;
 };
 
 const Section = ({ n, title, children, note }) => (
   <div className="mb-6">
     <div className="flex items-center gap-2 mb-2">
-      <span className="w-5 h-5 rounded-full bg-[#292A2B] text-[#9CA3AF] text-[11px] flex items-center justify-center font-[Inter]">{n}</span>
+      <span className="w-5 h-5 rounded-full bg-[#292A2B] text-[#9CA3AF] text-[12px] flex items-center justify-center font-[Inter]">{n}</span>
       <h2 className="text-[#E5E5E5] font-[Inter] font-bold text-[15px]">{title}</h2>
-      {note ? <span className="ml-auto text-[11px] text-[#6B7280] font-[Inter]">{note}</span> : null}
+      {note ? <span className="ml-auto text-[12px] text-[#6B7280] font-[Inter]">{note}</span> : null}
     </div>
     <div className="bg-[#1F1F20] border border-[#333] rounded-lg px-4 py-1">{children}</div>
   </div>
@@ -304,7 +304,7 @@ const ContractSetup = () => {
             <p className="text-[#9CA3AF] font-[Inter] text-sm">Every field the hire agreement needs, in the order it appears on the document.</p>
           </div>
           <button onClick={startNew}
-            className="px-4 py-2 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] transition-colors whitespace-nowrap">
+            className="px-4 py-2 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] transition-colors whitespace-nowrap">
             New contract
           </button>
         </div>
@@ -329,11 +329,11 @@ const ContractSetup = () => {
                   <td className="px-4 py-3 text-sm text-[#E5E5E5] font-[Inter]">{row.company_name}</td>
                   <td className="px-4 py-3 text-sm text-[#9CA3AF] font-[Inter]">{row.plant_code} — {row.equipment_name}</td>
                   <td className="px-4 py-3">
-                    <span className="text-[11px] px-2 py-0.5 rounded-full border bg-[#292A2B] text-[#9CA3AF] border-[#333] font-[Inter]">{row.status}</span>
+                    <span className="text-[12px] px-2 py-0.5 rounded-full border bg-[#292A2B] text-[#9CA3AF] border-[#333] font-[Inter]">{row.status}</span>
                   </td>
                   <td className="px-4 py-3 text-right">
                     <button onClick={() => openContract(row)}
-                      className="px-3 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] transition-colors">
+                      className="px-3 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] transition-colors">
                       Open
                     </button>
                   </td>
@@ -359,7 +359,7 @@ const ContractSetup = () => {
           <p className="text-[#9CA3AF] font-[Inter] text-sm">Work down the page. Amber fields are typed once and kept for next time.</p>
         </div>
         <button onClick={() => setView("list")}
-          className="px-3 py-1.5 border border-[#444] rounded text-[#E5E5E5] font-[Inter] font-bold text-[13px] hover:border-[#666] transition-colors whitespace-nowrap">
+          className="px-3 py-1.5 border border-[#444] rounded text-[#E5E5E5] font-[Inter] font-bold text-[14px] hover:border-[#666] transition-colors whitespace-nowrap">
           Back
         </button>
       </div>
@@ -511,7 +511,7 @@ const ContractSetup = () => {
 
       <div className="bg-[#1F1F20] border border-[#333] rounded-lg px-4 py-3 flex items-center gap-4">
         <div className="flex-1">
-          <div className="text-[#E5E5E5] font-[Inter] text-[13px] font-medium">
+          <div className="text-[#E5E5E5] font-[Inter] text-[14px] font-medium">
             {miss.length === 0 ? "All fields complete" : miss.length + " field" + (miss.length === 1 ? "" : "s") + " still to fill"}
           </div>
           {miss.length > 0 && (
@@ -519,7 +519,7 @@ const ContractSetup = () => {
           )}
         </div>
         <button onClick={save} disabled={saving}
-          className="px-4 py-2 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors whitespace-nowrap">
+          className="px-4 py-2 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors whitespace-nowrap">
           {saving ? "Saving..." : editingId ? "Save changes" : "Save draft"}
         </button>
         <button
@@ -530,7 +530,7 @@ const ContractSetup = () => {
             }
             setExecuteDoc(buildDoc());
           }}
-          className="px-4 py-2 rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#3d9e43] transition-colors whitespace-nowrap"
+          className="px-4 py-2 rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#3d9e43] transition-colors whitespace-nowrap"
         >
           Execute
         </button>
