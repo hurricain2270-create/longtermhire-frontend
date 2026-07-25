@@ -250,6 +250,12 @@ const Card = ({
                     className="hidden" />
                 </label>
                 <input value={reply} onChange={(e) => setReply(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      if (!busy && !uploading) send(d.id);
+                    }
+                  }}
                   placeholder="Add an update…" className={inputCls} />
                 <button onClick={() => send(d.id)} disabled={busy}
                   className="px-4 py-2 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] disabled:opacity-50 whitespace-nowrap">
