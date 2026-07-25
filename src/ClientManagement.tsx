@@ -589,24 +589,18 @@ const ClientManagement = () => {
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <div className="flex gap-3 items-center justify-center">
+                      <div className="flex flex-wrap gap-2 items-center justify-center">
                         <button
                           onClick={() => handleViewClientDetails(client)}
-                          className="text-[#FDCE06] font-[Inter] font-medium text-[14px] leading-[1.43em] hover:underline transition-all"
+                          className="px-3 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] transition-colors"
                         >
                           View
                         </button>
                         <button
                           onClick={() => handleEditClient(client)}
-                          className="text-[#FDCE06] font-[Inter] font-medium text-[14px] leading-[1.43em] hover:underline transition-all"
+                          className="px-3 py-1.5 rounded border border-[#333] text-[#9CA3AF] font-[Inter] font-bold text-[14px] hover:border-[#FDCE06] hover:text-[#FDCE06] transition-colors"
                         >
                           Edit
-                        </button>
-                        <button
-                          onClick={() => handleDeleteClient(client.id)}
-                          className="text-red-400 font-[Inter] font-medium text-[14px] leading-[1.43em] hover:underline transition-all"
-                        >
-                          Delete
                         </button>
                         <button
                           onClick={() => setInviteTarget(client)}
@@ -615,13 +609,15 @@ const ClientManagement = () => {
                               ? "Reset password and email new login details"
                               : "Send this client their login details for the first time"
                           }
-                          className={
-                            client.invited_at
-                              ? "text-[#9CA3AF] font-[Inter] font-medium text-[14px] leading-[1.43em] hover:underline transition-all"
-                              : "px-3 py-1 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] transition-all"
-                          }
+                          className="px-3 py-1.5 rounded border border-[#333] text-[#9CA3AF] font-[Inter] font-bold text-[14px] hover:border-[#FDCE06] hover:text-[#FDCE06] transition-colors"
                         >
                           {client.invited_at ? "Resend" : "Send invite"}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteClient(client.id)}
+                          className="px-3 py-1.5 rounded border border-[#7f1d1d] text-[#ef4444] font-[Inter] font-bold text-[14px] hover:bg-[#ef4444] hover:text-white transition-colors"
+                        >
+                          Delete
                         </button>
                       </div>
                     </td>
@@ -646,7 +642,7 @@ const ClientManagement = () => {
                           <button
                             onClick={() => handleResendMember(m)}
                             title="Reset password and email new login details"
-                            className="text-[#FDCE06] font-[Inter] font-medium text-[11px] hover:underline transition-all"
+                            className="px-2.5 py-1 rounded border border-[#333] text-[#9CA3AF] font-[Inter] font-bold text-[12px] hover:border-[#FDCE06] hover:text-[#FDCE06] transition-colors"
                           >
                             Resend login
                           </button>
