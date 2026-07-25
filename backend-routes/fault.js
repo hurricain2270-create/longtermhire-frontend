@@ -212,10 +212,30 @@ module.exports = function (app) {
       const sdk = sdkFor();
       const rows = await sdk.rawQuery(LIST_SQL + "ORDER BY (f.status = 'resolved'), f.id DESC", []);
       const open = rows.filter((r) => r.status !== "resolved").length;
+
+      // Unanswered = still open, and the newest entry in the thread came from
+      // the client. No stored read-state needed: if we replied last, it's
+      // answered. Derived, so it can never drift out of sync.
+      let unanswered = 0;
+      try {
+        const u = await sdk.rawQuery(
+          "SELECT COUNT(*) AS n FROM longtermhire_fault f " +
+          "WHERE f.status <> 'resolved' AND (" +
+          "  SELECT x.author_side FROM longtermhire_fault_update x " +
+          "  WHERE x.fault_id = f.id ORDER BY x.id DESC LIMIT 1" +
+          ") = 'client'",
+          []
+        );
+        unanswered = (u && u[0] && parseInt(u[0].n)) || 0;
+      } catch (e) {
+        console.error("Unanswered count error:", e);
+      }
+
       return res.status(200).json({
         error: false,
         data: rows.map((r) => ({ ...r, band: r.severity ? BANDS[r.severity] : null })),
         open_count: open,
+        unanswered_count: unanswered,
       });
     } catch (e) {
       console.error("Faults list error:", e);
