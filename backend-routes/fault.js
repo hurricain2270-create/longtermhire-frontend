@@ -60,14 +60,7 @@ module.exports = function (app) {
   }
 
   const LIST_SQL =
-    "SELECT f.*, e.equipment_id AS plant_code, e.equipment_name, c.company_name, " +
-    // Messages from the client since our last reply. Derived, same rule as the
-    // sidebar count, so a row and the total can never disagree.
-    "(SELECT COUNT(*) FROM longtermhire_fault_update x " +
-    " WHERE x.fault_id = f.id AND x.author_side = 'client' " +
-    " AND x.id > IFNULL((SELECT MAX(y.id) FROM longtermhire_fault_update y " +
-    "                    WHERE y.fault_id = f.id AND y.author_side = 'admin'), 0)" +
-    ") AS unanswered " +
+    "SELECT f.*, e.equipment_id AS plant_code, e.equipment_name, c.company_name " +
     "FROM longtermhire_fault f " +
     "LEFT JOIN longtermhire_equipment_item e ON e.id = f.equipment_id " +
     "LEFT JOIN longtermhire_client c ON c.user_id = f.client_user_id ";
@@ -219,30 +212,10 @@ module.exports = function (app) {
       const sdk = sdkFor();
       const rows = await sdk.rawQuery(LIST_SQL + "ORDER BY (f.status = 'resolved'), f.id DESC", []);
       const open = rows.filter((r) => r.status !== "resolved").length;
-
-      // Unanswered = still open, and the newest entry in the thread came from
-      // the client. No stored read-state needed: if we replied last, it's
-      // answered. Derived, so it can never drift out of sync.
-      let unanswered = 0;
-      try {
-        const u = await sdk.rawQuery(
-          "SELECT COUNT(*) AS n FROM longtermhire_fault f " +
-          "WHERE f.status <> 'resolved' AND (" +
-          "  SELECT x.author_side FROM longtermhire_fault_update x " +
-          "  WHERE x.fault_id = f.id ORDER BY x.id DESC LIMIT 1" +
-          ") = 'client'",
-          []
-        );
-        unanswered = (u && u[0] && parseInt(u[0].n)) || 0;
-      } catch (e) {
-        console.error("Unanswered count error:", e);
-      }
-
       return res.status(200).json({
         error: false,
         data: rows.map((r) => ({ ...r, band: r.severity ? BANDS[r.severity] : null })),
         open_count: open,
-        unanswered_count: unanswered,
       });
     } catch (e) {
       console.error("Faults list error:", e);
@@ -299,11 +272,20 @@ module.exports = function (app) {
       const sdk = sdkFor();
       const band = req.body.severity;
       if (!BANDS[band]) return res.status(400).json({ error: true, message: "Unknown band" });
+
+      // Severity and timeframe are separate judgements. A minor fault can be a
+      // three week wait on a part; a major one can be back running by tomorrow.
+      // The band's own figure is only a fallback when no timeframe was chosen.
+      let hours = parseFloat(req.body.window_hours);
+      if (!isFinite(hours) || hours <= 0) hours = BANDS[band].hours;
+      if (hours > 8760) hours = 8760; // a year, as a sanity ceiling
+
       await sdk.rawQuery("UPDATE longtermhire_fault SET severity = ?, window_hours = ?, cause = ? WHERE id = ?",
-        [band, BANDS[band].hours, req.body.cause || null, req.params.id]);
+        [band, hours, req.body.cause || null, req.params.id]);
       await addEntry(sdk, req.params.id, req.user_id, "Long Term Hire", "admin", "classified",
-        req.body.note || ("Classified as " + band));
-      return res.status(200).json({ error: false, message: "Classified", data: BANDS[band] });
+        req.body.note || ("Classified as " + band + " — " + hours + "h to repair"));
+      return res.status(200).json({ error: false, message: "Classified",
+        data: { ...BANDS[band], hours } });
     } catch (e) {
       console.error("Classify error:", e);
       return res.status(500).json({ error: true, message: e.message });
