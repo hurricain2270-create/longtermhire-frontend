@@ -32,7 +32,7 @@ const EquipmentManagement = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedEquipment, setSelectedEquipment] = useState(null);
   const [equipment, setEquipment] = useState([]);
-  const [ownershipFilter, setOwnershipFilter] = useState("all");
+  const [hireFilter, setHireFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
@@ -52,38 +52,6 @@ const EquipmentManagement = () => {
 
   // Debounced search state
   const [debouncedSearchData, setDebouncedSearchData] = useState(searchData);
-
-  // Everything loads in one page (limit 200), so filtering happens here rather
-  // than round-tripping to the server for every keystroke.
-  const matchesText = (item) => {
-    const t = q.trim().toLowerCase();
-    if (!t) return true;
-    return [item.equipment_name, item.equipment_id, item.category_name]
-      .some((v) => String(v || "").toLowerCase().includes(t));
-  };
-  const matchesOwnership = (item) =>
-    ownershipFilter === "all" || (item.ownership_status || "owned") === ownershipFilter;
-  const matchesCategory = (item) =>
-    categoryFilter === "all" || (item.category_name || "Uncategorised") === categoryFilter;
-
-  // Counts on each chip reflect the *other* filters, so a chip shows what you
-  // would actually get if you clicked it — not the total ignoring context.
-  const countOwnership = (val) =>
-    equipment.filter((i) => matchesText(i) && matchesCategory(i) &&
-      (val === "all" || (i.ownership_status || "owned") === val)).length;
-  const countCategory = (val) =>
-    equipment.filter((i) => matchesText(i) && matchesOwnership(i) &&
-      (val === "all" || (i.category_name || "Uncategorised") === val)).length;
-
-  const categories = Array.from(
-    new Set(equipment.map((i) => i.category_name || "Uncategorised"))
-  ).sort();
-
-  const visible = equipment.filter(
-    (i) => matchesText(i) && matchesOwnership(i) && matchesCategory(i)
-  );
-  const filtersActive =
-    q.trim() !== "" || ownershipFilter !== "all" || categoryFilter !== "all";
 
   // Fetch equipment data from API with pagination and search
   const fetchEquipment = async (page = 1, searchFilters = {}) => {
@@ -145,6 +113,39 @@ const EquipmentManagement = () => {
     })();
   }, []);
   const isOnHire = (item) => onHireIds.has(String(item.id));
+
+  // Everything loads in one page (limit 200) and the fleet is small, so
+  // filtering happens here rather than round-tripping for every keystroke.
+  const matchesText = (item) => {
+    const t = q.trim().toLowerCase();
+    if (!t) return true;
+    return [item.equipment_name, item.equipment_id, item.category_name]
+      .some((v) => String(v || "").toLowerCase().includes(t));
+  };
+  const matchesHire = (item) =>
+    hireFilter === "all" ||
+    (hireFilter === "on" ? isOnHire(item) : !isOnHire(item));
+  const matchesCategory = (item) =>
+    categoryFilter === "all" || (item.category_name || "Uncategorised") === categoryFilter;
+
+  // Counts reflect the *other* filters, so a chip shows what you would actually
+  // get if you clicked it — not a total that ignores what is already selected.
+  const countHire = (val) =>
+    equipment.filter((i) => matchesText(i) && matchesCategory(i) &&
+      (val === "all" || (val === "on" ? isOnHire(i) : !isOnHire(i)))).length;
+  const countCategory = (val) =>
+    equipment.filter((i) => matchesText(i) && matchesHire(i) &&
+      (val === "all" || (i.category_name || "Uncategorised") === val)).length;
+
+  const categories = Array.from(
+    new Set(equipment.map((i) => i.category_name || "Uncategorised"))
+  ).sort();
+
+  const visible = equipment.filter(
+    (i) => matchesText(i) && matchesHire(i) && matchesCategory(i)
+  );
+  const filtersActive =
+    q.trim() !== "" || hireFilter !== "all" || categoryFilter !== "all";
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -306,20 +307,20 @@ const EquipmentManagement = () => {
 
           <div className="mb-3">
             <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2">
-              Ownership
+              Hire status
             </div>
             <div className="flex flex-wrap gap-2">
               {[
                 { key: "all", label: "All" },
-                { key: "owned", label: "Owned" },
-                { key: "prospective", label: "Not purchased" },
+                { key: "on", label: "On hire" },
+                { key: "off", label: "Not on hire" },
               ].map((o) => (
                 <button
                   key={o.key}
-                  onClick={() => setOwnershipFilter(o.key)}
-                  className={CHIP(ownershipFilter === o.key)}
+                  onClick={() => setHireFilter(o.key)}
+                  className={CHIP(hireFilter === o.key)}
                 >
-                  {o.label} <span className="opacity-60">{countOwnership(o.key)}</span>
+                  {o.label} <span className="opacity-60">{countHire(o.key)}</span>
                 </button>
               ))}
             </div>
@@ -355,7 +356,7 @@ const EquipmentManagement = () => {
             </div>
             {filtersActive && (
               <button
-                onClick={() => { setQ(""); setOwnershipFilter("all"); setCategoryFilter("all"); }}
+                onClick={() => { setQ(""); setHireFilter("all"); setCategoryFilter("all"); }}
                 className={BTN.secondarySm}
               >
                 Clear filters
