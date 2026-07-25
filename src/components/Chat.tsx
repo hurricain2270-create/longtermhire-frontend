@@ -180,15 +180,13 @@ const Chat = () => {
     // Auto-scroll when messages change
     useEffect(() => {
         if (filteredMessages.length > lastMessageCountRef.current) {
-            // Only auto-scroll if we're not currently loading more messages
-            // AND either user switched conversation OR there are unread messages from polling
-            if (!loadingMore && (userSwitchedConversation || hasUnreadFromPolling)) {
-                console.log("📩 Auto-scrolling for new messages:", {
-                    userSwitchedConversation,
-                    hasUnreadFromPolling,
-                });
-                scrollToBottom(true); // Force scroll for new messages
-                setHasUnreadFromPolling(false); // Reset the flag
+            if (!loadingMore) {
+                // Force only when the user switched conversation. Otherwise
+                // scrollToBottom decides for itself: it moves if you're already
+                // near the bottom, and leaves you alone if you've scrolled up
+                // to read history.
+                scrollToBottom(userSwitchedConversation);
+                setHasUnreadFromPolling(false);
             }
             lastMessageCountRef.current = filteredMessages.length;
         }
