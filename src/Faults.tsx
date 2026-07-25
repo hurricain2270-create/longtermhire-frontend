@@ -310,14 +310,29 @@ const Faults = () => {
     return () => clearInterval(t);
   }, []);
 
-  const load = async () => {
+  // Live thread. Same approach the chat uses: reuse the fetch that already
+  // works, on a 3s timer, silently. A fault clock is judged on response time,
+  // so a reply must not wait for a refresh.
+  useEffect(() => {
+    if (!open) return;
+    const t = setInterval(async () => {
+      try {
+        const res = await api.get("/v1/api/longtermhire/super_admin/faults/" + open);
+        if (res?.data && !res.data.error) setDetail(res.data.data);
+        load(true);
+      } catch (e) { /* quiet — next tick will retry */ }
+    }, 3000);
+    return () => clearInterval(t);
+  }, [open]);
+
+  const load = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const res = await api.get("/v1/api/longtermhire/super_admin/faults");
       if (res?.data && !res.data.error) setRows(res.data.data || []);
     } catch (e) {
-      toast.error("Could not load faults");
-    } finally { setLoading(false); }
+      if (!silent) toast.error("Could not load faults");
+    } finally { if (!silent) setLoading(false); }
   };
 
   // opening it is the acknowledgement — the backend stamps it
