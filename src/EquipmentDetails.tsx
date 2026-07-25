@@ -6,6 +6,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import SimpleRichTextEditor from "./components/SimpleRichTextEditor";
 import { equipmentApi } from "./services/equipmentApi";
+import { BTN } from "./styles/buttons";
 
 const EquipmentDetails = () => {
   const { id } = useParams();
@@ -362,7 +363,7 @@ const EquipmentDetails = () => {
               <button
                 type="button"
                 onClick={handleAddMaintenancePeriod}
-                className="text-[#FDCE06] text-sm hover:text-[#E5B800] transition-colors"
+                className={BTN.primary}
               >
                 + Add Period
               </button>

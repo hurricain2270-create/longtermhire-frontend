@@ -3,6 +3,7 @@ import { ClipLoader } from "react-spinners";
 import { clientPasswordApi } from "../services/clientPasswordApi";
 import { useNavigate } from "react-router-dom";
 import { useCompanyLogo } from "../hooks/useCompanyLogo";
+import { BTN } from "../styles/buttons";
 
 function ClientChangePassword({ onBack }) {
     const [currentPassword, setCurrentPassword] = useState("");
@@ -133,7 +134,7 @@ function ClientChangePassword({ onBack }) {
                     {/* Back Button */}
                     <button
                         onClick={onBack}
-                        className="flex items-center text-[#9CA3AF] hover:text-[#E5E5E5] font-[Inter] text-sm mb-6 transition-colors"
+                        className={BTN.secondary + " flex items-center mb-6"}
                     >
                         <svg
                             width="16"

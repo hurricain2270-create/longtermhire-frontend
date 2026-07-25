@@ -1,5 +1,6 @@
 // @ts-nocheck
 import React from "react";
+import { BTN } from "../styles/buttons";
 
 const formatBannerDescription = (text) => {
   if (!text) return "";
@@ -313,7 +314,7 @@ function ContentDetailsModal({ isOpen, onClose, content, onEdit }) {
         <div className="flex items-center justify-end gap-3 p-6 border-t border-[#333333]">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-[#292A2B] border border-[#333333] text-[#E5E5E5] rounded-md hover:bg-[#333333] transition-colors"
+            className={BTN.secondary}
           >
             Close
           </button>

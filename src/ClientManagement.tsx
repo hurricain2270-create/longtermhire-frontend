@@ -458,7 +458,7 @@ const ClientManagement = () => {
           <div className="flex flex-col">
             <button
               onClick={handleSearch}
-              className="bg-[#FDCE06] w-[200px] rounded-md text-[#1F1F20] font-[Inter] font-bold text-[16px] leading-[1.19em] px-6 py-3 hover:bg-[#E5B800] transition-colors"
+              className={BTN.primary + " w-[200px]"}
               style={{ height: "42px" }}
             >
               Search
@@ -476,7 +476,7 @@ const ClientManagement = () => {
           </h3>
           <button
             onClick={handleAddClient}
-            className="bg-[#FDCE06] rounded-md text-[#1F1F20] font-[Inter] font-bold text-[16px] leading-[1.19em] px-6 py-2 hover:bg-[#E5B800] transition-colors"
+            className={BTN.primary}
           >
             + Add Company
           </button>

@@ -6,6 +6,7 @@ import AddPricingPackageModal from "./components/AddPricingPackageModal";
 import EditPricingModal from "./components/EditPricingModal";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { BTN } from "./styles/buttons";
 
 const PricingManagement = () => {
   const [searchData, setSearchData] = useState({
@@ -246,7 +247,7 @@ const PricingManagement = () => {
               {/* <button
                 onClick={handleClearSearch}
                 disabled={loading}
-                className="bg-[#6B7280] text-[#E5E5E5] font-[Inter] font-medium text-[14px] px-4 py-3 rounded-md hover:bg-[#4B5563] transition-colors disabled:opacity-50"
+                className={BTN.danger}
                 style={{ height: "42px" }}
               >
                 Clear
@@ -314,7 +315,7 @@ const PricingManagement = () => {
                         <p>{error}</p>
                         <button
                           onClick={fetchPricingPackages}
-                          className="mt-2 px-4 py-2 bg-[#FDCE06] text-[#1F1F20] rounded-md hover:bg-[#E5B800] transition-colors"
+                          className={BTN.primary + " mt-2"}
                         >
                           Retry
                         </button>

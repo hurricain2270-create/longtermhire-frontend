@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import { clientAuthApi } from "../services/clientAuthApi";
 import { useCompanyLogo } from "../hooks/useCompanyLogo";
+import { BTN } from "../styles/buttons";
 
 function ClientLogin() {
   const [email, setEmail] = useState("");
@@ -248,7 +249,7 @@ function ClientLogin() {
                 <button
                   type="button"
                   onClick={handleForgotPassword}
-                  className="text-[#FDCE06] whitespace-nowrap font-[Inter] hover:underline"
+                  className={BTN.secondary}
                   style={{
                     fontSize: "14px",
                     fontWeight: "400",

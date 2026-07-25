@@ -9,6 +9,7 @@ import ClipLoader from "react-spinners/ClipLoader";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router";
+import { BTN } from "./styles/buttons";
 
 const EquipmentManagement = () => {
   const [searchData, setSearchData] = useState({
@@ -362,7 +363,7 @@ const EquipmentManagement = () => {
             </h3>
             <button
               onClick={handleAddEquipment}
-              className="bg-[#FDCE06] rounded-md text-[#1F1F20] font-inter font-bold text-sm lg:text-base px-6 py-2 hover:bg-[#E5B800] transition-colors whitespace-nowrap"
+              className={BTN.primary}
             >
               Add Equipment
             </button>
@@ -463,7 +464,7 @@ const EquipmentManagement = () => {
                         <p>{error}</p>
                         <button
                           onClick={fetchEquipment}
-                          className="mt-2 px-4 py-2 bg-[#FDCE06] text-[#1F1F20] rounded-md hover:bg-[#E5B800] transition-colors"
+                          className={BTN.primary + " mt-2"}
                         >
                           Retry
                         </button>
@@ -477,7 +478,7 @@ const EquipmentManagement = () => {
                         <p>No equipment found</p>
                         <button
                           onClick={handleAddEquipment}
-                          className="mt-2 px-4 py-2 bg-[#FDCE06] text-[#1F1F20] rounded-md hover:bg-[#E5B800] transition-colors"
+                          className={BTN.primary + " mt-2"}
                         >
                           Add First Equipment
                         </button>

@@ -5,6 +5,7 @@ import { adminProfileApi } from "./services/adminProfileApi";
 import { equipmentApi } from "./services/equipmentApi";
 import { settingsApi } from "./services/settingsApi";
 import AdminChangePassword from "./components/AdminChangePassword";
+import { BTN } from "./styles/buttons";
 
 const Profile = () => {
   const [formData, setFormData] = useState({
@@ -689,7 +690,7 @@ const Profile = () => {
             {/* Change Password Button */}
             <button
               onClick={handleChangePassword}
-              className="w-full sm:max-w-md border border-[#FDCE06] rounded-md bg-[#292A2B] text-[#FDCE06] py-3 px-6 cursor-pointer hover:bg-[#333333] transition-colors"
+              className={BTN.edit + " w-full sm:max-w-md"}
               style={{
                 fontFamily: "Inter",
                 fontWeight: 600,

@@ -9,6 +9,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { isImageUrl } from "./utils/uploadUtils";
 import { useNavigate, useLocation } from "react-router-dom";
+import { BTN } from "./styles/buttons";
 
 const ContentManagement = () => {
   const [searchData, setSearchData] = useState({
@@ -264,7 +265,7 @@ const ContentManagement = () => {
           <div className="flex flex-col justify-end">
             <button
               onClick={handleSearch}
-              className="bg-[#FDCE06] w-[120px] text-[#1F1F20] font-[Inter] font-bold text-sm px-4 py-2 rounded-md hover:bg-[#E5B800] transition-colors h-[42px]"
+              className={BTN.primary + " w-[120px] h-[42px]"}
             >
               Search
             </button>
@@ -283,7 +284,7 @@ const ContentManagement = () => {
           {/* Add Content Button */}
           <button
             onClick={handleAddContent}
-            className="bg-[#FDCE06] hover:bg-[#E5B800] text-[#1F1F20] font-[Inter] font-bold text-sm px-4 py-2 rounded-lg transition-colors w-full sm:w-auto"
+            className={BTN.primary + " w-full sm:w-auto"}
           >
             Add Content
           </button>
@@ -402,7 +403,7 @@ const ContentManagement = () => {
                       <p>{error}</p>
                       <button
                         onClick={fetchContent}
-                        className="mt-2 px-4 py-2 bg-[#FDCE06] text-[#1F1F20] rounded-md hover:bg-[#E5B800] transition-colors"
+                        className={BTN.primary + " mt-2"}
                       >
                         Retry
                       </button>

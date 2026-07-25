@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { ClipLoader } from "react-spinners";
 import Modal from "./Modal";
+import { BTN } from "../styles/buttons";
 
 const EditClientModal = ({
   isOpen,
@@ -300,7 +301,7 @@ const EditClientModal = ({
             <button
               type="button"
               onClick={handleCancel}
-              className="h-11 px-6 bg-[#333333] rounded-md text-white hover:bg-[#404040] transition-all font-[Inter] font-bold text-sm"
+              className={BTN.secondary + " h-11"}
             >
               Cancel
             </button>

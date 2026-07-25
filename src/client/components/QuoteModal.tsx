@@ -7,6 +7,7 @@ import { clientEquipmentApi } from "../../services/clientEquipmentApi";
 import { settingsApi } from "../../services/settingsApi";
 import api from "../../services/api";
 import { toast } from "react-toastify";
+import { BTN } from "../../styles/buttons";
 
 interface QuoteModalProps {
     isOpen: boolean;
@@ -196,7 +197,7 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
                                 <p className="text-red-400 mb-4">{error}</p>
                                 <button
                                     onClick={prepareQuoteData}
-                                    className="px-4 py-2 bg-[#FDCE06] text-[#1F1F20] rounded hover:bg-[#E5B800] transition-colors font-bold"
+                                    className={BTN.primary}
                                 >
                                     Retry
                                 </button>
@@ -250,7 +251,7 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
                     )}
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 bg-[#333333] text-[#E5E5E5] rounded hover:bg-[#404040] transition-colors font-medium"
+                        className={BTN.secondary}
                     >
                         Close
                     </button>

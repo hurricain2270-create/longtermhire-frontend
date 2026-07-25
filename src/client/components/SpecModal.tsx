@@ -4,6 +4,7 @@ import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import { clientEquipmentApi } from "../../services/clientEquipmentApi";
 import { toast } from "react-toastify";
+import { BTN } from "../../styles/buttons";
 
 interface SpecFile {
   name: string;
@@ -171,7 +172,7 @@ const SpecModal: React.FC<SpecModalProps> = ({
               <p className="text-red-400 mb-4">{error}</p>
               <button
                 onClick={fetchSpecs}
-                className="px-4 py-2 bg-[#FDCE06] text-[#1F1F20] rounded hover:bg-[#E5B800] transition-colors font-bold"
+                className={BTN.primary}
               >
                 Retry
               </button>
@@ -227,7 +228,7 @@ const SpecModal: React.FC<SpecModalProps> = ({
         <div className="p-6 border-t border-[#333333] flex justify-end gap-3">
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-[#333333] text-[#E5E5E5] rounded hover:bg-[#404040] transition-colors font-medium"
+            className={BTN.secondary}
           >
             Close
           </button>

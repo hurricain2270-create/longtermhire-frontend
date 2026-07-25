@@ -19,6 +19,7 @@ import TermCalculator from "./components/TermCalculator";
 import ClientSite from "./components/ClientSite";
 import ClientFaults from "./components/ClientFaults";
 import { calculateMonthlyPrices } from "../utils/pricingCalculator";
+import { BTN } from "../styles/buttons";
 
 // Add custom CSS for scrollbar hiding and range input styling
 const scrollbarHideStyles = `
@@ -1467,7 +1468,7 @@ function ClientDashboard() {
               <span className="text-[#9CA3AF] text-xs sm:text-sm">|</span>
               <button
                 onClick={handleLogout}
-                className="text-[#E5E5E5] text-xs sm:text-sm hover:text-[#FDCE06] transition-colors"
+                className={BTN.secondary}
               >
                 Logout
               </button>

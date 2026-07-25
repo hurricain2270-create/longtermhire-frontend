@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { dashboardApi } from "./services/dashboardApi";
+import { BTN } from "./styles/buttons";
 
 // Skeleton Loading Components
 const StatCardSkeleton = () => (
@@ -125,7 +126,7 @@ function DashboardMain() {
             <p className="text-red-400">{error}</p>
             <button
               onClick={loadDashboardStats}
-              className="mt-2 text-[#FDCE06] hover:underline"
+              className={BTN.primary + " mt-2"}
             >
               Retry
             </button>

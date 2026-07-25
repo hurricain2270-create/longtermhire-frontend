@@ -6,6 +6,7 @@ import { contentApi } from "../services/contentApi";
 import ImageManager from "./ImageManager";
 import { toast } from "react-toastify";
 import SimpleRichTextEditor from "./SimpleRichTextEditor";
+import { BTN } from "../styles/buttons";
 
 const EditContentModal = ({
   isOpen,
@@ -299,7 +300,7 @@ const EditContentModal = ({
             <button
               type="button"
               onClick={handleCancel}
-              className="flex-1 h-[48px] bg-transparent border border-[#333333] rounded-[8px] text-[#E5E5E5] font-[Inter] font-medium text-[14px] leading-[1.21em] hover:border-[#555555] transition-colors"
+              className={BTN.secondary + " flex-1 h-[48px]"}
             >
               Cancel
             </button>

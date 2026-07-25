@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useState } from "react";
 import Modal from "./Modal";
+import { BTN } from "../styles/buttons";
 
 const AddPricingPackageModal = ({ isOpen, onClose, onSubmit, loading }) => {
   const [formData, setFormData] = useState({
@@ -207,7 +208,7 @@ const AddPricingPackageModal = ({ isOpen, onClose, onSubmit, loading }) => {
               type="button"
               onClick={handleCancel}
               disabled={loading}
-              className="px-6 py-2 bg-[#333333] hover:bg-[#404040] border-none rounded-[6px] text-white font-[Inter] font-bold text-[16px] cursor-pointer transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className={BTN.secondary}
             >
               Cancel
             </button>

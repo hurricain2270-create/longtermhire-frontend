@@ -3,6 +3,7 @@ import { ClipLoader } from "react-spinners";
 import Modal from "./Modal";
 import { equipmentApi } from "../services/equipmentApi";
 import { pricingApi } from "../services/pricingApi";
+import { BTN } from "../styles/buttons";
 
 const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
   const [formData, setFormData] = useState({
@@ -403,14 +404,14 @@ const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
                           <button
                             type="button"
                             onClick={handleSelectAll}
-                            className="text-[11px] px-2 py-1 border border-[#FDCE06] text-[#FDCE06] rounded hover:bg-[#FDCE06] hover:text-[#1F1F20] transition-colors"
+                            className={BTN.primary}
                           >
                             All
                           </button>
                           <button
                             type="button"
                             onClick={handleDeselectAll}
-                            className="text-[11px] px-2 py-1 border border-[#9CA3AF] text-[#9CA3AF] rounded hover:bg-[#9CA3AF] hover:text-[#1F1F20] transition-colors"
+                            className={BTN.primary}
                           >
                             None
                           </button>
@@ -455,7 +456,7 @@ const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
             <button
               type="button"
               onClick={handleCancel}
-              className="h-11 px-6 bg-[#333333] rounded-md text-white hover:bg-[#404040] transition-all font-[Inter] font-bold text-sm"
+              className={BTN.secondary + " h-11"}
             >
               Cancel
             </button>

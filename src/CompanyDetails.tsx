@@ -7,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import SimpleRichTextEditor from "./components/SimpleRichTextEditor";
 import { companyApi } from "./services/companyApi";
 import { calculateEquipmentPrice, formatPrice, formatDiscount } from "./utils/pricingCalculator";
+import { BTN } from "./styles/buttons";
 
 const CompanyDetails = () => {
   const { id } = useParams();
@@ -876,7 +877,7 @@ const CompanyDetails = () => {
                 </button>
                 <button
                   onClick={handleAddTeamMember}
-                  className="flex-1 bg-[#FDCE06] text-[#1F1F20] py-2 px-4 rounded-md font-[Inter] font-bold text-sm hover:bg-[#E5B800] transition-colors"
+                  className={BTN.primary + " flex-1"}
                 >
                   Save Member
                 </button>

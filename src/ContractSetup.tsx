@@ -8,6 +8,7 @@ import { PDFViewer } from "@react-pdf/renderer";
 import ContractPDF from "./components/ContractPDF";
 import { clientApi } from "./services/clientApi";
 import { equipmentApi } from "./services/equipmentApi";
+import { BTN } from "./styles/buttons";
 
 const LBL = "text-[#9CA3AF] font-[Inter] text-[14px]";
 const BOX =
@@ -333,7 +334,7 @@ const ContractSetup = () => {
             <p className="text-[#9CA3AF] font-[Inter] text-sm">Every field the hire agreement needs, in the order it appears on the document.</p>
           </div>
           <button onClick={startNew}
-            className="px-4 py-2 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] transition-colors whitespace-nowrap">
+            className={BTN.primary}>
             New contract
           </button>
         </div>

@@ -4,6 +4,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ClipLoader from "react-spinners/ClipLoader";
 import api from "./services/api";
+import { BTN } from "./styles/buttons";
 
 const HireManagement = () => {
   const [data, setData] = useState([]);
@@ -262,7 +263,7 @@ const HireManagement = () => {
       <div className="p-6">
         <div className="bg-[#1F1F20] border border-[#333] rounded-lg p-6 text-center">
           <p className="text-red-400 mb-3">{error}</p>
-          <button onClick={loadData} className="px-4 py-2 bg-[#FDCE06] text-[#1F1F20] rounded font-bold text-sm">
+          <button onClick={loadData} className={BTN.primary}>
             Retry
           </button>
         </div>

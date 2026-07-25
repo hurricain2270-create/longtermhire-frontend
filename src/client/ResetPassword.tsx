@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import { clientPasswordApi } from "../services/clientPasswordApi";
 import { useCompanyLogo } from "../hooks/useCompanyLogo";
+import { BTN } from "../styles/buttons";
 
 function ResetPassword() {
   const [password, setPassword] = useState("");
@@ -117,7 +118,7 @@ function ResetPassword() {
           {/* Back Button */}
           <button
             onClick={handleBackToOTP}
-            className="flex items-center text-[#9CA3AF] hover:text-[#E5E5E5] font-[Inter] text-sm mb-6 transition-colors"
+            className={BTN.secondary + " flex items-center mb-6"}
           >
             <svg
               width="16"

@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useState } from "react";
 import Modal from "./Modal";
+import { BTN } from "../styles/buttons";
 
 const AddEquipmentModal = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({
@@ -255,14 +256,14 @@ const AddEquipmentModal = ({ isOpen, onClose, onSave }) => {
                   <button
                     type="button"
                     onClick={handleSaveNewCategory}
-                    className="px-3 py-1 bg-[#FDCE06] text-[#000000] text-[12px] font-bold rounded-[4px] hover:bg-[#E5B800] transition-colors"
+                    className={BTN.primary}
                   >
                     Add
                   </button>
                   <button
                     type="button"
                     onClick={handleCancelAddCategory}
-                    className="px-3 py-1 bg-[#6B7280] text-[#E5E5E5] text-[12px] font-bold rounded-[4px] hover:bg-[#4B5563] transition-colors"
+                    className={BTN.secondary}
                   >
                     Cancel
                   </button>
@@ -505,13 +506,13 @@ const AddEquipmentModal = ({ isOpen, onClose, onSave }) => {
             <button
               type="button"
               onClick={handleCancel}
-              className="px-6 py-2 bg-[#333333] hover:bg-[#404040] border-none rounded-[6px] text-white font-[Inter] font-bold text-[16px] cursor-pointer transition-colors"
+              className={BTN.secondary}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-[#FDCE06] hover:bg-[#E5B800] border-none rounded-[6px] text-[#1F1F20] font-[Inter] font-bold text-[16px] cursor-pointer transition-colors"
+              className={BTN.primary}
             >
               Add Equipment
             </button>

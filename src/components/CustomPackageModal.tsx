@@ -1,6 +1,7 @@
 // @ts-nocheck
 import { useState } from "react";
 import Modal from "./Modal";
+import { BTN } from "../styles/buttons";
 
 const CustomPackageModal = ({
   isOpen,
@@ -238,13 +239,13 @@ const CustomPackageModal = ({
             <button
               type="button"
               onClick={handleCancel}
-              className="px-6 py-2 bg-[#333333] hover:bg-[#404040] border-none rounded-[6px] text-white font-[Inter] font-bold text-[16px] cursor-pointer transition-colors"
+              className={BTN.secondary}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2 bg-[#FDCE06] hover:bg-[#E5B800] border-none rounded-[6px] text-[#1F1F20] font-[Inter] font-bold text-[16px] cursor-pointer transition-colors"
+              className={BTN.primary}
             >
               Apply to Equipment
             </button>

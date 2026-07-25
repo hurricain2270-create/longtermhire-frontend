@@ -6,6 +6,7 @@ import { clientProfileApi } from "../services/clientProfileApi";
 import { clientAuthApi } from "../services/clientAuthApi";
 import { chatApi } from "../services/chatApi";
 import ClientChangePassword from "./ClientChangePassword";
+import { BTN } from "../styles/buttons";
 
 function ClientProfile() {
   const [formData, setFormData] = useState({
@@ -157,7 +158,7 @@ function ClientProfile() {
           </div>
           <button
             onClick={handleLogout}
-            className="text-[#E5E5E5] text-sm hover:text-[#FDCE06] transition-colors"
+            className={BTN.secondary}
           >
             Logout
           </button>
@@ -276,7 +277,7 @@ function ClientProfile() {
               {/* Change Password Button */}
               <button
                 onClick={handleChangePassword}
-                className="w-full sm:max-w-md border border-[#FDCE06] rounded-md bg-[#292A2B] text-[#FDCE06] py-3 px-6 cursor-pointer hover:bg-[#333333] transition-colors font-semibold"
+                className={BTN.edit + " w-full sm:max-w-md"}
               >
                 Change Password
               </button>

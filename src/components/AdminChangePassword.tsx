@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ClipLoader } from "react-spinners";
 import { adminProfileApi } from "../services/adminProfileApi";
+import { BTN } from "../styles/buttons";
 
 function AdminChangePassword({ onBack }) {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -115,7 +116,7 @@ function AdminChangePassword({ onBack }) {
       <div className="mb-8">
         <button
           onClick={onBack}
-          className="flex items-center text-[#9CA3AF] hover:text-[#E5E5E5] font-[Inter] text-sm mb-6 transition-colors"
+          className={BTN.secondary + " flex items-center mb-6"}
         >
           <svg
             width="16"
