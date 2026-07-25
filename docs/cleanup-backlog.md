@@ -53,6 +53,15 @@ this version**, then ask for the commit to be reverted.
       (`04a7cc88`). Define the sizes once in `tailwind.config` and reference
       them so it can't drift again.
 
+- [ ] **B15 — get the remaining backend route files into `backend-routes/`.**
+      `fault.js` and `contract.js` are there; the rest live only on EC2, which
+      means any change to them is guesswork from a 45-line grep window. Having
+      `contract.js` in the repo is the only reason the contract delete took
+      minutes instead of a new endpoint — the delete, the status field and the
+      draft-only policy were already written and had simply never been called.
+      Upload the rest with the same one-liner, then every backend change becomes
+      read → patch → one curl → `pm2 restart`.
+
 - [ ] **B12 — one upload path.** Two exist: `equipmentApi.uploadFile` (6 call
       sites, proven) and `uploadUtils.uploadImage` → `sdk.upload` (3 older
       screens). Standardise on the first.
