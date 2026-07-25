@@ -20,6 +20,7 @@ import ClientSite from "./components/ClientSite";
 import ClientFaults from "./components/ClientFaults";
 import { calculateMonthlyPrices } from "../utils/pricingCalculator";
 import { BTN } from "../styles/buttons";
+import { clientProfileApi } from "../services/clientProfileApi";
 
 // Add custom CSS for scrollbar hiding and range input styling
 const scrollbarHideStyles = `
@@ -382,6 +383,21 @@ function ClientDashboard() {
           name: clientInfo.profile?.name || clientInfo.email || "Client User",
           email: clientInfo.email,
         });
+
+        // The cached login info rarely carries a name, which is why the header
+        // fell back to the email address. Every client is onboarded by us, so
+        // the name is on their profile — use that.
+        try {
+          const prof = await clientProfileApi.getProfile();
+          const data = prof && !prof.error ? prof.data : null;
+          const realName =
+            data?.client_profile?.client_name ||
+            data?.user?.username ||
+            null;
+          if (realName) setUser((u) => ({ ...(u || {}), name: realName }));
+        } catch (e) {
+          console.error("Could not load the client name:", e);
+        }
 
         // Load company settings
         try {
