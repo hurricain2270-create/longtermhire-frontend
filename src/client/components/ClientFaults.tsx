@@ -285,8 +285,17 @@ const ClientFaults = () => {
 
       {faults.length > 0 && (
         <div className="space-y-3 mt-5">
-          {faults.map((f) => (
-            <div key={f.id} className="bg-[#1F1F20] border border-[#333] rounded-xl p-4 sm:p-5">
+          {faults.map((f, i) => (
+            <React.Fragment key={"wrap-" + f.id}>
+            {f.resolved_at && !faults[i - 1]?.resolved_at && (
+              <div className="text-[#6B7280] text-[12px] uppercase tracking-[0.06em] pt-4 pb-1">
+                Previously fixed
+              </div>
+            )}
+            <div key={f.id}
+              className={`bg-[#1F1F20] border border-[#333] rounded-xl p-4 sm:p-5 ${
+                f.resolved_at ? "opacity-60" : ""
+              }`}>
               <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
                 <div>
                   <div className="text-[#E5E5E5] text-[16px] font-semibold">{f.title}</div>
@@ -378,6 +387,7 @@ const ClientFaults = () => {
                 </div>
               )}
             </div>
+            </React.Fragment>
           ))}
         </div>
       )}
