@@ -414,10 +414,12 @@ const ContentManagement = () => {
                   className="bg-[#292A2B] border border-[#333333] rounded-xl overflow-hidden">
                   <div className="relative">
                     {photo ? (
-                      <img src={photo} alt={item.equipment_name || "Machine"}
-                        className="w-full h-[200px] object-cover border-b border-[#333333]" />
+                      <div className="w-full aspect-[4/3] bg-[#1F1F20] border-b border-[#333333] flex items-center justify-center">
+                        <img src={photo} alt={item.equipment_name || "Machine"}
+                          className="max-w-full max-h-full object-contain" />
+                      </div>
                     ) : (
-                      <div className="w-full h-[200px] flex flex-col items-center justify-center gap-1.5 bg-[#3a2f14] border-b border-[#333333]">
+                      <div className="w-full aspect-[4/3] flex flex-col items-center justify-center gap-1.5 bg-[#3a2f14] border-b border-[#333333]">
                         <span className="text-[#F59E0B] text-[26px] leading-none">⌷</span>
                         <span className="text-[#F59E0B] font-[Inter] text-[13px]">No photos yet</span>
                       </div>
