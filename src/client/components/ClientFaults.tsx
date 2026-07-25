@@ -279,7 +279,7 @@ const ClientFaults = () => {
         </div>
         <button onClick={() => setReporting(true)}
           className="px-4 py-2.5 rounded-lg bg-[#FDCE06] text-[#1F1F20] font-bold text-sm hover:bg-[#E5B800] transition-colors whitespace-nowrap">
-          Report a fault
+          Report a Fault
         </button>
       </div>
 
