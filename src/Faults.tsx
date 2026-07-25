@@ -185,6 +185,7 @@ const Card = ({
             {updates.map((u, i) => {
               const prev = updates[i - 1];
               const gap = prev ? hrs(prev.created_at, u.created_at) : null;
+              const mine = u.author_side === "admin";
               return (
                 <div key={u.id}>
                   {gap !== null && (
@@ -202,7 +203,9 @@ const Card = ({
                         {" · " + stamp(u.created_at)}
                       </div>
                       {u.message ? (
-                        <div className="text-[#E5E5E5] font-[Inter] text-[13px] leading-relaxed mt-0.5">{u.message}</div>
+                        <div className={`inline-block max-w-[85%] px-3 py-2 mt-1 rounded-lg font-[Inter] text-[13px] leading-relaxed ${
+                          mine ? "bg-[#FDCE06] text-[#1F1F20]" : "bg-[#1F1F20] text-[#E5E5E5] border border-[#333333]"
+                        }`}>{u.message}</div>
                       ) : null}
                       {photosOf(u.attachments).length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-2">
