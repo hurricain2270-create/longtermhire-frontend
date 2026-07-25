@@ -394,7 +394,13 @@ function ClientDashboard() {
             data?.client_profile?.client_name ||
             data?.user?.username ||
             null;
-          if (realName) setUser((u) => ({ ...(u || {}), name: realName }));
+          const companyName = data?.client_profile?.company_name || null;
+          if (realName || companyName)
+            setUser((u) => ({
+              ...(u || {}),
+              name: realName || (u && u.name),
+              company: companyName,
+            }));
         } catch (e) {
           console.error("Could not load the client name:", e);
         }
@@ -1474,6 +1480,7 @@ function ClientDashboard() {
             <div className="flex items-center gap-2 sm:gap-3 ml-2 sm:ml-4">
               <span className="text-[#9CA3AF] text-xs sm:text-sm hidden sm:block">
                 Welcome, {user?.name}
+                {user?.company ? " · " + user.company : ""}
               </span>
               <button
                 onClick={() => navigate("/client/profile")}
