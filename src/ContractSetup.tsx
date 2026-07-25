@@ -170,6 +170,19 @@ const ContractSetup = () => {
 
   const [deletingId, setDeletingId] = useState(null);
 
+  const setContractStatus = async (row, status) => {
+    try {
+      setDeletingId(row.id);
+      await api.put("/v1/api/longtermhire/super_admin/contracts/" + row.id, { status });
+      toast.success(status === "completed" ? "Contract completed" : "Contract reopened");
+      loadAll();
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Could not update that contract");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const handleDeleteContract = async (row) => {
     if (!window.confirm(`Delete contract ${row.contract_no}? This cannot be undone.`)) return;
     try {
@@ -340,7 +353,10 @@ const ContractSetup = () => {
               {contracts.length === 0 ? (
                 <tr><td colSpan={5} className="px-4 py-8 text-center text-[#9CA3AF] text-sm font-[Inter]">No contracts yet.</td></tr>
               ) : contracts.map((row) => (
-                <tr key={row.id} className="border-b border-[#1a1a1a] last:border-0">
+                <tr key={row.id}
+                  className={`border-b border-[#1a1a1a] last:border-0 ${
+                    row.status === "draft" ? "" : "opacity-50"
+                  }`}>
                   <td className="px-4 py-3 text-sm font-medium text-[#FDCE06] font-[Inter]">{row.contract_no}</td>
                   <td className="px-4 py-3 text-sm text-[#E5E5E5] font-[Inter]">{row.company_name}</td>
                   <td className="px-4 py-3 text-sm text-[#9CA3AF] font-[Inter]">{row.plant_code} — {row.equipment_name}</td>
@@ -353,11 +369,28 @@ const ContractSetup = () => {
                         className="px-3 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] transition-colors">
                         Open
                       </button>
-                      <button onClick={() => handleDeleteContract(row)}
-                        disabled={deletingId === row.id}
-                        className="px-3 py-1.5 rounded border border-[#7f1d1d] text-[#ef4444] font-[Inter] font-bold text-[14px] hover:bg-[#ef4444] hover:text-white disabled:opacity-50 transition-colors">
-                        {deletingId === row.id ? "Deleting…" : "Delete"}
-                      </button>
+                      {row.status === "draft" ? (
+                        <button onClick={() => setContractStatus(row, "completed")}
+                          disabled={deletingId === row.id}
+                          className="px-3 py-1.5 rounded border border-[#333] text-[#9CA3AF] font-[Inter] font-bold text-[14px] hover:border-[#4CAF50] hover:text-[#4CAF50] disabled:opacity-50 transition-colors">
+                          Complete
+                        </button>
+                      ) : (
+                        <button onClick={() => setContractStatus(row, "draft")}
+                          disabled={deletingId === row.id}
+                          className="px-3 py-1.5 rounded border border-[#333] text-[#9CA3AF] font-[Inter] font-bold text-[14px] hover:border-[#FDCE06] hover:text-[#FDCE06] disabled:opacity-50 transition-colors">
+                          Reopen
+                        </button>
+                      )}
+                      {/* The backend only permits deleting drafts, so don't
+                          offer it on anything that has been completed. */}
+                      {row.status === "draft" && (
+                        <button onClick={() => handleDeleteContract(row)}
+                          disabled={deletingId === row.id}
+                          className="px-3 py-1.5 rounded border border-[#7f1d1d] text-[#ef4444] font-[Inter] font-bold text-[14px] hover:bg-[#ef4444] hover:text-white disabled:opacity-50 transition-colors">
+                          {deletingId === row.id ? "Deleting…" : "Delete"}
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>
