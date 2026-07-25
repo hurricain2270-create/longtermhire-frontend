@@ -7,6 +7,7 @@
 // The rule: an action always looks the same wherever it appears.
 //   View / primary  — yellow, dark text
 //   Edit            — blue, dark text
+//   Start / go       — green, dark text
 //   Delete / danger — red, dark text
 //   Everything else — bordered, grey, yellow on hover
 
@@ -26,6 +27,9 @@ export const BTN = {
   // Edit — always blue, so it reads the same on every page.
   edit: `${base} ${size.md} bg-[#60A5FA] text-[#1F1F20] hover:bg-[#3B82F6]`,
 
+  // Go / start actions — Start Hire and the like.
+  success: `${base} ${size.md} bg-[#4CAF50] text-[#1F1F20] hover:bg-[#3d9e43]`,
+
   // Supporting actions — Resend, Complete, anything without its own colour.
   secondary: `${base} ${size.md} border border-[#333] text-[#9CA3AF] hover:border-[#FDCE06] hover:text-[#FDCE06]`,
 
@@ -41,6 +45,7 @@ export const BTN = {
   // Same three at the smaller size, for nested rows and tight columns.
   primarySm: `${base} ${size.sm} bg-[#FDCE06] text-[#1F1F20] hover:bg-[#E5B800]`,
   editSm: `${base} ${size.sm} bg-[#60A5FA] text-[#1F1F20] hover:bg-[#3B82F6]`,
+  successSm: `${base} ${size.sm} bg-[#4CAF50] text-[#1F1F20] hover:bg-[#3d9e43]`,
   secondarySm: `${base} ${size.sm} border border-[#333] text-[#9CA3AF] hover:border-[#FDCE06] hover:text-[#FDCE06]`,
   dangerSm: `${base} ${size.sm} bg-[#ef4444] text-[#1F1F20] hover:bg-[#dc2626]`,
 };

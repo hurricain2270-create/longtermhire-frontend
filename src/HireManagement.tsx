@@ -405,21 +405,21 @@ const HireManagement = () => {
                                 <>
                                   <button
                                     onClick={() => toggleExpand(item.assignment_id)}
-                                    className="px-3 py-1.5 border border-[#4CAF50] rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#3d9e43] transition-colors"
+                                    className={BTN.primary}
                                   >
                                     {isExpanded ? "Hide" : "View schedule"}
                                   </button>
                                   <button
                                     onClick={() => setConfirmAction({ type: "restart", assignmentId: item.assignment_id, equipmentName: item.equipment_name })}
                                     disabled={startingId === item.assignment_id}
-                                    className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors"
+                                    className={BTN.success}
                                   >
                                     {startingId === item.assignment_id ? "..." : "Restart Hire"}
                                   </button>
                                   <button
                                     onClick={() => { loadInvoices(item.assignment_id); setConfirmAction({ type: "delete", assignmentId: item.assignment_id, equipmentName: item.equipment_name }); }}
                                     disabled={startingId === item.assignment_id}
-                                    className="px-3 py-1.5 border border-[#ef4444] rounded bg-[#ef4444] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#d63a3a] disabled:opacity-50 transition-colors"
+                                    className={BTN.danger}
                                   >
                                     Delete
                                   </button>
@@ -431,7 +431,7 @@ const HireManagement = () => {
                                     setConfirmAction({ type: "start", assignmentId: item.assignment_id, equipmentName: item.equipment_name });
                                   }}
                                   disabled={startingId === item.assignment_id}
-                                  className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors"
+                                  className={BTN.success}
                                 >
                                   {startingId === item.assignment_id ? "Starting..." : "Start Hire"}
                                 </button>
@@ -439,14 +439,14 @@ const HireManagement = () => {
                                 <>
                                   <button
                                     onClick={() => toggleExpand(item.assignment_id)}
-                                    className="px-3 py-1.5 border border-[#4CAF50] rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#3d9e43] transition-colors"
+                                    className={BTN.primary}
                                   >
                                     {isExpanded ? "Hide" : "View schedule"}
                                   </button>
                                   <button
                                     onClick={() => setConfirmAction({ type: "end", assignmentId: item.assignment_id, equipmentName: item.equipment_name })}
                                     disabled={startingId === item.assignment_id}
-                                    className="px-3 py-1.5 border border-[#ef4444] rounded bg-[#ef4444] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#d63a3a] disabled:opacity-50 transition-colors"
+                                    className={BTN.danger}
                                   >
                                     End Hire
                                   </button>
