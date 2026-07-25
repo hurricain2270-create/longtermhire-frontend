@@ -1,6 +1,7 @@
 // @ts-nocheck
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { equipmentApi } from "../../services/equipmentApi";
 
 const API = "https://api.longtermhire.com";
 
@@ -108,19 +109,10 @@ const ClientFaults = () => {
   };
 
   const uploadOne = async (file) => {
-    const body = new FormData();
-    body.append("file", file);
-    const res = await fetch(API + "/v1/api/longtermhire/client/fault-upload", {
-      method: "POST",
-      headers: { Authorization: "Bearer " + token() },
-      body,
-    });
-    const raw = await res.text();
-    let j = null;
-    try { j = JSON.parse(raw); } catch (_) { /* not json */ }
-    if (j && !j.error && j.data?.url) return j.data.url;
-    const why = (j && j.message) || raw.slice(0, 120) || "empty response";
-    throw new Error("HTTP " + res.status + " — " + why);
+    // Same upload path the main chat uses — proven to work on both portals.
+    const up = await equipmentApi.uploadFile(file);
+    if (!up?.url) throw new Error("no url returned");
+    return up.url;
   };
 
   const addReplyPhotos = async (files) => {
@@ -145,16 +137,9 @@ const ClientFaults = () => {
     setUploading(true);
     for (const file of list) {
       try {
-        const body = new FormData();
-        body.append("file", file);
-        const res = await fetch(API + "/v1/api/longtermhire/client/fault-upload", {
-          method: "POST",
-          headers: { Authorization: "Bearer " + token() },
-          body,
-        });
-        const j = await res.json();
-        if (j && !j.error && j.data?.url) {
-          setPhotos((p) => [...p, j.data.url]);
+        const url = await uploadOne(file);
+        if (url) {
+          setPhotos((p) => [...p, url]);
         } else {
           toast.error("That photo wouldn't upload");
         }
