@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { authApi } from "./services/authApi";
 import { useCompanyLogo } from "./hooks/useCompanyLogo";
 import { chatApi } from "./services/chatApi";
+import { dashboardApi } from "./services/dashboardApi";
 import api from "./services/api";
 
 const AdminSidebar = ({ isOpen, onClose }) => {
@@ -37,14 +38,11 @@ const AdminSidebar = ({ isOpen, onClose }) => {
       } catch (e) { /* quiet */ }
 
       try {
-        // Same source the chat list's own unread badge uses: sum unread_count
-        // across conversations. getUnreadCount() is unproven, this isn't.
-        const j = await chatApi.getConversations();
+        // Same figure the dashboard's "Unread Messages" card shows, so the two
+        // can never disagree.
+        const j = await dashboardApi.getStats();
         if (alive && j && !j.error) {
-          const rows = j.data || [];
-          setUnreadChats(
-            rows.reduce((sum, r) => sum + (parseInt(r?.unread_count) || 0), 0)
-          );
+          setUnreadChats(parseInt(j.data?.stats?.recent_messages) || 0);
         }
       } catch (e) { /* quiet */ }
     };
