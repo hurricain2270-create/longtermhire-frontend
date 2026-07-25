@@ -16,6 +16,14 @@ export const useChat = (onNewMessagesFromPolling) => {
   const pollingInterval = useRef(null);
   const lastMessageTimestamp = useRef(0);
 
+  // MySQL datetimes ("2026-07-25 02:51:42") aren't valid ISO. Normalise before
+  // parsing so this never yields NaN.
+  const toTime = (v) => {
+    if (!v) return 0;
+    const t = new Date(String(v).replace(" ", "T")).getTime();
+    return isNaN(t) ? 0 : t;
+  };
+
   // Load conversations
   const loadConversations = useCallback(async (showLoading = true) => {
     try {
@@ -90,9 +98,7 @@ export const useChat = (onNewMessagesFromPolling) => {
         // Update last message timestamp for real-time polling
         if (messagesData.length > 0) {
           const latestMessage = messagesData[messagesData.length - 1];
-          lastMessageTimestamp.current = new Date(
-            latestMessage.created_at
-          ).getTime();
+          lastMessageTimestamp.current = toTime(latestMessage.created_at);
         }
       } else {
         setError(response.message);
@@ -224,11 +230,11 @@ export const useChat = (onNewMessagesFromPolling) => {
         try {
           const response = await chatApi.getMessages(conversationId, 1, 10);
           if (!response.error && response.data.length > 0) {
-            const newMessages = response.data.filter(
-              (msg) =>
-                new Date(msg.created_at).getTime() >
-                lastMessageTimestamp.current
-            );
+            // Dedupe by message id rather than by parsed timestamp. MySQL
+            // returns "YYYY-MM-DD HH:MM:SS", which is not valid ISO — some
+            // engines parse it as NaN, and every comparison against NaN is
+            // false, so nothing was ever recognised as new.
+            const newMessages = response.data;
 
             if (newMessages.length > 0) {
               setMessages((prev) => {
@@ -245,16 +251,14 @@ export const useChat = (onNewMessagesFromPolling) => {
                   if (onNewMessagesFromPolling) {
                     onNewMessagesFromPolling(uniqueNewMessages);
                   }
-                  return [...prev, ...uniqueNewMessages.reverse()];
+                  return [...prev, ...uniqueNewMessages];
                 }
                 return prev;
               });
 
               // Update timestamp only if we actually added new messages
               const latestMessage = newMessages[newMessages.length - 1];
-              lastMessageTimestamp.current = new Date(
-                latestMessage.created_at
-              ).getTime();
+              lastMessageTimestamp.current = toTime(latestMessage.created_at);
 
               // Refresh conversations to update unread counts (without showing loading)
               // Use a small delay to avoid race conditions
