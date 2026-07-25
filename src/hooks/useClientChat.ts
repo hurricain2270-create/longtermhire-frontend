@@ -23,6 +23,14 @@ export const useClientChat = () => {
   const pollingInterval = useRef(null);
   const lastMessageTimestamp = useRef(0);
 
+  // MySQL datetimes ("2026-07-25 02:51:42") aren't valid ISO. Normalise before
+  // parsing so this never yields NaN.
+  const toTime = (v) => {
+    if (!v) return 0;
+    const t = new Date(String(v).replace(" ", "T")).getTime();
+    return isNaN(t) ? 0 : t;
+  };
+
   // Set user online status
   const setOnline = useCallback(async () => {
     try {
@@ -124,9 +132,7 @@ export const useClientChat = () => {
         // Update last message timestamp for real-time polling
         if (messagesData.length > 0) {
           const latestMessage = messagesData[messagesData.length - 1];
-          lastMessageTimestamp.current = new Date(
-            latestMessage.created_at
-          ).getTime();
+          lastMessageTimestamp.current = toTime(latestMessage.created_at);
         }
       } else {
         setError(response.message || "Failed to load messages");
@@ -265,10 +271,11 @@ export const useClientChat = () => {
             setUnreadCount(response.unread_count);
           }
 
-          const newMessages = response.data.filter(
-            (msg) =>
-              new Date(msg.created_at).getTime() > lastMessageTimestamp.current
-          );
+          // Dedupe by message id rather than by parsed timestamp. MySQL
+          // returns "YYYY-MM-DD HH:MM:SS", which is not valid ISO — some
+          // engines parse it as NaN, and every comparison against NaN is
+          // false, so nothing was ever recognised as new.
+          const newMessages = response.data;
 
           if (newMessages.length > 0) {
             setMessages((prev) => {
@@ -281,16 +288,14 @@ export const useClientChat = () => {
               );
 
               if (uniqueNewMessages.length > 0) {
-                return [...prev, ...uniqueNewMessages.reverse()];
+                return [...prev, ...uniqueNewMessages];
               }
               return prev;
             });
 
             // Update timestamp
             const latestMessage = newMessages[newMessages.length - 1];
-            lastMessageTimestamp.current = new Date(
-              latestMessage.created_at
-            ).getTime();
+            lastMessageTimestamp.current = toTime(latestMessage.created_at);
           }
         }
       } catch (err) {
