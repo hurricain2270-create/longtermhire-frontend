@@ -47,11 +47,17 @@ this version**, then ask for the commit to be reverted.
 - [ ] **B7 — strip debug logging.** 247 `console.log` / `warn` / `error` calls,
       many with emoji prefixes. Leaks internal state on a public site.
 
-- [ ] **B11 — define a shared type scale.** No shared sizes, so every page picks
+- [ ] **B11 — define shared type and button styles.** No shared sizes, so every page picks
       its own pixel values — which is why the newer admin pages drifted one
       notch smaller than the older ones and had to be corrected by hand
       (`04a7cc88`). Define the sizes once in `tailwind.config` and reference
       them so it can't drift again.
+
+      Same problem with buttons: Contract Set Up and Equipment Management use
+      pill buttons, Content Management uses text links, Quote Management neither.
+      Client Management was converted to pills (`bb086ddd`) because there was no
+      majority to follow. Define primary / secondary / danger once and reference
+      them, rather than pasting Tailwind strings per page.
 
 - [ ] **B15 — get the remaining backend route files into `backend-routes/`.**
       `fault.js` and `contract.js` are there; the rest live only on EC2, which
