@@ -58,7 +58,6 @@ const ClientManagement = () => {
 
   // API data states
   const [clients, setClients] = useState([]);
-  const [q, setQ] = useState("");
   const [inviteFilter, setInviteFilter] = useState("all");
   const [kitFilter, setKitFilter] = useState("all");
   const [companyMembers, setCompanyMembers] = useState([]);
@@ -367,12 +366,8 @@ const ClientManagement = () => {
             const fullEquipment = equipment.find((eq) => eq.id === equipmentId);
             // The whole list arrives in one page (limit 200) and there are tens of
   // clients, not thousands, so filtering happens here rather than round-tripping.
-  const matchesText = (cl) => {
-    const t = q.trim().toLowerCase();
-    if (!t) return true;
-    return [cl.client_name, cl.company_name, cl.client_id, cl.email]
-      .some((v) => String(v || "").toLowerCase().includes(t));
-  };
+  // No search box: the whole client list fits on one screen.
+  const matchesText = () => true;
   const isInvited = (cl) => !!cl.invited_at;
   const hasKit = (cl) => Number(cl.equipment_count || 0) > 0;
 
@@ -392,8 +387,7 @@ const ClientManagement = () => {
   const visible = clients.filter(
     (cl) => matchesText(cl) && matchesInvite(cl) && matchesKit(cl)
   );
-  const filtersActive =
-    q.trim() !== "" || inviteFilter !== "all" || kitFilter !== "all";
+  const filtersActive = inviteFilter !== "all" || kitFilter !== "all";
 
   return (
               fullEquipment || {
@@ -442,13 +436,6 @@ const ClientManagement = () => {
 
       {/* Filters */}
       <section className="bg-[#1F1F20] border border-[#333333] rounded-lg p-5 mb-8">
-        <input
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by client, company, ID or email"
-          className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors mb-4"
-        />
-
         <div className="mb-3">
           <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2">
             Login sent
@@ -491,7 +478,7 @@ const ClientManagement = () => {
           </div>
           {filtersActive && (
             <button
-              onClick={() => { setQ(""); setInviteFilter("all"); setKitFilter("all"); }}
+              onClick={() => { setInviteFilter("all"); setKitFilter("all"); }}
               className={BTN.secondarySm}
             >
               Clear filters

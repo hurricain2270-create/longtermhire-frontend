@@ -11,6 +11,12 @@ import { isImageUrl } from "./utils/uploadUtils";
 import { useNavigate, useLocation } from "react-router-dom";
 import { BTN } from "./styles/buttons";
 
+const CHIP = (on) =>
+  "px-3 py-1.5 rounded-full font-[Inter] text-[14px] transition-colors border " +
+  (on
+    ? "bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06] font-bold"
+    : "bg-[#292A2B] text-[#9CA3AF] border-[#333] hover:border-[#FDCE06] hover:text-[#FDCE06]");
+
 const ContentManagement = () => {
   const [searchData, setSearchData] = useState({
     contentId: "",
@@ -46,6 +52,8 @@ const ContentManagement = () => {
   };
 
   const [contentData, setContentData] = useState([]);
+  const [descFilter, setDescFilter] = useState("all");
+  const [imgFilter, setImgFilter] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -214,6 +222,27 @@ const ContentManagement = () => {
     }
   };
 
+  // What still needs content written. Everything loads in one page and the
+  // fleet is small, so this is worked out here rather than on the server.
+  const hasDesc = (it) => String(it.description || "").trim().length > 0;
+  const hasImg = (it) =>
+    (Array.isArray(it.images) && it.images.length > 0) || !!it.image_url;
+
+  const matchesDesc = (it) =>
+    descFilter === "all" || (descFilter === "yes" ? hasDesc(it) : !hasDesc(it));
+  const matchesImg = (it) =>
+    imgFilter === "all" || (imgFilter === "yes" ? hasImg(it) : !hasImg(it));
+
+  const countDesc = (val) =>
+    contentData.filter((it) => matchesImg(it) &&
+      (val === "all" || (val === "yes" ? hasDesc(it) : !hasDesc(it)))).length;
+  const countImg = (val) =>
+    contentData.filter((it) => matchesDesc(it) &&
+      (val === "all" || (val === "yes" ? hasImg(it) : !hasImg(it)))).length;
+
+  const visible = contentData.filter((it) => matchesDesc(it) && matchesImg(it));
+  const filtersActive = descFilter !== "all" || imgFilter !== "all";
+
   return (
     <div className="p-4 sm:p-8 bg-transparent min-h-screen">
       {/* Header */}
@@ -224,46 +253,54 @@ const ContentManagement = () => {
         <p className="text-[#9CA3AF] text-sm mt-1">Manage equipment descriptions, images and banners shown to clients in the equipment portal.</p>
       </header>
 
-      {/* Search Section */}
-      <section className="bg-[#1F1F20] border border-[#333333] rounded-lg p-4 sm:p-6 mb-6 sm:mb-8">
-        <h3 className="text-[#E5E5E5] font-[Inter] font-semibold text-lg sm:text-[20px] leading-[1.2em] mb-4 sm:mb-6">
-          Search
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
-          {/* Equipment ID Field */}
-          <div className="flex flex-col">
-            <label className="text-[#9CA3AF] font-[Inter] font-medium text-sm leading-[1.21em] mb-2">
-              Equipment ID
-            </label>
-            <input
-              type="text"
-              name="equipmentId"
-              value={searchData.equipmentId}
-              onChange={handleInputChange}
-              onKeyPress={handleKeyPress}
-              className="bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-3 py-3 outline-none focus:border-[#FDCE06] transition-colors h-[42px]"
-            />
+      {/* Filters */}
+      <section className="bg-[#1F1F20] border border-[#333333] rounded-lg p-5 mb-8">
+        <div className="mb-3">
+          <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2">
+            Description
           </div>
-
-          {/* Equipment Name Field */}
-          <div className="flex flex-col">
-            <label className="text-[#9CA3AF] font-[Inter] font-medium text-sm leading-[1.21em] mb-2">
-              Equipment Name
-            </label>
-            <input
-              type="text"
-              name="equipmentName"
-              value={searchData.equipmentName}
-              onChange={handleInputChange}
-              onKeyPress={handleKeyPress}
-              className="bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-3 py-3 outline-none focus:border-[#FDCE06] transition-colors h-[42px]"
-            />
+          <div className="flex flex-wrap gap-2">
+            {[
+              { key: "all", label: "All" },
+              { key: "yes", label: "Written" },
+              { key: "no", label: "Missing" },
+            ].map((o) => (
+              <button key={o.key} onClick={() => setDescFilter(o.key)}
+                className={CHIP(descFilter === o.key)}>
+                {o.label} <span className="opacity-60">{countDesc(o.key)}</span>
+              </button>
+            ))}
           </div>
+        </div>
 
-          {/* Search Button */}
-          <div className="flex flex-col justify-end">
+        <div>
+          <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2">
+            Photos
           </div>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { key: "all", label: "All" },
+              { key: "yes", label: "Has photos" },
+              { key: "no", label: "None" },
+            ].map((o) => (
+              <button key={o.key} onClick={() => setImgFilter(o.key)}
+                className={CHIP(imgFilter === o.key)}>
+                {o.label} <span className="opacity-60">{countImg(o.key)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#2A2A2A]">
+          <div className="text-[#9CA3AF] font-[Inter] text-[14px]">
+            Showing {visible.length} of {contentData.length} machines
+          </div>
+          {filtersActive && (
+            <button onClick={() => { setDescFilter("all"); setImgFilter("all"); }}
+              className={BTN.secondarySm}>
+              Clear filters
+            </button>
+          )}
         </div>
       </section>
 
@@ -419,7 +456,7 @@ const ContentManagement = () => {
                   </td>
                 </tr>
               ) : (
-                contentData.map((item, index) => (
+                visible.map((item, index) => (
                   <tr
                     key={item.id}
                     className={`cursor-pointer hover:bg-[#292A2B] transition-colors ${index > 0 ? "border-t border-[#333333]" : ""
