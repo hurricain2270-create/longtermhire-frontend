@@ -93,6 +93,7 @@ const ContractPDF = ({ contract = {} }) => {
         <Band>EQUIPMENT</Band>
         <Row label="Plant number" value={c.plant_code} />
         <Row label="Plant name" value={c.equipment_name} />
+        <Row label="Description" value={c.equipment_description} />
         <Row label="Plant model" value={c.model} />
         <Row label="Year" value={c.year_made} />
         <Row label="Fuel type" value={c.fuel_type} />
