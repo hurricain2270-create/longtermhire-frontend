@@ -62,7 +62,7 @@ const stamp = (d) => {
 // At module scope — declaring these inside the component remounts them on every
 // keystroke, which destroys the input and loses focus.
 const inputCls =
-  "flex-1 bg-[#292A2B] border border-[#3A3A3C] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-[13px] outline-none focus:border-[#FDCE06]";
+  "flex-1 bg-[#292A2B] border border-[#3A3A3C] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-[14px] outline-none focus:border-[#FDCE06]";
 
 const Card = ({
   f, open, detail, busy, reply, setReply,
@@ -80,25 +80,25 @@ const Card = ({
       <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
         <div>
           <div className="text-[#E5E5E5] font-[Inter] text-[15px] font-semibold">{f.title}</div>
-          <div className="text-[#6B7280] font-[Inter] text-[11px] mt-0.5">
+          <div className="text-[#6B7280] font-[Inter] text-[12px] mt-0.5">
             {f.fault_no} · {f.plant_code} {f.equipment_name} · {f.company_name} · {stamp(f.reported_at)}
           </div>
-          <div className="text-[#6B7280] font-[Inter] text-[11px] mt-0.5">
+          <div className="text-[#6B7280] font-[Inter] text-[12px] mt-0.5">
             {f.reported_by_name} called it &ldquo;{REPORTED_AS[f.reported_severity] || f.reported_severity}&rdquo;
           </div>
         </div>
         <div className="text-right">
           {band ? (
-            <span className="text-[11px] px-2.5 py-1 rounded-full font-[Inter] font-bold"
+            <span className="text-[12px] px-2.5 py-1 rounded-full font-[Inter] font-bold"
               style={{ background: band.colour + "22", color: band.colour, border: "1px solid " + band.colour + "55" }}>
               {band.label} · {band.window}
             </span>
           ) : (
-            <span className="text-[11px] px-2.5 py-1 rounded-full bg-[#3a2e00] text-[#FDCE06] border border-[#5a4800] font-[Inter] font-bold">
+            <span className="text-[12px] px-2.5 py-1 rounded-full bg-[#3a2e00] text-[#FDCE06] border border-[#5a4800] font-[Inter] font-bold">
               Needs assessing
             </span>
           )}
-          <div className="text-[#9CA3AF] font-[Inter] text-[11px] mt-1.5 tabular-nums">
+          <div className="text-[#9CA3AF] font-[Inter] text-[12px] mt-1.5 tabular-nums">
             {f.resolved_at ? "took " + human(hrs(f.reported_at, f.resolved_at)) : human(hrs(f.reported_at)) + " open"}
           </div>
         </div>
@@ -107,8 +107,8 @@ const Card = ({
       {f.severity && (
         f.severity === "emergency" ? (
           <div className="mb-3">
-            <div className="flex justify-between text-[11px] text-[#9CA3AF] font-[Inter] mb-1.5">
-              <span className="uppercase tracking-[0.06em] text-[10px]">Response</span>
+            <div className="flex justify-between text-[12px] text-[#9CA3AF] font-[Inter] mb-1.5">
+              <span className="uppercase tracking-[0.06em] text-[11px]">Response</span>
               <span className={f.actioned_at ? "text-[#4CAF50] font-bold" : ""}>
                 {f.actioned_at
                   ? "actioned in " + human(hrs(f.reported_at, f.actioned_at))
@@ -122,8 +122,8 @@ const Card = ({
                   : (hrs(f.reported_at) / 24) * 100 > 66 ? "#ef4444" : "#F59E0B",
               }} />
             </div>
-            <div className="flex justify-between text-[11px] text-[#9CA3AF] font-[Inter] mb-1.5">
-              <span className="uppercase tracking-[0.06em] text-[10px]">Repair</span>
+            <div className="flex justify-between text-[12px] text-[#9CA3AF] font-[Inter] mb-1.5">
+              <span className="uppercase tracking-[0.06em] text-[11px]">Repair</span>
               <span>{f.resolved_at ? "back in service" : "in progress"}</span>
             </div>
             <div className="bg-[#252527] rounded-full h-2 overflow-hidden">
@@ -135,7 +135,7 @@ const Card = ({
           </div>
         ) : (
           <div className="mb-3">
-            <div className="flex justify-between text-[11px] text-[#9CA3AF] font-[Inter] mb-1.5">
+            <div className="flex justify-between text-[12px] text-[#9CA3AF] font-[Inter] mb-1.5">
               <span>{f.resolved_at ? "Back in service" : "Being sorted"}</span>
               <span>
                 {f.resolved_at
@@ -158,7 +158,7 @@ const Card = ({
 
       <div className="flex items-center gap-2">
         <button onClick={() => openFault(f)}
-          className="text-[#FDCE06] font-[Inter] text-[13px] font-medium hover:underline">
+          className="text-[#FDCE06] font-[Inter] text-[14px] font-medium hover:underline">
           {isOpen ? "Close" : "Open"}
         </button>
         {/* Same badge the chat list uses for unread messages */}
@@ -173,7 +173,7 @@ const Card = ({
         <div className="mt-4 border-t border-[#2A2A2A] pt-4">
           {!d.severity && (
             <div className="mb-4">
-              <div className="text-[#9CA3AF] font-[Inter] text-[11px] uppercase tracking-[0.06em] mb-2">
+              <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2">
                 Assess it — this is what shows the bar to the client
               </div>
               <div className="flex flex-wrap gap-2">
@@ -196,7 +196,7 @@ const Card = ({
               return (
                 <div key={u.id}>
                   {gap !== null && (
-                    <div className="border-l border-dashed border-[#333] ml-[5px] pl-4 py-1.5 text-[#6B7280] font-[Inter] text-[11px]">
+                    <div className="border-l border-dashed border-[#333] ml-[5px] pl-4 py-1.5 text-[#6B7280] font-[Inter] text-[12px]">
                       <span className="text-[#9CA3AF]">{human(gap)}</span>
                     </div>
                   )}
@@ -204,13 +204,13 @@ const Card = ({
                     <span className="w-2.5 h-2.5 rounded-full mt-1.5 flex-none"
                       style={{ background: u.author_side === "admin" ? "#4CAF50" : "#F59E0B" }} />
                     <div className="flex-1">
-                      <div className="text-[#6B7280] font-[Inter] text-[11px]">
+                      <div className="text-[#6B7280] font-[Inter] text-[12px]">
                         {u.author_side === "admin" ? "You" : u.author_name}
                         {EVENT_LABEL[u.event_type] ? " · " + EVENT_LABEL[u.event_type] : ""}
                         {" · " + stamp(u.created_at)}
                       </div>
                       {u.message ? (
-                        <div className={`inline-block max-w-[85%] px-3 py-2 mt-1 rounded-lg font-[Inter] text-[13px] leading-relaxed ${
+                        <div className={`inline-block max-w-[85%] px-3 py-2 mt-1 rounded-lg font-[Inter] text-[14px] leading-relaxed ${
                           mine ? "bg-[#FDCE06] text-[#1F1F20]" : "bg-[#1F1F20] text-[#E5E5E5] border border-[#333333]"
                         }`}>{u.message}</div>
                       ) : null}
@@ -240,7 +240,7 @@ const Card = ({
                       <img src={src} alt="" className="w-full h-full object-cover" />
                       <button type="button"
                         onClick={() => setReplyPhotos((p) => p.filter((_, x) => x !== n))}
-                        className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/70 text-white text-[11px] leading-none flex items-center justify-center">
+                        className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full bg-black/70 text-white text-[12px] leading-none flex items-center justify-center">
                         ×
                       </button>
                     </div>
@@ -265,7 +265,7 @@ const Card = ({
                   }}
                   placeholder="Add an update…" className={inputCls} />
                 <button onClick={() => send(d.id)} disabled={busy}
-                  className="px-4 py-2 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] disabled:opacity-50 whitespace-nowrap">
+                  className="px-4 py-2 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] disabled:opacity-50 whitespace-nowrap">
                   Send
                 </button>
               </div>
@@ -285,7 +285,7 @@ const Card = ({
                 )}
                 <input value={resolveHours} onChange={(e) => setResolveHours(e.target.value)}
                   placeholder="hrs at handback"
-                  className="w-36 bg-[#292A2B] border border-[#3A3A3C] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-[13px] outline-none focus:border-[#FDCE06]" />
+                  className="w-36 bg-[#292A2B] border border-[#3A3A3C] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-[14px] outline-none focus:border-[#FDCE06]" />
                 <button onClick={() => stage(d.id, "resolved", { hours: resolveHours })} disabled={busy}
                   className="px-3 py-1.5 rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[12px] hover:bg-[#3d9e43] disabled:opacity-50">
                   Back in service
@@ -445,7 +445,7 @@ const Faults = () => {
           { l: "Resolved", v: doneRows.length, c: "#4CAF50" },
         ].map((t) => (
           <div key={t.l} className="bg-[#1F1F20] border border-[#333] rounded-lg px-4 py-3">
-            <div className="text-[#9CA3AF] font-[Inter] text-[11px] uppercase tracking-[0.06em] mb-1">{t.l}</div>
+            <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-1">{t.l}</div>
             <div className="font-[Inter] font-bold text-[23px]" style={{ color: t.c }}>{t.v}</div>
           </div>
         ))}
@@ -459,7 +459,7 @@ const Faults = () => {
         <>
           {openRows.map((f) => <Card key={f.id} f={f} open={open} detail={detail} busy={busy} reply={reply} setReply={setReply} replyPhotos={replyPhotos} setReplyPhotos={setReplyPhotos} uploading={uploading} addReplyPhotos={addReplyPhotos} resolveHours={resolveHours} setResolveHours={setResolveHours} openFault={openFault} classify={classify} stage={stage} send={send} />)}
           {doneRows.length > 0 && (
-            <div className="text-[#6B7280] font-[Inter] text-[11px] uppercase tracking-[0.06em] mt-7 mb-3">Resolved</div>
+            <div className="text-[#6B7280] font-[Inter] text-[12px] uppercase tracking-[0.06em] mt-7 mb-3">Resolved</div>
           )}
           {doneRows.map((f) => <Card key={f.id} f={f} open={open} detail={detail} busy={busy} reply={reply} setReply={setReply} resolveHours={resolveHours} setResolveHours={setResolveHours} openFault={openFault} classify={classify} stage={stage} send={send} />)}
         </>
