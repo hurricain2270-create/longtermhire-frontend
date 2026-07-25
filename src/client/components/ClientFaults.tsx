@@ -74,6 +74,22 @@ const ClientFaults = () => {
     return () => clearInterval(t);
   }, []);
 
+  // Live thread — same 3s poll as the chat, reusing the existing fetch.
+  useEffect(() => {
+    if (!open) return;
+    const t = setInterval(async () => {
+      try {
+        const res = await fetch(API + "/v1/api/longtermhire/client/faults/" + open, {
+          headers: { Authorization: "Bearer " + token() },
+        });
+        const j = await res.json();
+        if (j && !j.error) setThread(j.data.updates || []);
+        load();
+      } catch (e) { /* quiet — next tick will retry */ }
+    }, 3000);
+    return () => clearInterval(t);
+  }, [open]);
+
   const token = () => localStorage.getItem("clientAuthToken");
 
   const loadMachines = async () => {
