@@ -60,7 +60,14 @@ module.exports = function (app) {
   }
 
   const LIST_SQL =
-    "SELECT f.*, e.equipment_id AS plant_code, e.equipment_name, c.company_name " +
+    "SELECT f.*, e.equipment_id AS plant_code, e.equipment_name, c.company_name, " +
+    // Messages from the client since our last reply. Derived, same rule as the
+    // sidebar count, so a row and the total can never disagree.
+    "(SELECT COUNT(*) FROM longtermhire_fault_update x " +
+    " WHERE x.fault_id = f.id AND x.author_side = 'client' " +
+    " AND x.id > IFNULL((SELECT MAX(y.id) FROM longtermhire_fault_update y " +
+    "                    WHERE y.fault_id = f.id AND y.author_side = 'admin'), 0)" +
+    ") AS unanswered " +
     "FROM longtermhire_fault f " +
     "LEFT JOIN longtermhire_equipment_item e ON e.id = f.equipment_id " +
     "LEFT JOIN longtermhire_client c ON c.user_id = f.client_user_id ";
