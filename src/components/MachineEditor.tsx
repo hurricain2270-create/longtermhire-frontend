@@ -5,10 +5,11 @@ import ClipLoader from "react-spinners/ClipLoader";
 import { equipmentApi } from "../services/equipmentApi";
 import { contentApi } from "../services/contentApi";
 import { BTN } from "../styles/buttons";
+import EquipmentCard from "../client/components/EquipmentCard";
 
-const LBL = "block text-[#9CA3AF] font-[Inter] text-[13px] mb-1";
+const LBL = "block text-[#9CA3AF] font-[Inter] text-[15px] mb-1.5";
 const FLD =
-  "w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] font-[Inter] text-[14px] px-3 py-2 outline-none focus:border-[#FDCE06] transition-colors";
+  "w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] font-[Inter] text-[17px] px-3.5 py-2.5 outline-none focus:border-[#FDCE06] transition-colors";
 
 const parseSpecs = (raw) => {
   if (!raw) return [];
@@ -247,31 +248,32 @@ const MachineEditor = ({
   return (
     <div>
       <div className="flex items-center justify-between gap-3 mb-1">
-        <div className="flex items-center gap-3 font-[Inter] text-[13px]">
-          <button onClick={onPrev} disabled={index <= 0}
-            className="text-[#9CA3AF] hover:text-[#FDCE06] disabled:opacity-30">
-            &larr;
+        <div className="flex items-center gap-3 font-[Inter]">
+          <button onClick={onPrev} disabled={index <= 0} aria-label="Previous machine"
+            className="w-12 h-12 rounded-lg border border-[#333] text-[#9CA3AF] text-[26px] leading-none flex items-center justify-center hover:border-[#FDCE06] hover:text-[#FDCE06] disabled:opacity-25 transition-colors">
+            &#8249;
           </button>
-          <span className="text-[#6B7280]">{index + 1} of {total}</span>
-          <button onClick={onNext} disabled={index >= total - 1}
-            className="text-[#9CA3AF] hover:text-[#FDCE06] disabled:opacity-30">
-            &rarr;
+          <span className="text-[#9CA3AF] text-[16px] min-w-[70px] text-center">
+            {index + 1} of {total}
+          </span>
+          <button onClick={onNext} disabled={index >= total - 1} aria-label="Next machine"
+            className="w-12 h-12 rounded-lg border border-[#333] text-[#9CA3AF] text-[26px] leading-none flex items-center justify-center hover:border-[#FDCE06] hover:text-[#FDCE06] disabled:opacity-25 transition-colors">
+            &#8250;
           </button>
-          <span className="text-[#333]">|</span>
-          <button onClick={onBack} className="text-[#9CA3AF] hover:text-[#FDCE06]">
+          <button onClick={onBack} className={BTN.secondaryLg + " ml-2"}>
             Back to fleet
           </button>
         </div>
-        <button onClick={save} disabled={saving} className={BTN.primary}>
+        <button onClick={save} disabled={saving} className={BTN.primaryLg}>
           {saving ? "Saving…" : "Save"}
         </button>
       </div>
 
       <div className="flex items-baseline gap-2.5 flex-wrap mb-1">
-        <h2 className="text-[#E5E5E5] font-[Inter] text-[20px] font-semibold">
+        <h2 className="text-[#E5E5E5] font-[Inter] text-[24px] font-semibold">
           {form.equipmentName || "Unnamed machine"}
         </h2>
-        <span className="text-[#6B7280] font-[Inter] text-[13px]">{form.equipmentId}</span>
+        <span className="text-[#9CA3AF] font-[Inter] text-[16px]">{form.equipmentId}</span>
         {onHire && (
           <span className="px-2.5 py-0.5 rounded-full bg-[#14352a] text-[#4CAF50] font-[Inter] text-[12px]">
             On hire
@@ -279,7 +281,7 @@ const MachineEditor = ({
         )}
       </div>
 
-      <div className="flex flex-wrap gap-x-4 gap-y-1 font-[Inter] text-[13px] pb-3.5 mb-4 border-b border-[#333]">
+      <div className="flex flex-wrap gap-x-5 gap-y-1.5 font-[Inter] text-[15px] pb-4 mb-4 border-b border-[#333]">
         {mark(written, written ? "Description" : "No description")}
         {mark(photos.length > 0, photos.length + (photos.length === 1 ? " photo" : " photos"))}
         {mark(specs.length > 0, specs.length > 0 ? specs.length + " spec" : "No spec sheet")}
@@ -321,7 +323,7 @@ const MachineEditor = ({
           <label className={LBL}>Description</label>
           <textarea value={form.description} onChange={set("description")}
             className={FLD + " h-[150px] resize-y"} />
-          <p className="text-[#6B7280] font-[Inter] text-[12px] mt-1">
+          <p className="text-[#6B7280] font-[Inter] text-[14px] mt-1.5">
             Shown on the client portal listing.
           </p>
         </div>
@@ -359,65 +361,70 @@ const MachineEditor = ({
 
           {shownPhoto && shownPhoto.id !== "legacy" && (
             <div className="flex gap-2 mt-2">
-              <button onClick={() => makeMain(shownPhoto)} className={BTN.secondarySm}>
+              <button onClick={() => makeMain(shownPhoto)} className={BTN.secondary}>
                 Set as main
               </button>
-              <button onClick={() => dropPhoto(shownPhoto)} className={BTN.dangerSm + " ml-auto"}>
+              <button onClick={() => dropPhoto(shownPhoto)} className={BTN.danger + " ml-auto"}>
                 Remove photo
               </button>
             </div>
           )}
 
-          <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mt-4 mb-2">
+          <div className="text-[#9CA3AF] font-[Inter] text-[14px] uppercase tracking-[0.06em] mt-5 mb-2.5">
             Spec sheets
           </div>
           {specs.map((s, i) => (
             <div key={i}
               className="flex items-center gap-2 border border-[#333] rounded-lg px-3 py-2 mb-1.5">
               <a href={urlOf(s)} target="_blank" rel="noreferrer"
-                className="flex-1 text-[#E5E5E5] font-[Inter] text-[13px] truncate hover:text-[#FDCE06]">
+                className="flex-1 text-[#E5E5E5] font-[Inter] text-[15px] truncate hover:text-[#FDCE06]">
                 {fileNameOf(s)}
               </a>
               <button onClick={() => dropSpec(i)}
-                className="text-[#9CA3AF] hover:text-[#ef4444] text-[14px]">
+                className="text-[#9CA3AF] hover:text-[#ef4444] text-[20px] px-2">
                 &times;
               </button>
             </div>
           ))}
-          <label className="block border border-dashed border-[#444] rounded-lg py-3 text-center text-[#9CA3AF] font-[Inter] text-[13px] hover:border-[#FDCE06] hover:text-[#FDCE06] cursor-pointer">
+          <label className="block border border-dashed border-[#444] rounded-lg py-4 text-center text-[#9CA3AF] font-[Inter] text-[15px] hover:border-[#FDCE06] hover:text-[#FDCE06] cursor-pointer">
             Add a spec sheet
             <input type="file" accept=".pdf,application/pdf" multiple hidden
               onChange={(e) => { addSpec(e.target.files); e.target.value = ""; }} />
           </label>
 
-          <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mt-4 mb-2">
+          <div className="text-[#9CA3AF] font-[Inter] text-[14px] uppercase tracking-[0.06em] mt-5 mb-2.5">
             What the client sees
           </div>
-          <div className="bg-[#292A2B] border border-[#333] rounded-xl overflow-hidden">
-            <div className="aspect-[4/3] bg-[#1F1F20] flex items-center justify-center">
-              {shownPhoto ? (
-                <img src={shownPhoto.image_url} alt="" className="max-w-full max-h-full object-contain" />
-              ) : (
-                <span className="text-[#6B7280] font-[Inter] text-[12px]">No photo</span>
-              )}
-            </div>
-            <div className="p-3.5">
-              <div className="text-[#E5E5E5] font-[Inter] text-[15px] font-semibold">
-                {form.equipmentName || "Unnamed machine"}
-              </div>
-              <div className="text-[#6B7280] font-[Inter] text-[12px] mt-0.5 mb-2">
-                {form.basePrice ? "From $" + Number(form.basePrice).toLocaleString() + " / month" : "No rate set"}
-                {form.minimumDuration ? " · " + form.minimumDuration + " month minimum" : ""}
-              </div>
-              <p className="text-[#9CA3AF] font-[Inter] text-[12px] leading-relaxed mb-3">
-                {form.description || "No description written."}
-              </p>
-              <div className="flex gap-2">
-                <button className={BTN.primarySm}>Request</button>
-                {specs.length > 0 && <button className={BTN.secondarySm}>Specs</button>}
-              </div>
-            </div>
-          </div>
+          {/* The actual component the client portal renders, not a lookalike —
+              so the preview cannot drift away from the real thing. Client
+              specific pricing (custom rates, discounts) isn't applied here. */}
+          <EquipmentCard
+            equipment={{
+              id: machine.id,
+              equipment_id: form.equipmentId,
+              equipment_name: form.equipmentName,
+              name: form.equipmentName,
+              base_price: form.basePrice,
+              description: form.description,
+              content_description: form.description,
+              content_images: photos,
+              image_url: shownPhoto ? shownPhoto.image_url : "",
+              availability: machine.availability,
+              status: machine.status,
+              minimum_duration: form.minimumDuration,
+              specs_files: JSON.stringify(specs),
+            }}
+            onQuickView={() => {}}
+            onRequest={() => {}}
+            requestLoading={false}
+            selectedImageIndex={shown}
+            onImageSelect={(_id, i) => setShown(i)}
+            formatCurrency={(n) =>
+              "$" + Number(n || 0).toLocaleString(undefined, { maximumFractionDigits: 0 })
+            }
+            handleImageLoad={() => {}}
+            imageObjectFit={{}}
+          />
         </div>
       </div>
 

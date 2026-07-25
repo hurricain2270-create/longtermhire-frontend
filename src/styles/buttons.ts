@@ -14,6 +14,7 @@ const base =
   "rounded font-[Inter] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
 
 const size = {
+  lg: "px-5 py-2.5 text-[16px]",
   md: "px-3 py-1.5 text-[14px]",
   sm: "px-2.5 py-1 text-[12px]",
 };
@@ -30,6 +31,12 @@ export const BTN = {
 
   // Destructive — always red, always dark text, so it reads the same everywhere.
   danger: `${base} ${size.md} bg-[#ef4444] text-[#1F1F20] hover:bg-[#dc2626]`,
+
+  // Larger, for editing screens where you're working for a while and shouldn't
+  // have to aim.
+  primaryLg: `${base} ${size.lg} bg-[#FDCE06] text-[#1F1F20] hover:bg-[#E5B800]`,
+  secondaryLg: `${base} ${size.lg} border border-[#333] text-[#9CA3AF] hover:border-[#FDCE06] hover:text-[#FDCE06]`,
+  dangerLg: `${base} ${size.lg} bg-[#ef4444] text-[#1F1F20] hover:bg-[#dc2626]`,
 
   // Same three at the smaller size, for nested rows and tight columns.
   primarySm: `${base} ${size.sm} bg-[#FDCE06] text-[#1F1F20] hover:bg-[#E5B800]`,
