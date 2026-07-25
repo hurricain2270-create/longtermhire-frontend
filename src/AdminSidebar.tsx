@@ -13,6 +13,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
 
   // Live counts on the tabs, so nothing needs anyone to go looking for it.
   const [openFaults, setOpenFaults] = useState(0);
+  const [unansweredFaults, setUnansweredFaults] = useState(0);
   const [activeHires, setActiveHires] = useState(0);
   const [unreadChats, setUnreadChats] = useState(0);
 
@@ -25,6 +26,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
         const res = await api.get("/v1/api/longtermhire/super_admin/faults");
         if (alive && res?.data && !res.data.error) {
           setOpenFaults(res.data.open_count || 0);
+          setUnansweredFaults(res.data.unanswered_count || 0);
         }
       } catch (e) { /* a missing count shouldn't break the sidebar */ }
 
@@ -359,6 +361,11 @@ const AdminSidebar = ({ isOpen, onClose }) => {
                 {item.counter === "faults" && openFaults > 0 ? ` (${openFaults})` : ""}
                 {item.counter === "hires" && activeHires > 0 ? ` (${activeHires})` : ""}
               </span>
+              {item.counter === "faults" && unansweredFaults > 0 && (
+                <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-[#ef4444] text-white text-[11px] font-bold flex items-center justify-center">
+                  {unansweredFaults}
+                </span>
+              )}
               {item.badge === "chat" && unreadChats > 0 && (
                 <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-[#ef4444] text-white text-[11px] font-bold flex items-center justify-center">
                   {unreadChats}
