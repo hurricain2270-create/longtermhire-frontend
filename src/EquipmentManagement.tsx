@@ -11,6 +11,14 @@ import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router";
 import { BTN } from "./styles/buttons";
 
+// Filter chip. Selected reads as the yellow the rest of the app uses for
+// "this is the active thing".
+const CHIP = (on) =>
+  "px-3 py-1.5 rounded-full font-[Inter] text-[14px] transition-colors border " +
+  (on
+    ? "bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06] font-bold"
+    : "bg-[#292A2B] text-[#9CA3AF] border-[#333] hover:border-[#FDCE06] hover:text-[#FDCE06]");
+
 const EquipmentManagement = () => {
   const [searchData, setSearchData] = useState({
     categoryId: "",
@@ -25,6 +33,8 @@ const EquipmentManagement = () => {
   const [selectedEquipment, setSelectedEquipment] = useState(null);
   const [equipment, setEquipment] = useState([]);
   const [ownershipFilter, setOwnershipFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -42,6 +52,38 @@ const EquipmentManagement = () => {
 
   // Debounced search state
   const [debouncedSearchData, setDebouncedSearchData] = useState(searchData);
+
+  // Everything loads in one page (limit 200), so filtering happens here rather
+  // than round-tripping to the server for every keystroke.
+  const matchesText = (item) => {
+    const t = q.trim().toLowerCase();
+    if (!t) return true;
+    return [item.equipment_name, item.equipment_id, item.category_name]
+      .some((v) => String(v || "").toLowerCase().includes(t));
+  };
+  const matchesOwnership = (item) =>
+    ownershipFilter === "all" || (item.ownership_status || "owned") === ownershipFilter;
+  const matchesCategory = (item) =>
+    categoryFilter === "all" || (item.category_name || "Uncategorised") === categoryFilter;
+
+  // Counts on each chip reflect the *other* filters, so a chip shows what you
+  // would actually get if you clicked it — not the total ignoring context.
+  const countOwnership = (val) =>
+    equipment.filter((i) => matchesText(i) && matchesCategory(i) &&
+      (val === "all" || (i.ownership_status || "owned") === val)).length;
+  const countCategory = (val) =>
+    equipment.filter((i) => matchesText(i) && matchesOwnership(i) &&
+      (val === "all" || (i.category_name || "Uncategorised") === val)).length;
+
+  const categories = Array.from(
+    new Set(equipment.map((i) => i.category_name || "Uncategorised"))
+  ).sort();
+
+  const visible = equipment.filter(
+    (i) => matchesText(i) && matchesOwnership(i) && matchesCategory(i)
+  );
+  const filtersActive =
+    q.trim() !== "" || ownershipFilter !== "all" || categoryFilter !== "all";
 
   // Fetch equipment data from API with pagination and search
   const fetchEquipment = async (page = 1, searchFilters = {}) => {
@@ -253,96 +295,72 @@ const EquipmentManagement = () => {
           <p className="text-[#9CA3AF] text-sm mt-1">Add and maintain your equipment fleet — categories, pricing, availability and specifications.</p>
         </div>
 
-        {/* Search Section */}
-        <section className="bg-[#1F1F20] border border-[#333333] rounded-lg p-6 mb-8">
-          <h3 className="text-[#E5E5E5] font-[Inter] font-semibold text-[20px] leading-[1.2em] mb-6">
-            Search
-          </h3>
+        {/* Filters */}
+        <section className="bg-[#1F1F20] border border-[#333333] rounded-lg p-5 mb-8">
+          <input
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            placeholder="Search by name, plant number or category"
+            className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors mb-4"
+          />
 
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4 items-end">
-            {/* Ownership */}
-            <div className="flex flex-col">
-              <label className="text-[#9CA3AF] font-[Inter] font-medium text-[14px] leading-[1.21em] mb-2">
-                Ownership
-              </label>
-              <select
-                value={ownershipFilter}
-                onChange={(e) => setOwnershipFilter(e.target.value)}
-                className="bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors"
+          <div className="mb-3">
+            <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2">
+              Ownership
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: "all", label: "All" },
+                { key: "owned", label: "Owned" },
+                { key: "prospective", label: "Not purchased" },
+              ].map((o) => (
+                <button
+                  key={o.key}
+                  onClick={() => setOwnershipFilter(o.key)}
+                  className={CHIP(ownershipFilter === o.key)}
+                >
+                  {o.label} <span className="opacity-60">{countOwnership(o.key)}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2">
+              Category
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => setCategoryFilter("all")} className={CHIP(categoryFilter === "all")}>
+                All <span className="opacity-60">{countCategory("all")}</span>
+              </button>
+              {categories.map((cat) => {
+                const n = countCategory(cat);
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setCategoryFilter(cat)}
+                    disabled={n === 0 && categoryFilter !== cat}
+                    className={CHIP(categoryFilter === cat) + (n === 0 ? " opacity-40" : "")}
+                  >
+                    {cat} <span className="opacity-60">{n}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#2A2A2A]">
+            <div className="text-[#9CA3AF] font-[Inter] text-[14px]">
+              Showing {visible.length} of {equipment.length} machines
+            </div>
+            {filtersActive && (
+              <button
+                onClick={() => { setQ(""); setOwnershipFilter("all"); setCategoryFilter("all"); }}
+                className={BTN.secondarySm}
               >
-                <option value="all">All</option>
-                <option value="owned">Owned</option>
-                <option value="prospective">Not purchased</option>
-              </select>
-            </div>
-
-            {/* Category ID */}
-            <div className="flex flex-col">
-              <label className="text-[#9CA3AF] font-[Inter] font-medium text-[14px] leading-[1.21em] mb-2">
-                Category ID
-              </label>
-              <input
-                type="text"
-                name="categoryId"
-                value={searchData.categoryId}
-                onChange={handleInputChange}
-                onKeyPress={handleKeyPress}
-                className="bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors"
-                style={{ height: "42px" }}
-              />
-            </div>
-
-            {/* Category Name */}
-            <div className="flex flex-col">
-              <label className="text-[#9CA3AF] font-[Inter] font-medium text-[14px] leading-[1.21em] mb-2">
-                Category Name
-              </label>
-              <input
-                type="text"
-                name="categoryName"
-                value={searchData.categoryName}
-                onChange={handleInputChange}
-                onKeyPress={handleKeyPress}
-                className="bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors"
-                style={{ height: "42px" }}
-              />
-            </div>
-
-            {/* Equipment ID */}
-            <div className="flex flex-col">
-              <label className="text-[#9CA3AF] font-[Inter] font-medium text-[14px] leading-[1.21em] mb-2">
-                Equipment ID
-              </label>
-              <input
-                type="text"
-                name="equipmentId"
-                value={searchData.equipmentId}
-                onChange={handleInputChange}
-                onKeyPress={handleKeyPress}
-                className="bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors"
-                style={{ height: "42px" }}
-              />
-            </div>
-
-            {/* Equipment Name */}
-            <div className="flex flex-col">
-              <label className="text-[#9CA3AF] font-[Inter] font-medium text-[14px] leading-[1.21em] mb-2">
-                Equipment Name
-              </label>
-              <input
-                type="text"
-                name="equipmentName"
-                value={searchData.equipmentName}
-                onChange={handleInputChange}
-                onKeyPress={handleKeyPress}
-                className="bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors"
-                style={{ height: "42px" }}
-              />
-            </div>
-
-            {/* Search Button */}
-            <div className="flex flex-col">
-            </div>
+                Clear filters
+              </button>
+            )}
           </div>
         </section>
 
@@ -478,13 +496,7 @@ const EquipmentManagement = () => {
                     </td>
                   </tr>
                 ) : (
-                  equipment
-                    .filter(
-                      (item) =>
-                        ownershipFilter === "all" ||
-                        (item.ownership_status || "owned") === ownershipFilter
-                    )
-                    .map((item) => (
+                  visible.map((item) => (
                     <tr
                       key={item.id}
                       className="border-t border-[#333333] hover:bg-[#292A2B] transition-colors"
