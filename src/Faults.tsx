@@ -156,10 +156,18 @@ const Card = ({
         )
       )}
 
-      <button onClick={() => openFault(f)}
-        className="text-[#FDCE06] font-[Inter] text-[13px] font-medium hover:underline">
-        {isOpen ? "Close" : "Open"}
-      </button>
+      <div className="flex items-center gap-2">
+        <button onClick={() => openFault(f)}
+          className="text-[#FDCE06] font-[Inter] text-[13px] font-medium hover:underline">
+          {isOpen ? "Close" : "Open"}
+        </button>
+        {/* Same badge the chat list uses for unread messages */}
+        {f.unanswered > 0 && (
+          <div className="bg-[#FDCE06] text-[#1F1F20] text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+            {f.unanswered}
+          </div>
+        )}
+      </div>
 
       {isOpen && detail && (
         <div className="mt-4 border-t border-[#2A2A2A] pt-4">
