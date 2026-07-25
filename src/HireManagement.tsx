@@ -293,7 +293,7 @@ const HireManagement = () => {
                   key={name}
                   onClick={() => setActiveCompany(name)}
                   className={
-                    "px-4 py-2 rounded font-[Inter] font-bold text-[13px] transition-colors " +
+                    "px-4 py-2 rounded font-[Inter] font-bold text-[14px] transition-colors " +
                     (isOn
                       ? "bg-[#FDCE06] text-[#1F1F20]"
                       : "bg-[#292A2B] text-[#9CA3AF] border border-[#333] hover:border-[#FDCE06]")
@@ -381,14 +381,14 @@ const HireManagement = () => {
                           <td className="px-4 py-3">
                             {isCompleted ? (
                               <div>
-                                <div className="text-[11px] text-[#666] mb-1">Completed · {clampedMonths} of {months} months</div>
+                                <div className="text-[12px] text-[#666] mb-1">Completed · {clampedMonths} of {months} months</div>
                                 <div className="bg-[#2A2A2A] rounded h-1.5 w-full">
                                   <div className="h-1.5 rounded bg-[#555]" style={{ width: progressPct + "%" }} />
                                 </div>
                               </div>
                             ) : isActive ? (
                               <div>
-                                <div className="text-[11px] text-[#9CA3AF] mb-1">{clampedMonths} of {months} months</div>
+                                <div className="text-[12px] text-[#9CA3AF] mb-1">{clampedMonths} of {months} months</div>
                                 <div className="bg-[#2A2A2A] rounded h-1.5 w-full">
                                   <div className="h-1.5 rounded" style={{ width: progressPct + "%", background: progressPct >= 75 ? "#FDCE06" : "#4CAF50" }} />
                                 </div>
@@ -404,21 +404,21 @@ const HireManagement = () => {
                                 <>
                                   <button
                                     onClick={() => toggleExpand(item.assignment_id)}
-                                    className="px-3 py-1.5 border border-[#4CAF50] rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#3d9e43] transition-colors"
+                                    className="px-3 py-1.5 border border-[#4CAF50] rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#3d9e43] transition-colors"
                                   >
                                     {isExpanded ? "Hide" : "View schedule"}
                                   </button>
                                   <button
                                     onClick={() => setConfirmAction({ type: "restart", assignmentId: item.assignment_id, equipmentName: item.equipment_name })}
                                     disabled={startingId === item.assignment_id}
-                                    className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors"
+                                    className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors"
                                   >
                                     {startingId === item.assignment_id ? "..." : "Restart Hire"}
                                   </button>
                                   <button
                                     onClick={() => { loadInvoices(item.assignment_id); setConfirmAction({ type: "delete", assignmentId: item.assignment_id, equipmentName: item.equipment_name }); }}
                                     disabled={startingId === item.assignment_id}
-                                    className="px-3 py-1.5 border border-[#ef4444] rounded bg-[#ef4444] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#d63a3a] disabled:opacity-50 transition-colors"
+                                    className="px-3 py-1.5 border border-[#ef4444] rounded bg-[#ef4444] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#d63a3a] disabled:opacity-50 transition-colors"
                                   >
                                     Delete
                                   </button>
@@ -430,7 +430,7 @@ const HireManagement = () => {
                                     setConfirmAction({ type: "start", assignmentId: item.assignment_id, equipmentName: item.equipment_name });
                                   }}
                                   disabled={startingId === item.assignment_id}
-                                  className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors"
+                                  className="px-3 py-1.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors"
                                 >
                                   {startingId === item.assignment_id ? "Starting..." : "Start Hire"}
                                 </button>
@@ -438,14 +438,14 @@ const HireManagement = () => {
                                 <>
                                   <button
                                     onClick={() => toggleExpand(item.assignment_id)}
-                                    className="px-3 py-1.5 border border-[#4CAF50] rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#3d9e43] transition-colors"
+                                    className="px-3 py-1.5 border border-[#4CAF50] rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#3d9e43] transition-colors"
                                   >
                                     {isExpanded ? "Hide" : "View schedule"}
                                   </button>
                                   <button
                                     onClick={() => setConfirmAction({ type: "end", assignmentId: item.assignment_id, equipmentName: item.equipment_name })}
                                     disabled={startingId === item.assignment_id}
-                                    className="px-3 py-1.5 border border-[#ef4444] rounded bg-[#ef4444] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#d63a3a] disabled:opacity-50 transition-colors"
+                                    className="px-3 py-1.5 border border-[#ef4444] rounded bg-[#ef4444] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#d63a3a] disabled:opacity-50 transition-colors"
                                   >
                                     End Hire
                                   </button>
@@ -511,7 +511,7 @@ const HireManagement = () => {
                                               <button
                                                 onClick={() => saveInvoice(item.assignment_id, m, monthTotalDue, monthTotalDue, "unpaid")}
                                                 disabled={isSaving}
-                                                className="px-2 py-0.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[11px] hover:bg-[#E5B800] disabled:opacity-50"
+                                                className="px-2 py-0.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[12px] hover:bg-[#E5B800] disabled:opacity-50"
                                               >
                                                 {isSaving ? "..." : "Log invoice"}
                                               </button>
@@ -522,14 +522,14 @@ const HireManagement = () => {
                                                 <button
                                                   onClick={() => saveInvoice(item.assignment_id, m, inv.amount, parseFloat(owingValue || 0), parseFloat(owingValue || 0) <= 0 ? "paid" : "unpaid")}
                                                   disabled={isSaving}
-                                                  className="px-2 py-0.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[11px] hover:bg-[#E5B800] disabled:opacity-50"
+                                                  className="px-2 py-0.5 border border-[#FDCE06] rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[12px] hover:bg-[#E5B800] disabled:opacity-50"
                                                 >
                                                   {isSaving ? "..." : "Save"}
                                                 </button>
                                                 <button
                                                   onClick={() => saveInvoice(item.assignment_id, m, inv.amount, 0, "paid")}
                                                   disabled={isSaving}
-                                                  className="px-2 py-0.5 border border-[#4CAF50] rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[11px] hover:bg-[#3d9e43] disabled:opacity-50"
+                                                  className="px-2 py-0.5 border border-[#4CAF50] rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[12px] hover:bg-[#3d9e43] disabled:opacity-50"
                                                 >
                                                   Paid
                                                 </button>
@@ -644,13 +644,13 @@ const HireManagement = () => {
               <div className="px-5 py-4 border-t border-[#333] flex justify-end gap-3">
                 <button
                   onClick={() => setConfirmAction(null)}
-                  className="px-4 py-1.5 border border-[#444] rounded text-[#E5E5E5] font-[Inter] font-bold text-[13px] hover:border-[#666] transition-colors"
+                  className="px-4 py-1.5 border border-[#444] rounded text-[#E5E5E5] font-[Inter] font-bold text-[14px] hover:border-[#666] transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={runConfirmedAction}
-                  className={"px-4 py-1.5 border rounded text-[#1F1F20] font-[Inter] font-bold text-[13px] transition-colors " + cfg.btn}
+                  className={"px-4 py-1.5 border rounded text-[#1F1F20] font-[Inter] font-bold text-[14px] transition-colors " + cfg.btn}
                 >
                   {cfg.label}
                 </button>
