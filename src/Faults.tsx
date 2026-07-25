@@ -253,7 +253,7 @@ const Card = ({
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
-                      if (!busy && !uploading) send(d.id);
+                      if (!busy) send(d.id);
                     }
                   }}
                   placeholder="Add an update…" className={inputCls} />
