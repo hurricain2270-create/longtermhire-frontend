@@ -4,6 +4,7 @@ import AddEquipmentModal from "./components/AddEquipmentModal";
 import EditEquipmentModal from "./components/EditEquipmentModal";
 import EquipmentDetailsModal from "./components/EquipmentDetailsModal";
 import { equipmentApi } from "./services/equipmentApi";
+import { contentApi } from "./services/contentApi";
 import api from "./services/api";
 import ClipLoader from "react-spinners/ClipLoader";
 import { toast, ToastContainer } from "react-toastify";
@@ -34,6 +35,7 @@ const EquipmentManagement = () => {
   const [equipment, setEquipment] = useState([]);
   const [hireFilter, setHireFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [gapFilter, setGapFilter] = useState("all");
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -92,6 +94,19 @@ const EquipmentManagement = () => {
   }, [debouncedSearchData]);
 
   // Which equipment is currently out on hire
+  // Listing content lives in its own table, but it belongs to the machine —
+  // so it's loaded here and merged on, rather than living on a separate page.
+  const [contentRows, setContentRows] = useState([]);
+  const loadContent = async () => {
+    try {
+      const res = await contentApi.getContent(1, 200, {});
+      setContentRows((res && res.data) || []);
+    } catch (e) {
+      console.error("Could not load listing content:", e);
+    }
+  };
+  useEffect(() => { loadContent(); }, []);
+
   const [onHireIds, setOnHireIds] = useState(new Set());
   useEffect(() => {
     (async () => {
@@ -114,6 +129,35 @@ const EquipmentManagement = () => {
   }, []);
   const isOnHire = (item) => onHireIds.has(String(item.id));
 
+  const contentFor = (item) =>
+    contentRows.find((ct) => String(ct.content_equipment_id) === String(item.id)) || null;
+
+  const photosOf = (item) => {
+    const ct = contentFor(item);
+    if (!ct) return [];
+    if (Array.isArray(ct.images) && ct.images.length) return ct.images;
+    return ct.image_url ? [{ id: "legacy", image_url: ct.image_url, is_main: 1 }] : [];
+  };
+  const mainPhoto = (item) => {
+    const ph = photosOf(item);
+    if (!ph.length) return null;
+    return (ph.find((p) => p.is_main === 1 || p.is_main === true) || ph[0]).image_url;
+  };
+  const descOf = (item) => String((contentFor(item) || {}).description || "").trim();
+
+  // specs_files is a JSON string on the equipment row.
+  const specCount = (item) => {
+    const raw = item.specs_files;
+    if (!raw) return 0;
+    if (Array.isArray(raw)) return raw.length;
+    try {
+      const p = JSON.parse(raw);
+      return Array.isArray(p) ? p.length : p ? 1 : 0;
+    } catch (e) {
+      return String(raw).trim() ? 1 : 0;
+    }
+  };
+
   // Everything loads in one page (limit 200) and the fleet is small, so
   // filtering happens here rather than round-tripping for every keystroke.
   const matchesText = (item) => {
@@ -125,6 +169,25 @@ const EquipmentManagement = () => {
   const matchesHire = (item) =>
     hireFilter === "all" ||
     (hireFilter === "on" ? isOnHire(item) : !isOnHire(item));
+  const matchesGap = (item) => {
+    if (gapFilter === "all") return true;
+    if (gapFilter === "desc") return descOf(item).length === 0;
+    if (gapFilter === "photo") return photosOf(item).length === 0;
+    if (gapFilter === "spec") return specCount(item) === 0;
+    if (gapFilter === "price") return !item.base_price;
+    return true;
+  };
+  const countGap = (val) =>
+    equipment.filter((i) => {
+      if (!matchesText(i) || !matchesHire(i) || !matchesCategory(i)) return false;
+      if (val === "all") return true;
+      if (val === "desc") return descOf(i).length === 0;
+      if (val === "photo") return photosOf(i).length === 0;
+      if (val === "spec") return specCount(i) === 0;
+      if (val === "price") return !i.base_price;
+      return true;
+    }).length;
+
   const matchesCategory = (item) =>
     categoryFilter === "all" || (item.category_name || "Uncategorised") === categoryFilter;
 
@@ -141,11 +204,15 @@ const EquipmentManagement = () => {
     new Set(equipment.map((i) => i.category_name || "Uncategorised"))
   ).sort();
 
-  const visible = equipment.filter(
-    (i) => matchesText(i) && matchesHire(i) && matchesCategory(i)
-  );
+  const visible = equipment
+    .filter((i) => matchesText(i) && matchesHire(i) && matchesCategory(i) && matchesGap(i))
+    .slice()
+    .sort((a, b) =>
+      String(a.equipment_id || "").localeCompare(String(b.equipment_id || ""),
+        undefined, { numeric: true, sensitivity: "base" })
+    );
   const filtersActive =
-    q.trim() !== "" || hireFilter !== "all" || categoryFilter !== "all";
+    q.trim() !== "" || hireFilter !== "all" || categoryFilter !== "all" || gapFilter !== "all";
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -326,6 +393,26 @@ const EquipmentManagement = () => {
             </div>
           </div>
 
+          <div className="mb-3">
+            <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2">
+              Needs attention
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: "all", label: "All" },
+                { key: "desc", label: "No description" },
+                { key: "photo", label: "No photos" },
+                { key: "spec", label: "No spec" },
+                { key: "price", label: "No price" },
+              ].map((o) => (
+                <button key={o.key} onClick={() => setGapFilter(o.key)}
+                  className={CHIP(gapFilter === o.key)}>
+                  {o.label} <span className="opacity-60">{countGap(o.key)}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div>
             <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2">
               Category
@@ -356,7 +443,7 @@ const EquipmentManagement = () => {
             </div>
             {filtersActive && (
               <button
-                onClick={() => { setQ(""); setHireFilter("all"); setCategoryFilter("all"); }}
+                onClick={() => { setQ(""); setHireFilter("all"); setCategoryFilter("all"); setGapFilter("all"); }}
                 className={BTN.secondarySm}
               >
                 Clear filters
@@ -380,177 +467,91 @@ const EquipmentManagement = () => {
             </button>
           </div>
 
-          {/* Table Container with Overflow */}
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[1000px]">
-              {/* Table Header */}
-              <thead className="bg-[#292A2B]">
-                <tr>
-                  <th className="text-[#E5E5E5] font-inter font-bold text-xs lg:text-sm text-left px-3 py-4">
-                    <div className="flex flex-col">
-                      <span>Category ID</span>
-                      <div className="flex justify-center items-center mt-1">
-                        <svg
-                          width="8.75"
-                          height="14"
-                          viewBox="0 0 8.75 14"
-                          fill="none"
-                        >
-                          <path
-                            d="M0 0.876L8.75 13.127L0 0.876Z"
-                            fill="#6B7280"
-                          />
-                        </svg>
-                      </div>
+          {/* Tile grid */}
+          {loading ? (
+            <div className="flex justify-center py-16">
+              <ClipLoader color="#FDCE06" size={40} />
+            </div>
+          ) : error ? (
+            <div className="text-center py-12">
+              <p className="text-red-500 mb-3">{error}</p>
+              <button onClick={fetchEquipment} className={BTN.primary}>Retry</button>
+            </div>
+          ) : visible.length === 0 ? (
+            <div className="text-center py-16 text-[#9CA3AF] font-[Inter] text-[14px]">
+              Nothing matches those filters.
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {visible.map((item) => {
+                const photo = mainPhoto(item);
+                const pc = photosOf(item).length;
+                const sc = specCount(item);
+                const written = descOf(item).length > 0;
+                return (
+                  <div key={item.id}
+                    className="bg-[#292A2B] border border-[#333333] rounded-xl overflow-hidden">
+                    <div className="relative">
+                      {photo ? (
+                        <div className="w-full aspect-[4/3] bg-[#1F1F20] border-b border-[#333333] flex items-center justify-center">
+                          <img src={photo} alt={item.equipment_name || "Machine"}
+                            className="max-w-full max-h-full object-contain" />
+                        </div>
+                      ) : (
+                        <div className="w-full aspect-[4/3] flex flex-col items-center justify-center gap-1.5 bg-[#3a2f14] border-b border-[#333333]">
+                          <span className="text-[#F59E0B] font-[Inter] text-[13px]">No photos yet</span>
+                        </div>
+                      )}
+                      {isOnHire(item) && (
+                        <span className="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-[#14352a] text-[#4CAF50] font-[Inter] text-[12px]">
+                          On hire
+                        </span>
+                      )}
                     </div>
-                  </th>
-                  <th className="text-[#E5E5E5] font-inter font-bold text-xs lg:text-sm text-left px-3 py-4">
-                    <div className="flex flex-col">
-                      <span>Category</span>
-                      <span>Name</span>
-                    </div>
-                  </th>
-                  <th className="text-[#E5E5E5] font-inter font-bold text-xs lg:text-sm text-left px-3 py-4">
-                    <div className="flex flex-col">
-                      <span>Equipment ID</span>
-                      <div className="flex justify-center items-center mt-1">
-                        <svg
-                          width="8.75"
-                          height="14"
-                          viewBox="0 0 8.75 14"
-                          fill="none"
-                        >
-                          <path
-                            d="M0 0.876L8.75 13.127L0 0.876Z"
-                            fill="#6B7280"
-                          />
-                        </svg>
-                      </div>
-                    </div>
-                  </th>
-                  <th className="text-[#E5E5E5] font-inter font-bold text-xs lg:text-sm text-left px-3 py-4">
-                    <div className="flex flex-col">
-                      <span>Equipment</span>
-                      <span>Name</span>
-                    </div>
-                  </th>
-                                    <th className="text-[#E5E5E5] font-inter font-bold text-xs lg:text-sm text-left px-3 py-4">
-                    Position
-                  </th>
-                  <th className="text-[#E5E5E5] font-inter font-bold text-xs lg:text-sm text-left px-3 py-4">
-                    <div className="flex flex-col">
-                      <span>Base</span>
-                      <span>Price</span>
-                    </div>
-                  </th>
-                  <th className="text-[#E5E5E5] font-inter font-bold text-xs lg:text-sm text-left px-3 py-4">
-                    <div className="flex flex-col">
-                      <span>Min. Hire</span>
-                      <span>Duration</span>
-                    </div>
-                  </th>
-                  <th className="text-[#E5E5E5] font-inter font-bold text-xs lg:text-sm text-left px-3 py-4">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
 
-              {/* Table Body */}
-              <tbody>
-                {loading ? (
-                  <tr>
-                    <td colSpan="8" className="text-center py-8">
-                      <div className="flex justify-center items-center">
-                        <ClipLoader color="#FDCE06" size={30} />
-                        <span className="ml-3 text-[#E5E5E5]">
-                          Loading equipment...
+                    <div className="p-3.5">
+                      <div className="text-[#E5E5E5] font-[Inter] text-[15px] font-semibold">
+                        {item.equipment_name || "Unnamed"}
+                      </div>
+                      <div className="text-[#6B7280] font-[Inter] text-[13px] mt-0.5 mb-2.5">
+                        {item.equipment_id || "—"}
+                        {item.category_name ? " · " + item.category_name : ""}
+                      </div>
+
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 font-[Inter] text-[13px] mb-3">
+                        <span className={written ? "text-[#9CA3AF]" : "text-[#F59E0B]"}>
+                          {written ? "Written" : "No description"}
+                        </span>
+                        <span className={pc > 0 ? "text-[#9CA3AF]" : "text-[#F59E0B]"}>
+                          {pc} {pc === 1 ? "photo" : "photos"}
+                        </span>
+                        <span className={sc > 0 ? "text-[#9CA3AF]" : "text-[#F59E0B]"}>
+                          {sc > 0 ? sc + (sc === 1 ? " spec" : " specs") : "No spec"}
+                        </span>
+                        <span className={item.base_price ? "text-[#9CA3AF]" : "text-[#F59E0B]"}>
+                          {item.base_price ? "Priced" : "No price"}
                         </span>
                       </div>
-                    </td>
-                  </tr>
-                ) : error ? (
-                  <tr>
-                    <td colSpan="8" className="text-center py-8">
-                      <div className="text-red-500">
-                        <p>{error}</p>
-                        <button
-                          onClick={fetchEquipment}
-                          className={BTN.primary + " mt-2"}
-                        >
-                          Retry
+
+                      <div className="flex gap-2">
+                        <button onClick={() => handleEditEquipment(item)} className={BTN.editSm}>
+                          Edit
+                        </button>
+                        <button onClick={() => handleViewDetails(item)} className={BTN.primarySm}>
+                          Details
+                        </button>
+                        <button onClick={() => handleDeleteEquipment(item.id)}
+                          className={BTN.dangerSm + " ml-auto"}>
+                          Delete
                         </button>
                       </div>
-                    </td>
-                  </tr>
-                ) : equipment.length === 0 ? (
-                  <tr>
-                    <td colSpan="8" className="text-center py-8">
-                      <div className="text-[#9CA3AF]">
-                        <p>No equipment found</p>
-                        <button
-                          onClick={handleAddEquipment}
-                          className={BTN.primary + " mt-2"}
-                        >
-                          Add First Equipment
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  visible.map((item) => (
-                    <tr
-                      key={item.id}
-                      className="border-t border-[#333333] hover:bg-[#292A2B] transition-colors"
-                    >
-                      <td className="text-[#E5E5E5] font-inter font-normal text-sm px-3 py-4">
-                        {item.category_id}
-                      </td>
-                      <td className="text-[#E5E5E5] font-inter font-normal text-sm px-3 py-4">
-                        {item.category_name}
-                      </td>
-                      <td className="text-[#E5E5E5] font-inter font-normal text-sm px-3 py-4">
-                        {item.equipment_id}
-                      </td>
-                      <td className="text-[#E5E5E5] font-inter font-normal text-sm px-3 py-4">
-                        {item.equipment_name}
-                      </td>
-                                            <td className="text-[#E5E5E5] font-inter font-normal text-sm px-3 py-4">
-                        {item.position || "N/A"}
-                      </td>
-                      <td className="text-[#E5E5E5] font-inter font-normal text-sm px-3 py-4">
-                        ${formatMoney(item.base_price)}
-                      </td>
-                      <td className="text-[#E5E5E5] font-inter font-normal text-sm px-3 py-4">
-                        {item.minimum_duration}
-                      </td>
-                      <td className="px-3 py-4">
-                        <div className="flex flex-wrap gap-2 items-center">
-                          <button
-                            onClick={() => handleViewDetails(item)}
-                            className={isOnHire(item) ? "px-3 py-1.5 rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#3d9e43] transition-colors" : "px-3 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] transition-colors"}
-                          >
-                            View
-                          </button>
-                          <button
-                            onClick={() => handleEditEquipment(item)}
-                            className={isOnHire(item) ? "px-3 py-1.5 rounded bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#3d9e43] transition-colors" : "px-3 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[13px] hover:bg-[#E5B800] transition-colors"}
-                          >
-                            Edit
-                          </button>
-                          <button
-                            className="text-red-500 font-inter font-medium text-sm hover:underline transition-all"
-                            onClick={() => handleDeleteEquipment(item.id)}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
 
           {/* Pagination */}
           {pagination.totalPages > 1 && (
