@@ -11,7 +11,6 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router";
 import { BTN } from "./styles/buttons";
-import MachineEditor from "./components/MachineEditor";
 
 // Filter chip. Selected reads as the yellow the rest of the app uses for
 // "this is the active thing".
@@ -37,7 +36,6 @@ const EquipmentManagement = () => {
   const [hireFilter, setHireFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [gapFilter, setGapFilter] = useState("all");
-  const [editingId, setEditingId] = useState(null);
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -202,15 +200,6 @@ const EquipmentManagement = () => {
     equipment.filter((i) => matchesText(i) && matchesHire(i) &&
       (val === "all" || (i.category_name || "Uncategorised") === val)).length;
 
-  // The select needs ids, not just names — derive both from the fleet.
-  const categoryOptions = Array.from(
-    new Map(
-      equipment
-        .filter((i) => i.category_id)
-        .map((i) => [String(i.category_id), { id: i.category_id, category_name: i.category_name || "Uncategorised" }])
-    ).values()
-  ).sort((a, b) => a.category_name.localeCompare(b.category_name));
-
   const categories = Array.from(
     new Set(equipment.map((i) => i.category_name || "Uncategorised"))
   ).sort();
@@ -374,28 +363,6 @@ const EquipmentManagement = () => {
           <p className="text-[#9CA3AF] text-sm mt-1">Add and maintain your equipment fleet — categories, pricing, availability and specifications.</p>
         </div>
 
-        {editingId ? (
-          (() => {
-            const idx = visible.findIndex((i) => String(i.id) === String(editingId));
-            const machine = visible[idx] || equipment.find((i) => String(i.id) === String(editingId));
-            if (!machine) return null;
-            return (
-              <MachineEditor
-                machine={machine}
-                content={contentFor(machine)}
-                categories={categoryOptions}
-                onHire={isOnHire(machine)}
-                index={idx < 0 ? 0 : idx}
-                total={visible.length}
-                onPrev={() => idx > 0 && setEditingId(visible[idx - 1].id)}
-                onNext={() => idx < visible.length - 1 && setEditingId(visible[idx + 1].id)}
-                onBack={() => setEditingId(null)}
-                onSaved={() => { fetchEquipment(); loadContent(); }}
-              />
-            );
-          })()
-        ) : (
-        <>
         {/* Filters */}
         <section className="bg-[#1F1F20] border border-[#333333] rounded-lg p-5 mb-8">
           <input
@@ -567,7 +534,7 @@ const EquipmentManagement = () => {
                       </div>
 
                       <div className="flex gap-2">
-                        <button onClick={() => setEditingId(item.id)} className={BTN.editSm}>
+                        <button onClick={() => handleEditEquipment(item)} className={BTN.editSm}>
                           Edit
                         </button>
                         <button onClick={() => handleViewDetails(item)} className={BTN.primarySm}>
@@ -639,9 +606,6 @@ const EquipmentManagement = () => {
             </div>
           )}
         </section>
-
-        </>
-        )}
 
         {/* Add Equipment Modal */}
         <AddEquipmentModal
