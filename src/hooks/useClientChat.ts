@@ -97,10 +97,10 @@ export const useClientChat = () => {
   }, []);
 
   // Load messages for a specific conversation
-  const loadMessages = useCallback(async (conversationId, page = 1) => {
+  const loadMessages = useCallback(async (conversationId, page = 1, silent = false) => {
     try {
       if (page === 1) {
-        setLoading(true);
+        if (!silent) setLoading(true);
         setCurrentPage(1);
       } else {
         setLoadingMore(true);
@@ -264,45 +264,13 @@ export const useClientChat = () => {
 
     pollingInterval.current = setInterval(async () => {
       try {
-        const response = await chatApi.getMessages(conversationId, 1, 10);
-        if (!response.error && response.data.length > 0) {
-          // Update unread count from polling response
-          if (response.unread_count !== undefined) {
-            setUnreadCount(response.unread_count);
-          }
-
-          // Dedupe by message id rather than by parsed timestamp. MySQL
-          // returns "YYYY-MM-DD HH:MM:SS", which is not valid ISO — some
-          // engines parse it as NaN, and every comparison against NaN is
-          // false, so nothing was ever recognised as new.
-          const newMessages = response.data;
-
-          if (newMessages.length > 0) {
-            setMessages((prev) => {
-              // Create a Set of existing message IDs to check for duplicates
-              const existingMessageIds = new Set(prev.map((msg) => msg.id));
-
-              // Filter out messages that already exist
-              const uniqueNewMessages = newMessages.filter(
-                (msg) => !existingMessageIds.has(msg.id)
-              );
-
-              if (uniqueNewMessages.length > 0) {
-                return [...prev, ...uniqueNewMessages];
-              }
-              return prev;
-            });
-
-            // Update timestamp
-            const latestMessage = newMessages[newMessages.length - 1];
-            lastMessageTimestamp.current = toTime(latestMessage.created_at);
-          }
-        }
+        // Reuse the exact path that works on refresh.
+        await loadMessages(conversationId, 1, true);
       } catch (err) {
         console.error("Polling error:", err);
       }
     }, 3000); // Poll every 3 seconds
-  }, []);
+  }, [loadMessages]);
 
   // Stop polling
   const stopPolling = useCallback(() => {
