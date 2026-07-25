@@ -36,15 +36,11 @@ module.exports = function (app) {
 
   const LIST_SQL =
     "SELECT ct.*, c.client_name, c.company_name, c.abn, c.contact_position, u.email, " +
-    "e.equipment_name, e.equipment_id AS plant_code, e.model, e.year_made, e.fuel_type, " +
-    // The description the client actually saw when they picked the machine —
-    // it belongs on the agreement, so it goes on the contract too.
-    "COALESCE(NULLIF(TRIM(ctn.description), ''), e.description) AS equipment_description " +
+    "e.equipment_name, e.equipment_id AS plant_code, e.model, e.year_made, e.fuel_type " +
     "FROM longtermhire_contract ct " +
     "LEFT JOIN longtermhire_client c ON c.user_id = ct.client_user_id " +
     "LEFT JOIN longtermhire_user u ON u.id = ct.client_user_id " +
-    "LEFT JOIN longtermhire_equipment_item e ON e.id = ct.equipment_id " +
-    "LEFT JOIN longtermhire_content ctn ON ctn.equipment_id = e.id ";
+    "LEFT JOIN longtermhire_equipment_item e ON e.id = ct.equipment_id ";
 
   app.get("/v1/api/longtermhire/super_admin/contracts", TokenMiddleware(), RoleMiddleware(["super_admin"]), async (req, res) => {
     try {
