@@ -18,19 +18,6 @@ const AdminSidebar = ({ isOpen, onClose }) => {
   useEffect(() => {
     let alive = true;
 
-    // The unread payload has changed shape before, so read it defensively
-    // rather than assuming one field.
-    const readUnread = (j) => {
-      if (!j || j.error) return 0;
-      const d = j.data;
-      if (typeof d === "number") return d;
-      if (Array.isArray(d))
-        return d.reduce((sum, r) => sum + (parseInt(r?.unread_count) || 0), 0);
-      if (d && typeof d === "object")
-        return parseInt(d.total ?? d.unread_count ?? d.count ?? 0) || 0;
-      return parseInt(j.total ?? j.unread_count ?? 0) || 0;
-    };
-
     const check = async () => {
       // Each count is independent — one failing must not take the others down.
       try {
@@ -50,8 +37,15 @@ const AdminSidebar = ({ isOpen, onClose }) => {
       } catch (e) { /* quiet */ }
 
       try {
-        const j = await chatApi.getUnreadCount();
-        if (alive) setUnreadChats(readUnread(j));
+        // Same source the chat list's own unread badge uses: sum unread_count
+        // across conversations. getUnreadCount() is unproven, this isn't.
+        const j = await chatApi.getConversations();
+        if (alive && j && !j.error) {
+          const rows = j.data || [];
+          setUnreadChats(
+            rows.reduce((sum, r) => sum + (parseInt(r?.unread_count) || 0), 0)
+          );
+        }
       } catch (e) { /* quiet */ }
     };
 
