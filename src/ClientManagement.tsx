@@ -594,7 +594,7 @@ const ClientManagement = () => {
                         <button onClick={() => handleViewClientDetails(client)} className={BTN.primary}>
                           View
                         </button>
-                        <button onClick={() => handleEditClient(client)} className={BTN.secondary}>
+                        <button onClick={() => handleEditClient(client)} className={BTN.edit}>
                           Edit
                         </button>
                         <button
