@@ -10,22 +10,53 @@ const AdminSidebar = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const { companyLogo } = useCompanyLogo();
 
-  // Open faults, so the tab can carry a count without anyone checking it
+  // Live counts on the tabs, so nothing needs anyone to go looking for it.
   const [openFaults, setOpenFaults] = useState(0);
+  const [activeHires, setActiveHires] = useState(0);
+  const [unreadChats, setUnreadChats] = useState(0);
+
   useEffect(() => {
     let alive = true;
+
+    // The unread payload has changed shape before, so read it defensively
+    // rather than assuming one field.
+    const readUnread = (j) => {
+      if (!j || j.error) return 0;
+      const d = j.data;
+      if (typeof d === "number") return d;
+      if (Array.isArray(d))
+        return d.reduce((sum, r) => sum + (parseInt(r?.unread_count) || 0), 0);
+      if (d && typeof d === "object")
+        return parseInt(d.total ?? d.unread_count ?? d.count ?? 0) || 0;
+      return parseInt(j.total ?? j.unread_count ?? 0) || 0;
+    };
+
     const check = async () => {
+      // Each count is independent — one failing must not take the others down.
       try {
         const res = await api.get("/v1/api/longtermhire/super_admin/faults");
         if (alive && res?.data && !res.data.error) {
           setOpenFaults(res.data.open_count || 0);
         }
-      } catch (e) {
-        // a missing count shouldn't break the sidebar
-      }
+      } catch (e) { /* a missing count shouldn't break the sidebar */ }
+
+      try {
+        const res = await api.get("/v1/api/longtermhire/super_admin/hire-management");
+        if (alive && res?.data && !res.data.error) {
+          const rows = res.data.data || [];
+          // Same definition the Hire Management page itself uses.
+          setActiveHires(rows.filter((r) => r?.hire_status === "active").length);
+        }
+      } catch (e) { /* quiet */ }
+
+      try {
+        const j = await chatApi.getUnreadCount();
+        if (alive) setUnreadChats(readUnread(j));
+      } catch (e) { /* quiet */ }
     };
+
     check();
-    const t = setInterval(check, 60000);
+    const t = setInterval(check, 5000);
     return () => { alive = false; clearInterval(t); };
   }, []);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -186,6 +217,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
     {
       path: "/hire-management",
       name: "Hire Management",
+      counter: "hires",
       icon: (
         <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M1 3.75h12M1 7.75h12M1 11.75h7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -205,7 +237,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
     {
       path: "/faults",
       name: "Faults",
-      badge: "faults",
+      counter: "faults",
       icon: (
         <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M7 1.75 13 12.25H1L7 1.75Z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/>
@@ -225,6 +257,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
     {
       path: "/chat",
       name: "Chat",
+      badge: "chat",
       icon: (
         <svg
           width="18"
@@ -331,10 +364,12 @@ const AdminSidebar = ({ isOpen, onClose }) => {
                 className={`text-sm font-normal ${isActive(item.path) ? "text-[#FDCE06] font-semibold" : "text-white"}`}
               >
                 {item.name}
+                {item.counter === "faults" && openFaults > 0 ? ` (${openFaults})` : ""}
+                {item.counter === "hires" && activeHires > 0 ? ` (${activeHires})` : ""}
               </span>
-              {item.badge === "faults" && openFaults > 0 && (
+              {item.badge === "chat" && unreadChats > 0 && (
                 <span className="ml-auto min-w-[20px] h-5 px-1.5 rounded-full bg-[#ef4444] text-white text-[11px] font-bold flex items-center justify-center">
-                  {openFaults}
+                  {unreadChats}
                 </span>
               )}
             </Link>
