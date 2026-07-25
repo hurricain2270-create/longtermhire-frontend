@@ -168,6 +168,22 @@ const ContractSetup = () => {
     setView("edit");
   };
 
+  const [deletingId, setDeletingId] = useState(null);
+
+  const handleDeleteContract = async (row) => {
+    if (!window.confirm(`Delete contract ${row.contract_no}? This cannot be undone.`)) return;
+    try {
+      setDeletingId(row.id);
+      await api.delete("/v1/api/longtermhire/super_admin/contracts/" + row.id);
+      toast.success("Contract deleted");
+      loadAll();
+    } catch (e) {
+      toast.error(e?.response?.data?.message || "Could not delete that contract");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const openContract = async (row) => {
     setForm({
       ...BLANK,
@@ -332,10 +348,17 @@ const ContractSetup = () => {
                     <span className="text-[12px] px-2 py-0.5 rounded-full border bg-[#292A2B] text-[#9CA3AF] border-[#333] font-[Inter]">{row.status}</span>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button onClick={() => openContract(row)}
-                      className="px-3 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] transition-colors">
-                      Open
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button onClick={() => openContract(row)}
+                        className="px-3 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] transition-colors">
+                        Open
+                      </button>
+                      <button onClick={() => handleDeleteContract(row)}
+                        disabled={deletingId === row.id}
+                        className="px-3 py-1.5 rounded border border-[#7f1d1d] text-[#ef4444] font-[Inter] font-bold text-[14px] hover:bg-[#ef4444] hover:text-white disabled:opacity-50 transition-colors">
+                        {deletingId === row.id ? "Deleting…" : "Delete"}
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
