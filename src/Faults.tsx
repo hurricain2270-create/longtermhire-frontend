@@ -11,11 +11,22 @@ import { equipmentApi } from "./services/equipmentApi";
 const isImageFile = (f) =>
   !!f && (f.type ? f.type.startsWith("image/") : /\.(jpe?g|png|gif|webp|heic|heif|bmp|tiff?)$/i.test(f.name || ""));
 
+// Severity only. How long it takes to fix is a separate judgement, picked
+// per fault, because the two don't correlate.
 const BANDS = [
-  { key: "emergency", label: "Emergency", window: "24h response", colour: "#B91C1C" },
-  { key: "major", label: "Major failure", window: "1 week", colour: "#ef4444" },
-  { key: "mechanical", label: "Mechanical", window: "3 days", colour: "#F59E0B" },
-  { key: "minor", label: "Minor", window: "2 days", colour: "#4CAF50" },
+  { key: "emergency", label: "Emergency", colour: "#B91C1C" },
+  { key: "major", label: "Major failure", colour: "#ef4444" },
+  { key: "mechanical", label: "Mechanical", colour: "#F59E0B" },
+  { key: "minor", label: "Minor", colour: "#4CAF50" },
+];
+
+const TIMEFRAMES = [
+  { label: "24 hours", hours: 24 },
+  { label: "48 hours", hours: 48 },
+  { label: "3 days", hours: 72 },
+  { label: "1 week", hours: 168 },
+  { label: "2 weeks", hours: 336 },
+  { label: "4 weeks", hours: 672 },
 ];
 
 const REPORTED_AS = {
@@ -68,6 +79,7 @@ const Card = ({
   f, open, detail, busy, reply, setReply,
   replyPhotos, setReplyPhotos, uploading, addReplyPhotos,
   resolveHours, setResolveHours,
+  pendingBand, setPendingBand, customDays, setCustomDays,
   openFault, classify, stage, send,
 }) => {
   const band = BANDS.find((b) => b.key === f.severity);
@@ -91,7 +103,7 @@ const Card = ({
           {band ? (
             <span className="text-[12px] px-2.5 py-1 rounded-full font-[Inter] font-bold"
               style={{ background: band.colour + "22", color: band.colour, border: "1px solid " + band.colour + "55" }}>
-              {band.label} · {band.window}
+              {band.label}{d.window_hours ? " · " + human(d.window_hours) : ""}
             </span>
           ) : (
             <span className="text-[12px] px-2.5 py-1 rounded-full bg-[#3a2e00] text-[#FDCE06] border border-[#5a4800] font-[Inter] font-bold">
@@ -177,14 +189,54 @@ const Card = ({
                 Assess it — this is what shows the bar to the client
               </div>
               <div className="flex flex-wrap gap-2">
-                {BANDS.map((b) => (
-                  <button key={b.key} onClick={() => classify(d.id, b.key)} disabled={busy}
-                    className="px-3 py-1.5 rounded border font-[Inter] font-bold text-[12px] transition-colors disabled:opacity-50"
-                    style={{ borderColor: b.colour + "66", color: b.colour, background: b.colour + "18" }}>
-                    {b.label} · {b.window}
-                  </button>
-                ))}
+                {BANDS.map((b) => {
+                  const picked = pendingBand === b.key;
+                  return (
+                    <button key={b.key} onClick={() => setPendingBand(picked ? null : b.key)} disabled={busy}
+                      className="px-3 py-1.5 rounded border font-[Inter] font-bold text-[12px] transition-colors disabled:opacity-50"
+                      style={{
+                        borderColor: picked ? b.colour : b.colour + "66",
+                        color: picked ? "#1F1F20" : b.colour,
+                        background: picked ? b.colour : b.colour + "18",
+                      }}>
+                      {b.label}
+                    </button>
+                  );
+                })}
               </div>
+
+              {/* Second judgement: how long the repair will take. Unrelated to
+                  how serious it is. */}
+              {pendingBand && (
+                <div className="mt-3 pt-3 border-t border-[#2A2A2A]">
+                  <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2">
+                    How long to repair?
+                  </div>
+                  <div className="flex flex-wrap gap-2 items-center">
+                    {TIMEFRAMES.map((t) => (
+                      <button key={t.hours} onClick={() => classify(d.id, pendingBand, t.hours)} disabled={busy}
+                        className="px-3 py-1.5 rounded border border-[#333] text-[#E5E5E5] font-[Inter] text-[14px] hover:border-[#FDCE06] hover:text-[#FDCE06] disabled:opacity-50 transition-colors">
+                        {t.label}
+                      </button>
+                    ))}
+                    <span className="text-[#6B7280] font-[Inter] text-[12px] px-1">or</span>
+                    <input value={customDays} onChange={(e) => setCustomDays(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && parseFloat(customDays) > 0 && !busy) {
+                          classify(d.id, pendingBand, parseFloat(customDays) * 24);
+                        }
+                      }}
+                      placeholder="days" inputMode="decimal"
+                      className="w-20 bg-[#292A2B] border border-[#333] rounded px-2 py-1.5 text-[#E5E5E5] font-[Inter] text-[14px] outline-none focus:border-[#FDCE06]" />
+                    <button
+                      onClick={() => classify(d.id, pendingBand, parseFloat(customDays) * 24)}
+                      disabled={busy || !(parseFloat(customDays) > 0)}
+                      className="px-3 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors">
+                      Set
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -305,6 +357,8 @@ const Faults = () => {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(null);
   const [detail, setDetail] = useState(null);
+  const [pendingBand, setPendingBand] = useState(null);
+  const [customDays, setCustomDays] = useState("");
   const [reply, setReply] = useState("");
   const [resolveHours, setResolveHours] = useState("");
   const [busy, setBusy] = useState(false);
@@ -359,11 +413,14 @@ const Faults = () => {
     }
   };
 
-  const classify = async (id, band) => {
+  const classify = async (id, band, windowHours) => {
     try {
       setBusy(true);
-      await api.put("/v1/api/longtermhire/super_admin/faults/" + id + "/classify", { severity: band });
+      await api.put("/v1/api/longtermhire/super_admin/faults/" + id + "/classify",
+        { severity: band, window_hours: windowHours });
       toast.success("Classified");
+      setPendingBand(null);
+      setCustomDays("");
       const res = await api.get("/v1/api/longtermhire/super_admin/faults/" + id);
       if (res?.data && !res.data.error) setDetail(res.data.data);
       load();
@@ -457,11 +514,11 @@ const Faults = () => {
         </div>
       ) : (
         <>
-          {openRows.map((f) => <Card key={f.id} f={f} open={open} detail={detail} busy={busy} reply={reply} setReply={setReply} replyPhotos={replyPhotos} setReplyPhotos={setReplyPhotos} uploading={uploading} addReplyPhotos={addReplyPhotos} resolveHours={resolveHours} setResolveHours={setResolveHours} openFault={openFault} classify={classify} stage={stage} send={send} />)}
+          {openRows.map((f) => <Card key={f.id} f={f} open={open} detail={detail} busy={busy} reply={reply} setReply={setReply} replyPhotos={replyPhotos} setReplyPhotos={setReplyPhotos} uploading={uploading} addReplyPhotos={addReplyPhotos} resolveHours={resolveHours} setResolveHours={setResolveHours} pendingBand={pendingBand} setPendingBand={setPendingBand} customDays={customDays} setCustomDays={setCustomDays} openFault={openFault} classify={classify} stage={stage} send={send} />)}
           {doneRows.length > 0 && (
             <div className="text-[#6B7280] font-[Inter] text-[12px] uppercase tracking-[0.06em] mt-7 mb-3">Resolved</div>
           )}
-          {doneRows.map((f) => <Card key={f.id} f={f} open={open} detail={detail} busy={busy} reply={reply} setReply={setReply} resolveHours={resolveHours} setResolveHours={setResolveHours} openFault={openFault} classify={classify} stage={stage} send={send} />)}
+          {doneRows.map((f) => <Card key={f.id} f={f} open={open} detail={detail} busy={busy} reply={reply} setReply={setReply} resolveHours={resolveHours} setResolveHours={setResolveHours} pendingBand={pendingBand} setPendingBand={setPendingBand} customDays={customDays} setCustomDays={setCustomDays} openFault={openFault} classify={classify} stage={stage} send={send} />)}
         </>
       )}
 
