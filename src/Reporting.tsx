@@ -151,7 +151,7 @@ const Reporting = () => {
 
   const pill = (text, bg, color, border) => (
     <span
-      className="text-[11px] px-2 py-0.5 rounded-full font-[Inter]"
+      className="text-[12px] px-2 py-0.5 rounded-full font-[Inter]"
       style={{ background: bg, color: color, border: "1px solid " + border }}
     >
       {text}
@@ -212,7 +212,7 @@ const Reporting = () => {
           { label: "Utilisation", value: utilisation + "%", color: "#E5E5E5" },
         ].map((s, i) => (
           <div key={i} className="bg-[#292A2B] rounded-lg p-4">
-            <div className="text-[#9CA3AF] font-[Inter] text-[11px] mb-1">{s.label}</div>
+            <div className="text-[#9CA3AF] font-[Inter] text-[12px] mb-1">{s.label}</div>
             <div className="font-[Inter] font-bold text-[24px]" style={{ color: s.color }}>{s.value}</div>
           </div>
         ))}
@@ -226,7 +226,7 @@ const Reporting = () => {
           { label: monthName(2), value: fmt(monthAfter), color: "#FDCE06", note: "Month after" },
         ].map((s, i) => (
           <div key={i} className="bg-[#292A2B] rounded-lg p-4">
-            <div className="text-[#9CA3AF] font-[Inter] text-[11px] mb-1">
+            <div className="text-[#9CA3AF] font-[Inter] text-[12px] mb-1">
               {s.note} &middot; {s.label}
             </div>
             <div className="font-[Inter] font-bold text-[22px]" style={{ color: s.color }}>{s.value}</div>
