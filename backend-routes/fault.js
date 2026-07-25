@@ -154,25 +154,12 @@ module.exports = function (app) {
       const sdk = sdkFor();
       const owner = await ownerFor(sdk, req.user_id);
       // resolved faults leave the supervisor's view entirely — they stay on the admin side
-      // A supervisor works the live list — resolved faults clear off it so the
-      // page stays about what needs doing. Owners and engineers get the history
-      // too: what has gone wrong with each machine and how it was fixed.
-      const roleRows = await sdk.rawQuery(
-        "SELECT role FROM longtermhire_company_member WHERE user_id = ? LIMIT 1",
-        [req.user_id]
+      // Once a fault is closed off it clears from every client screen — owner,
+      // engineer and supervisor alike. The page is about what still needs doing.
+      const rows = await sdk.rawQuery(
+        LIST_SQL + "WHERE f.client_user_id = ? AND f.status <> ? ORDER BY f.id DESC",
+        [owner, "resolved"]
       );
-      const isSupervisor =
-        roleRows && roleRows.length && String(roleRows[0].role) === "Supervisor";
-
-      const rows = isSupervisor
-        ? await sdk.rawQuery(
-            LIST_SQL + "WHERE f.client_user_id = ? AND f.status <> ? ORDER BY f.id DESC",
-            [owner, "resolved"]
-          )
-        : await sdk.rawQuery(
-            LIST_SQL + "WHERE f.client_user_id = ? ORDER BY (f.status = 'resolved'), f.id DESC",
-            [owner]
-          );
       return res.status(200).json({ error: false, data: rows.map((r) => ({ ...r, band: r.severity ? BANDS[r.severity] : null })) });
     } catch (e) {
       console.error("Client faults error:", e);
