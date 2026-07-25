@@ -313,7 +313,9 @@ const ClientFaults = () => {
                         {" · " + stamp(u.created_at)}
                       </div>
                       {u.message ? (
-                        <div className="text-[#E5E5E5] text-[13px] leading-relaxed">{u.message}</div>
+                        <div className={`inline-block max-w-[85%] px-3 py-2 rounded-lg text-[13px] leading-relaxed ${
+                          u.author_side === "client" ? "bg-[#FDCE06] text-[#1F1F20]" : "bg-[#1F1F20] text-[#E5E5E5] border border-[#333333]"
+                        }`}>{u.message}</div>
                       ) : null}
                       {photosOf(u.attachments).length > 0 && (
                         <div className="flex flex-wrap gap-2 mt-2">
