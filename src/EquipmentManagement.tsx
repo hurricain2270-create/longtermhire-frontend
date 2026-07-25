@@ -38,7 +38,6 @@ const EquipmentManagement = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [gapFilter, setGapFilter] = useState("all");
   const [editingId, setEditingId] = useState(null);
-  const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -162,8 +161,9 @@ const EquipmentManagement = () => {
 
   // Everything loads in one page (limit 200) and the fleet is small, so
   // filtering happens here rather than round-tripping for every keystroke.
+  // No search box — the chips and a fleet this size make it unnecessary.
   const matchesText = (item) => {
-    const t = q.trim().toLowerCase();
+    const t = "";
     if (!t) return true;
     return [item.equipment_name, item.equipment_id, item.category_name]
       .some((v) => String(v || "").toLowerCase().includes(t));
@@ -223,7 +223,7 @@ const EquipmentManagement = () => {
         undefined, { numeric: true, sensitivity: "base" })
     );
   const filtersActive =
-    q.trim() !== "" || hireFilter !== "all" || categoryFilter !== "all" || gapFilter !== "all";
+    hireFilter !== "all" || categoryFilter !== "all" || gapFilter !== "all";
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -398,13 +398,6 @@ const EquipmentManagement = () => {
         <>
         {/* Filters */}
         <section className="bg-[#1F1F20] border border-[#333333] rounded-lg p-5 mb-8">
-          <input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Search by name, plant number or category"
-            className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors mb-4"
-          />
-
           <div className="mb-3">
             <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2">
               Hire status
@@ -476,7 +469,7 @@ const EquipmentManagement = () => {
             </div>
             {filtersActive && (
               <button
-                onClick={() => { setQ(""); setHireFilter("all"); setCategoryFilter("all"); setGapFilter("all"); }}
+                onClick={() => { setHireFilter("all"); setCategoryFilter("all"); setGapFilter("all"); }}
                 className={BTN.secondarySm}
               >
                 Clear filters
