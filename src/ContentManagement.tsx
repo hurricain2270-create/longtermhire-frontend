@@ -263,12 +263,6 @@ const ContentManagement = () => {
 
           {/* Search Button */}
           <div className="flex flex-col justify-end">
-            <button
-              onClick={handleSearch}
-              className={BTN.primary + " w-[120px] h-[42px]"}
-            >
-              Search
-            </button>
           </div>
         </div>
       </section>

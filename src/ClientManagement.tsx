@@ -456,13 +456,6 @@ const ClientManagement = () => {
 
           {/* Search Button */}
           <div className="flex flex-col">
-            <button
-              onClick={handleSearch}
-              className={BTN.primary + " w-[200px]"}
-              style={{ height: "42px" }}
-            >
-              Search
-            </button>
           </div>
         </div>
       </section>
