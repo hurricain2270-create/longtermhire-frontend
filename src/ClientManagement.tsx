@@ -14,6 +14,14 @@ import { clientApi } from "./services/clientApi";
 import { equipmentApi } from "./services/equipmentApi";
 import { useNavigate } from "react-router";
 
+// Filter chip — yellow when active, matching how the rest of the app marks
+// "this is the thing you have selected".
+const CHIP = (on) =>
+  "px-3 py-1.5 rounded-full font-[Inter] text-[14px] transition-colors border " +
+  (on
+    ? "bg-[#FDCE06] text-[#1F1F20] border-[#FDCE06] font-bold"
+    : "bg-[#292A2B] text-[#9CA3AF] border-[#333] hover:border-[#FDCE06] hover:text-[#FDCE06]");
+
 const ClientManagement = () => {
   const [searchData, setSearchData] = useState({
     clientId: "",
@@ -50,6 +58,9 @@ const ClientManagement = () => {
 
   // API data states
   const [clients, setClients] = useState([]);
+  const [q, setQ] = useState("");
+  const [inviteFilter, setInviteFilter] = useState("all");
+  const [kitFilter, setKitFilter] = useState("all");
   const [companyMembers, setCompanyMembers] = useState([]);
   const [inviteTarget, setInviteTarget] = useState(null);
   const [equipment, setEquipment] = useState([]);
@@ -354,7 +365,37 @@ const ClientManagement = () => {
         const selectedEquipmentObjects = selectedEquipmentIds.map(
           (equipmentId) => {
             const fullEquipment = equipment.find((eq) => eq.id === equipmentId);
-            return (
+            // The whole list arrives in one page (limit 200) and there are tens of
+  // clients, not thousands, so filtering happens here rather than round-tripping.
+  const matchesText = (cl) => {
+    const t = q.trim().toLowerCase();
+    if (!t) return true;
+    return [cl.client_name, cl.company_name, cl.client_id, cl.email]
+      .some((v) => String(v || "").toLowerCase().includes(t));
+  };
+  const isInvited = (cl) => !!cl.invited_at;
+  const hasKit = (cl) => Number(cl.equipment_count || 0) > 0;
+
+  const matchesInvite = (cl) =>
+    inviteFilter === "all" || (inviteFilter === "yes" ? isInvited(cl) : !isInvited(cl));
+  const matchesKit = (cl) =>
+    kitFilter === "all" || (kitFilter === "yes" ? hasKit(cl) : !hasKit(cl));
+
+  // Counts reflect the other filters, so a chip shows what clicking it gives you.
+  const countInvite = (val) =>
+    clients.filter((c2) => matchesText(c2) && matchesKit(c2) &&
+      (val === "all" || (val === "yes" ? isInvited(c2) : !isInvited(c2)))).length;
+  const countKit = (val) =>
+    clients.filter((c2) => matchesText(c2) && matchesInvite(c2) &&
+      (val === "all" || (val === "yes" ? hasKit(c2) : !hasKit(c2)))).length;
+
+  const visible = clients.filter(
+    (cl) => matchesText(cl) && matchesInvite(cl) && matchesKit(cl)
+  );
+  const filtersActive =
+    q.trim() !== "" || inviteFilter !== "all" || kitFilter !== "all";
+
+  return (
               fullEquipment || {
                 id: equipmentId,
                 equipment_id: equipmentId,
@@ -399,64 +440,63 @@ const ClientManagement = () => {
         <p className="text-[#9CA3AF] text-sm mt-1">Invite clients, assign equipment and pricing, and manage each company's access to the portal.</p>
       </header>
 
-      {/* Search Section */}
-      <section className="bg-[#1F1F20] border border-[#333333] rounded-lg p-6 mb-8">
-        <h3 className="text-[#E5E5E5] font-[Inter] font-semibold text-[20px] leading-[1.2em] mb-6">
-          Search
-        </h3>
+      {/* Filters */}
+      <section className="bg-[#1F1F20] border border-[#333333] rounded-lg p-5 mb-8">
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search by client, company, ID or email"
+          className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors mb-4"
+        />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-          {/* Client ID Field */}
-          <div className="flex flex-col">
-            <label className="text-[#9CA3AF] font-[Inter] font-medium text-[14px] leading-[1.21em] mb-2">
-              Client ID
-            </label>
-            <input
-              type="text"
-              name="clientId"
-              value={searchData.clientId}
-              onChange={handleInputChange}
-              onKeyPress={handleKeyPress}
-              className="bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors"
-              style={{ height: "42px" }}
-            />
+        <div className="mb-3">
+          <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2">
+            Login sent
           </div>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { key: "all", label: "All" },
+              { key: "yes", label: "Invited" },
+              { key: "no", label: "Not invited" },
+            ].map((o) => (
+              <button key={o.key} onClick={() => setInviteFilter(o.key)}
+                className={CHIP(inviteFilter === o.key)}>
+                {o.label} <span className="opacity-60">{countInvite(o.key)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
 
-          {/* Client Name Field */}
-          <div className="flex flex-col">
-            <label className="text-[#9CA3AF] font-[Inter] font-medium text-[14px] leading-[1.21em] mb-2">
-              Client Name
-            </label>
-            <input
-              type="text"
-              name="clientName"
-              value={searchData.clientName}
-              onChange={handleInputChange}
-              onKeyPress={handleKeyPress}
-              className="bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors"
-              style={{ height: "42px" }}
-            />
+        <div>
+          <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2">
+            Equipment assigned
           </div>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { key: "all", label: "All" },
+              { key: "yes", label: "Has equipment" },
+              { key: "no", label: "None yet" },
+            ].map((o) => (
+              <button key={o.key} onClick={() => setKitFilter(o.key)}
+                className={CHIP(kitFilter === o.key)}>
+                {o.label} <span className="opacity-60">{countKit(o.key)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
 
-          {/* Company Name Field */}
-          <div className="flex flex-col">
-            <label className="text-[#9CA3AF] font-[Inter] font-medium text-[14px] leading-[1.21em] mb-2">
-              Company Name
-            </label>
-            <input
-              type="text"
-              name="companyName"
-              value={searchData.companyName}
-              onChange={handleInputChange}
-              onKeyPress={handleKeyPress}
-              className="bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-3 outline-none focus:border-[#FDCE06] transition-colors"
-              style={{ height: "42px" }}
-            />
+        <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#2A2A2A]">
+          <div className="text-[#9CA3AF] font-[Inter] text-[14px]">
+            Showing {visible.length} of {clients.length} clients
           </div>
-
-          {/* Search Button */}
-          <div className="flex flex-col">
-          </div>
+          {filtersActive && (
+            <button
+              onClick={() => { setQ(""); setInviteFilter("all"); setKitFilter("all"); }}
+              className={BTN.secondarySm}
+            >
+              Clear filters
+            </button>
+          )}
         </div>
       </section>
 
@@ -512,7 +552,7 @@ const ClientManagement = () => {
                   </td>
                 </tr>
               ) : (
-                clients.map((client, index) => (
+                visible.map((client, index) => (
                   <Fragment key={client.id}>
                   <tr
                     className={`${index < clients.length - 1
