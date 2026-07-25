@@ -286,7 +286,7 @@ const MachineEditor = ({
         {mark(priced, priced ? "Priced" : "No price")}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-5 mb-5">
+      <div className="grid grid-cols-1 lg:grid-cols-[0.85fr_1.15fr] gap-5">
         <div>
           <label className={LBL}>Machine name</label>
           <input value={form.equipmentName} onChange={set("equipmentName")} className={FLD + " mb-3"} />
@@ -389,40 +389,38 @@ const MachineEditor = ({
             <input type="file" accept=".pdf,application/pdf" multiple hidden
               onChange={(e) => { addSpec(e.target.files); e.target.value = ""; }} />
           </label>
+
+          <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mt-4 mb-2">
+            What the client sees
+          </div>
+          <div className="bg-[#292A2B] border border-[#333] rounded-xl overflow-hidden">
+            <div className="aspect-[4/3] bg-[#1F1F20] flex items-center justify-center">
+              {shownPhoto ? (
+                <img src={shownPhoto.image_url} alt="" className="max-w-full max-h-full object-contain" />
+              ) : (
+                <span className="text-[#6B7280] font-[Inter] text-[12px]">No photo</span>
+              )}
+            </div>
+            <div className="p-3.5">
+              <div className="text-[#E5E5E5] font-[Inter] text-[15px] font-semibold">
+                {form.equipmentName || "Unnamed machine"}
+              </div>
+              <div className="text-[#6B7280] font-[Inter] text-[12px] mt-0.5 mb-2">
+                {form.basePrice ? "From $" + Number(form.basePrice).toLocaleString() + " / month" : "No rate set"}
+                {form.minimumDuration ? " · " + form.minimumDuration + " month minimum" : ""}
+              </div>
+              <p className="text-[#9CA3AF] font-[Inter] text-[12px] leading-relaxed mb-3">
+                {form.description || "No description written."}
+              </p>
+              <div className="flex gap-2">
+                <button className={BTN.primarySm}>Request</button>
+                {specs.length > 0 && <button className={BTN.secondarySm}>Specs</button>}
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="pt-4 border-t border-[#333]">
-        <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2.5">
-          What the client sees
-        </div>
-        <div className="bg-[#292A2B] border border-[#333] rounded-xl overflow-hidden grid grid-cols-1 sm:grid-cols-[1fr_1.4fr]">
-          <div className="aspect-[4/3] bg-[#1F1F20] flex items-center justify-center">
-            {shownPhoto ? (
-              <img src={shownPhoto.image_url} alt="" className="max-w-full max-h-full object-contain" />
-            ) : (
-              <span className="text-[#6B7280] font-[Inter] text-[12px]">No photo</span>
-            )}
-          </div>
-          <div className="p-4">
-            <div className="text-[#E5E5E5] font-[Inter] text-[16px] font-semibold">
-              {form.equipmentName || "Unnamed machine"}
-            </div>
-            <div className="text-[#6B7280] font-[Inter] text-[13px] mt-0.5 mb-2.5">
-              {form.basePrice ? "From $" + Number(form.basePrice).toLocaleString() + " / month" : "No rate set"}
-              {form.minimumDuration ? " · " + form.minimumDuration + " month minimum" : ""}
-              {catName ? " · " + catName : ""}
-            </div>
-            <p className="text-[#9CA3AF] font-[Inter] text-[13px] leading-relaxed mb-3">
-              {form.description || "No description written."}
-            </p>
-            <div className="flex gap-2">
-              <button className={BTN.primarySm}>Request</button>
-              {specs.length > 0 && <button className={BTN.secondarySm}>Specs</button>}
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
