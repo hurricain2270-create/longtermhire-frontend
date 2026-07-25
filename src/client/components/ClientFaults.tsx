@@ -358,7 +358,7 @@ const ClientFaults = () => {
                           onKeyDown={(e) => {
                             if (e.key === "Enter" && !e.shiftKey) {
                               e.preventDefault();
-                              if (!busy && !uploading) sendReply(f.id);
+                              if (!busy) sendReply(f.id);
                             }
                           }}
                           placeholder="Add an update…"
