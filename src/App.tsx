@@ -1,3 +1,4 @@
+import React from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -33,6 +34,47 @@ import ForgotPassword from "./client/ForgotPassword";
 import VerifyOTP from "./client/VerifyOTP";
 import ResetPassword from "./client/ResetPassword";
 
+// Without this, a single error anywhere unmounts the whole app and every page
+// goes blank with nothing on screen to explain it. Now the page that broke says
+// so, and the rest of the app keeps working.
+class PageErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { err: null };
+  }
+  static getDerivedStateFromError(err) {
+    return { err };
+  }
+  componentDidCatch(err, info) {
+    console.error("Page crashed:", err, info);
+  }
+  render() {
+    if (!this.state.err) return this.props.children;
+    return (
+      <div className="p-8">
+        <div className="max-w-2xl bg-[#1F1F20] border border-[#7f1d1d] rounded-xl p-6">
+          <h2 className="text-[#ef4444] font-[Inter] text-[18px] font-semibold mb-2">
+            This page hit a problem
+          </h2>
+          <p className="text-[#9CA3AF] font-[Inter] text-[14px] mb-4">
+            The rest of the app still works — use the menu to go elsewhere. If you
+            can, send this message on:
+          </p>
+          <pre className="bg-[#292A2B] border border-[#333] rounded-lg p-3 text-[#E5E5E5] font-mono text-[12px] whitespace-pre-wrap break-words mb-4">
+            {String(this.state.err && (this.state.err.stack || this.state.err.message || this.state.err))}
+          </pre>
+          <button
+            onClick={() => this.setState({ err: null })}
+            className="px-3 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] transition-colors"
+          >
+            Try again
+          </button>
+        </div>
+      </div>
+    );
+  }
+}
+
 function DashboardLayout({ children }) {
   const location = useLocation();
   const isChatPath = location.pathname.startsWith("/chat");
@@ -47,7 +89,7 @@ function DashboardLayout({ children }) {
             height: "100vh",
           }}
         >
-          {children}
+          <PageErrorBoundary key={location.pathname}>{children}</PageErrorBoundary>
         </main>
       </div>
     </OnlineStatusProvider>
