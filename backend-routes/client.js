@@ -571,8 +571,11 @@ module.exports = function (app) {
         LEFT JOIN (
           SELECT DISTINCT client_user_id
           FROM longtermhire_client_equipment
-          WHERE custom_discount_type IS NOT NULL 
-          AND custom_discount_value IS NOT NULL
+          -- Count a discount the admin can actually set. custom_discount_type
+          -- and custom_discount_value are never written by anything, so the
+          -- Pricing item could never be satisfied.
+          WHERE (discount IS NOT NULL AND discount <> 0)
+          OR (compounding_discount IS NOT NULL AND compounding_discount <> 0)
         ) custom_discounts ON c.user_id = custom_discounts.client_user_id
         ${whereClause}
         ORDER BY c.id DESC
