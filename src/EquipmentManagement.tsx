@@ -525,26 +525,26 @@ const EquipmentManagement = () => {
                         </div>
                       ) : (
                         <div className="w-full aspect-[4/3] flex flex-col items-center justify-center gap-1.5 bg-[#3a2f14] border-b border-[#333333]">
-                          <span className="text-[#F59E0B] font-[Inter] text-[13px]">No photos yet</span>
+                          <span className="text-[#F59E0B] font-[Inter] text-[24px]">No photos yet</span>
                         </div>
                       )}
                       {isOnHire(item) && (
-                        <span className="absolute top-2.5 right-2.5 px-2.5 py-0.5 rounded-full bg-[#14352a] text-[#4CAF50] font-[Inter] text-[12px]">
+                        <span className="absolute top-3 right-3 px-4 py-1.5 rounded-full bg-[#14352a] text-[#4CAF50] font-[Inter] text-[20px]">
                           On hire
                         </span>
                       )}
                     </div>
 
-                    <div className="p-3.5">
-                      <div className="text-[#E5E5E5] font-[Inter] text-[15px] font-semibold">
+                    <div className="p-5">
+                      <div className="text-[#E5E5E5] font-[Inter] text-[30px] leading-tight font-semibold">
                         {item.equipment_name || "Unnamed"}
                       </div>
-                      <div className="text-[#6B7280] font-[Inter] text-[13px] mt-0.5 mb-2.5">
+                      <div className="text-[#9CA3AF] font-[Inter] text-[22px] mt-1 mb-3.5">
                         {item.equipment_id || "—"}
                         {item.category_name ? " · " + item.category_name : ""}
                       </div>
 
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 font-[Inter] text-[13px] mb-3">
+                      <div className="flex flex-wrap gap-x-6 gap-y-2 font-[Inter] text-[22px] mb-4">
                         <span className={written ? "text-[#9CA3AF]" : "text-[#F59E0B]"}>
                           {written ? "Written" : "No description"}
                         </span>
@@ -560,14 +560,14 @@ const EquipmentManagement = () => {
                       </div>
 
                       <div className="flex gap-2">
-                        <button onClick={() => setEditingId(item.id)} className={BTN.editSm}>
+                        <button onClick={() => setEditingId(item.id)} className={BTN.editLg}>
                           Edit
                         </button>
-                        <button onClick={() => handleViewDetails(item)} className={BTN.primarySm}>
+                        <button onClick={() => handleViewDetails(item)} className={BTN.primaryLg}>
                           Details
                         </button>
                         <button onClick={() => handleDeleteEquipment(item.id)}
-                          className={BTN.dangerSm + " ml-auto"}>
+                          className={BTN.dangerLg + " ml-auto"}>
                           Delete
                         </button>
                       </div>

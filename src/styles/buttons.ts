@@ -47,12 +47,15 @@ export const BTN = {
 
   // Extra large, for the machine editor — a screen you work in for a while.
   primaryXl: `${base} ${size.xl} bg-[#FDCE06] text-[#1F1F20] hover:bg-[#E5B800]`,
+  editXl: `${base} ${size.xl} bg-[#60A5FA] text-[#1F1F20] hover:bg-[#3B82F6]`,
   secondaryXl: `${base} ${size.xl} border border-[#333] text-[#9CA3AF] hover:border-[#FDCE06] hover:text-[#FDCE06]`,
   dangerXl: `${base} ${size.xl} bg-[#ef4444] text-[#1F1F20] hover:bg-[#dc2626]`,
 
   // Larger, for editing screens where you're working for a while and shouldn't
   // have to aim.
   primaryLg: `${base} ${size.lg} bg-[#FDCE06] text-[#1F1F20] hover:bg-[#E5B800]`,
+  editLg: `${base} ${size.lg} bg-[#60A5FA] text-[#1F1F20] hover:bg-[#3B82F6]`,
+  successLg: `${base} ${size.lg} bg-[#4CAF50] text-[#1F1F20] hover:bg-[#3d9e43]`,
   secondaryLg: `${base} ${size.lg} border border-[#333] text-[#9CA3AF] hover:border-[#FDCE06] hover:text-[#FDCE06]`,
   dangerLg: `${base} ${size.lg} bg-[#ef4444] text-[#1F1F20] hover:bg-[#dc2626]`,
 
