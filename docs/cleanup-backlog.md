@@ -105,6 +105,29 @@ this version**, then ask for the commit to be reverted.
 
 ---
 
+## Client portal permissions
+
+Built: `permissions` column on `longtermhire_company_member`, tick boxes when
+onboarding a member, and gating for the five areas (plant tiles, term
+calculator, current hires, faults, machines on hire). Role is a preset that
+fills the boxes; the boxes decide. Ticker, sticky note, chat and profile are
+always on.
+
+- [ ] **Enforce permissions on the endpoints.** Gating is currently in the
+      browser only. Someone technical could open DevTools, take their own
+      token and call the fault or hire endpoints directly. Judged an acceptable
+      risk for now: the users are site supervisors and company owners, and the
+      exposure is fault records for machines they already hire.
+      **Revisit before putting anything commercially sensitive behind a tick
+      box** — other companies' rates, invoices, contracts. At that point
+      "they'd have to try" stops being a defence.
+- [ ] **Editing permissions after onboarding.** The tick boxes appear when
+      adding a member. Changing an existing member's role rewrites their
+      permissions to that role's preset, but there's no screen to adjust the
+      boxes on their own.
+- [ ] Permissions are read at login, so changes need a log out and back in
+      before they take effect.
+
 ## From the Equipment / Content merge
 
 - [ ] **Retire Content Management properly.** Now greyed and last in the menu
