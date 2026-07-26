@@ -358,30 +358,25 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({
 
                 if (!isUnavailable) return null;
 
-                let date = null;
-                if (equipment.unavailability_due_month) {
-                  date = new Date(equipment.unavailability_due_month);
-                  // If invalid date, use next month instead
-                  if (isNaN(date.getTime())) {
-                    const nextMonth = new Date();
-                    nextMonth.setMonth(nextMonth.getMonth() + 1);
-                    date = nextMonth;
+                // Say when it's back only if someone has actually said so — inventing
+                // "next month" promised clients a date nobody had set.
+                const raw = equipment.unavailability_due_month
+                  ? String(equipment.unavailability_due_month).trim()
+                  : "";
+                let label = "Currently unavailable";
+                if (/^[A-Za-z]+\s+\d{4}$/.test(raw)) {
+                  label = "Available " + raw;
+                } else if (raw) {
+                  const d = new Date(raw);
+                  if (!isNaN(d.getTime())) {
+                    label =
+                      "Available " +
+                      d.toLocaleDateString("en-US", { month: "long", year: "numeric" });
                   }
-                } else {
-                  // If no date provided but equipment is unavailable, show next month
-                  const nextMonth = new Date();
-                  nextMonth.setMonth(nextMonth.getMonth() + 1);
-                  date = nextMonth;
                 }
 
                 return (
-                  <div className="text-[#10B981] text-sm font-semibold">
-                    Available{" "}
-                    {date.toLocaleDateString("en-US", {
-                      month: "long",
-                      year: "numeric",
-                    })}
-                  </div>
+                  <div className="text-[#F59E0B] text-sm font-semibold">{label}</div>
                 );
               })()}
 
