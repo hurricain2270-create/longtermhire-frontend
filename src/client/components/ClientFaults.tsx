@@ -285,7 +285,7 @@ const ClientFaults = () => {
           style={{
             background:
               "repeating-linear-gradient(45deg, #FDCE06 0px, #FDCE06 10px, #1F1F20 10px, #1F1F20 20px)",
-            color: "#ef4444",
+            color: "#ffffff",
             // The label crosses both the yellow and the black, so it needs an
             // outline to stay readable on either.
             textShadow:
