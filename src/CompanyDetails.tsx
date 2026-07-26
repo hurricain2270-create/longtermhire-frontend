@@ -9,6 +9,22 @@ import { companyApi } from "./services/companyApi";
 import { calculateEquipmentPrice, formatPrice, formatDiscount } from "./utils/pricingCalculator";
 import { BTN } from "./styles/buttons";
 
+// What a person can see in the client portal. The role is only a preset —
+// these tick boxes are what actually decides, so a company can be set up the
+// way it really works rather than forced into a template.
+const AREAS = [
+  { key: "plant", label: "Plant hire tiles" },
+  { key: "calculator", label: "Term calculator" },
+  { key: "hires", label: "Current hires" },
+  { key: "faults", label: "Faults" },
+  { key: "onsite", label: "Machines on hire" },
+];
+const PRESETS = {
+  "Company Owner": ["plant", "calculator", "hires"],
+  Engineer: ["plant", "calculator", "hires"],
+  Supervisor: ["plant", "faults", "onsite"],
+};
+
 const CompanyDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -41,6 +57,7 @@ const CompanyDetails = () => {
     phone: "",
     password: "",
     roles: "Engineer",
+    permissions: PRESETS["Engineer"],
   });
 
   useEffect(() => {
@@ -148,6 +165,7 @@ const CompanyDetails = () => {
         member_email: newTeamMember.email,
         member_phone: newTeamMember.phone,
         role: newTeamMember.roles,
+        permissions: newTeamMember.permissions,
         password: newTeamMember.password,
       });
 
@@ -168,6 +186,7 @@ const CompanyDetails = () => {
           phone: "",
           password: "",
           roles: "Engineer",
+          permissions: PRESETS["Engineer"],
         });
         setShowAddTeamMemberModal(false);
         toast.success("Team member added successfully!");
@@ -858,6 +877,9 @@ const CompanyDetails = () => {
                     setNewTeamMember({
                       ...newTeamMember,
                       roles: e.target.value,
+                      // Choosing a role resets the boxes to its preset; you can
+                      // then tick or untick anything from there.
+                      permissions: PRESETS[e.target.value] || [],
                     })
                   }
                   className="w-full bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 py-2 outline-none focus:border-[#FDCE06]"
@@ -866,6 +888,41 @@ const CompanyDetails = () => {
                   <option>Engineer</option>
                   <option>Supervisor</option>
                 </select>
+
+                <div className="mt-4">
+                  <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2">
+                    What they can see
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4">
+                    {AREAS.map((a) => {
+                      const on = (newTeamMember.permissions || []).includes(a.key);
+                      return (
+                        <label key={a.key}
+                          className="flex items-center gap-2.5 cursor-pointer select-none">
+                          <input
+                            type="checkbox"
+                            checked={on}
+                            onChange={() =>
+                              setNewTeamMember((p) => ({
+                                ...p,
+                                permissions: on
+                                  ? (p.permissions || []).filter((k) => k !== a.key)
+                                  : [...(p.permissions || []), a.key],
+                              }))
+                            }
+                            className="w-4 h-4 accent-[#FDCE06]"
+                          />
+                          <span className="text-[#E5E5E5] font-[Inter] text-[14px]">
+                            {a.label}
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <p className="text-[#6B7280] font-[Inter] text-[12px] mt-2">
+                    Chat, the news bar and their profile are always available.
+                  </p>
+                </div>
               </div>
 
               <div className="flex gap-3 mt-6">
