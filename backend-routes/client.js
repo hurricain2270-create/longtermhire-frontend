@@ -1317,6 +1317,14 @@ module.exports = function (app) {
         'UPDATE longtermhire_client_equipment SET hire_start_date = ?, hire_status = ?, updated_at = ? WHERE id = ?',
         [startDate, 'active', currentTime, assignmentId]
       );
+
+      // The machine is physically gone, so mark it unavailable. Doing it here
+      // rather than by hand means it can't be forgotten.
+      await sdk.rawQuery(
+        'UPDATE longtermhire_equipment_item SET availability = 0 ' +
+        'WHERE id = (SELECT equipment_id FROM longtermhire_client_equipment WHERE id = ?)',
+        [assignmentId]
+      );
       return res.status(200).json({ error: false, message: 'Hire started', data: { start_date: startDate, status: 'active' } });
     } catch (error) {
       console.error('Start hire error:', error);
@@ -1357,6 +1365,14 @@ module.exports = function (app) {
       await sdk.rawQuery(
         'UPDATE longtermhire_client_equipment SET hire_start_date = ?, hire_status = ?, updated_at = ? WHERE id = ?',
         [startDate, 'active', currentTime, assignmentId]
+      );
+
+      // The machine is physically gone, so mark it unavailable. Doing it here
+      // rather than by hand means it can't be forgotten.
+      await sdk.rawQuery(
+        'UPDATE longtermhire_equipment_item SET availability = 0 ' +
+        'WHERE id = (SELECT equipment_id FROM longtermhire_client_equipment WHERE id = ?)',
+        [assignmentId]
       );
       return res.status(200).json({ error: false, message: 'Hire started', data: { start_date: startDate, status: 'active' } });
     } catch (error) {
@@ -1483,6 +1499,21 @@ module.exports = function (app) {
         'UPDATE longtermhire_client_equipment SET hire_end_date = ?, hire_status = ?, updated_at = ? WHERE id = ?',
         [endDate, 'completed', currentTime, assignmentId]
       );
+
+      // Back on the shelf — but only if no other client still has it out.
+      const stillOut = await sdk.rawQuery(
+        'SELECT id FROM longtermhire_client_equipment ' +
+        'WHERE equipment_id = (SELECT equipment_id FROM longtermhire_client_equipment WHERE id = ?) ' +
+        "AND hire_status = 'active' AND id <> ? LIMIT 1",
+        [assignmentId, assignmentId]
+      );
+      if (!stillOut || stillOut.length === 0) {
+        await sdk.rawQuery(
+          'UPDATE longtermhire_equipment_item SET availability = 1 ' +
+          'WHERE id = (SELECT equipment_id FROM longtermhire_client_equipment WHERE id = ?)',
+          [assignmentId]
+        );
+      }
       return res.status(200).json({ error: false, message: 'Hire ended', data: { end_date: endDate, status: 'completed' } });
     } catch (error) {
       console.error('End hire error:', error);
@@ -1561,6 +1592,12 @@ module.exports = function (app) {
       await sdk.rawQuery(
         'UPDATE longtermhire_client_equipment SET hire_end_date = NULL, hire_status = ?, updated_at = ? WHERE id = ?',
         ['active', currentTime, assignmentId]
+      );
+
+      await sdk.rawQuery(
+        'UPDATE longtermhire_equipment_item SET availability = 0 ' +
+        'WHERE id = (SELECT equipment_id FROM longtermhire_client_equipment WHERE id = ?)',
+        [assignmentId]
       );
       return res.status(200).json({ error: false, message: 'Hire restarted' });
     } catch (error) {
