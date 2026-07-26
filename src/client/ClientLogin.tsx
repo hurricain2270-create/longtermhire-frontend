@@ -119,14 +119,14 @@ function ClientLogin() {
         >
           {/* Login Form Container - Exact Figma dimensions */}
           <div
-            className="bg-[#1F1F20] w-[90%] sm:w-[448px] min-h-[415px] border border-[#333333] flex flex-col"
+            className="bg-[#1F1F20] w-[92%] sm:w-[520px] min-h-[470px] border border-[#333333] flex flex-col"
             style={{
               borderRadius: "8px",
             }}
           >
             {/* Title Section */}
             <div
-              className="flex items-center justify-center w-[90%] sm:w-[398px]"
+              className="flex items-center justify-center w-[90%] sm:w-[452px]"
               style={{
                 height: "36px",
                 marginLeft: "25px",
@@ -148,7 +148,7 @@ function ClientLogin() {
             {/* Form Section */}
             <form
               onSubmit={handleSubmit}
-              className="flex flex-col min-h-[263px] w-[90%] sm:w-[398px]"
+              className="flex flex-col min-h-[263px] w-[90%] sm:w-[452px]"
               style={{
                 marginLeft: "25px",
                 marginTop: "32px",
@@ -156,7 +156,7 @@ function ClientLogin() {
             >
               {/* Input Fields Container */}
               <div
-                className="flex flex-col bg-transparent w-[90%] sm:w-[398px]"
+                className="flex flex-col bg-transparent w-[90%] sm:w-[452px]"
                 style={{
                   height: "147px",
                   borderRadius: "6px",
@@ -185,7 +185,7 @@ function ClientLogin() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="bg-[#1C1C1C] border border-[#444444] text-[#E5E5E5] placeholder-[#ADAEBC] font-[Inter] focus:outline-none focus:ring-0 px-3 w-[100%] sm:w-[398px]"
+                    className="bg-[#1C1C1C] border border-[#444444] text-[#E5E5E5] placeholder-[#ADAEBC] font-[Inter] focus:outline-none focus:ring-0 px-3 w-[100%] sm:w-[452px]"
                     style={{
                       height: "38px",
                       borderRadius: "6px",
@@ -214,13 +214,13 @@ function ClientLogin() {
                     Password:
                   </label>
                   {/* Password Input */}
-                  <div className="relative w-[100%] sm:w-[398px]">
+                  <div className="relative w-[100%] sm:w-[452px]">
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="bg-[#1C1C1C] border border-[#444444] text-[#E5E5E5] placeholder-[#ADAEBC] font-[Inter] focus:outline-none focus:ring-0 px-3 w-[100%] sm:w-[398px]"
+                    className="bg-[#1C1C1C] border border-[#444444] text-[#E5E5E5] placeholder-[#ADAEBC] font-[Inter] focus:outline-none focus:ring-0 px-3 w-[100%] sm:w-[452px]"
                     style={{
                       height: "38px",
                       borderRadius: "6px",
@@ -237,13 +237,13 @@ function ClientLogin() {
 
               {/* Remember Me Section */}
               <div
-                className="flex items-center justify-between w-[90%] sm:w-[398px]"
+                className="flex items-center justify-between w-[90%] sm:w-[452px]"
                 style={{
                   height: "20px",
                   marginTop: "24px",
                 }}
               >
-                <div className="flex items-center w-[90%] sm:w-[398px]">
+                <div className="flex items-center w-[90%] sm:w-[452px]">
                   {/* Checkbox */}
                   <input
                     id="remember"
@@ -306,7 +306,7 @@ function ClientLogin() {
               )}
 
               {/* Submit Button */}
-              <div className="w-[90%] sm:w-[398px] h-[38px] mt-[52px]">
+              <div className="w-[90%] sm:w-[452px] h-[38px] mt-[52px]">
                 <button
                   type="submit"
                   disabled={loading}

@@ -91,8 +91,8 @@ const HeaderTicker = ({ text }: { text: string }) => {
     return () => clearInterval(timer);
   }, [text]);
 
-  // A small yellow label instead of a full-width bright bar — the page already
-  // carries plenty of colour, and the eye only needs a flash to know what this is.
+  // A quiet dark bar rather than a bright banner — the page already carries
+  // plenty of colour in the equipment tiles.
   return (
     <div
       style={{
@@ -106,28 +106,12 @@ const HeaderTicker = ({ text }: { text: string }) => {
         width: "100%",
       }}
     >
-      <span
-        style={{
-          background: "#FDCE06",
-          color: "#1F1F20",
-          fontFamily: "'Inter', sans-serif",
-          fontWeight: 700,
-          fontSize: "12px",
-          letterSpacing: "0.08em",
-          padding: "0 14px",
-          display: "flex",
-          alignItems: "center",
-          flex: "none",
-        }}
-      >
-        NEWS
-      </span>
       <div
         style={{
           flex: 1,
           overflow: "hidden",
           position: "relative",
-          padding: "11px 0",
+          padding: "14px 16px",
         }}
       >
         <div
@@ -137,7 +121,7 @@ const HeaderTicker = ({ text }: { text: string }) => {
             whiteSpace: "nowrap",
             fontFamily: "'Inter', sans-serif",
             fontWeight: 500,
-            fontSize: "15px",
+            fontSize: "21px",
             color: "#E5E5E5",
           }}
         >
