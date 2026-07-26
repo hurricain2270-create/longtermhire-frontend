@@ -286,7 +286,7 @@ const ClientFaults = () => {
             background:
               "repeating-linear-gradient(45deg, #FDCE06 0px, #FDCE06 10px, #1F1F20 10px, #1F1F20 20px)",
           }}>
-          <span className="block px-4 py-2 rounded-md bg-[#1F1F20] text-[#FDCE06] font-bold text-sm">
+          <span className="block px-4 py-2 rounded-md bg-white text-[#dc2626] font-bold text-sm">
             Report a Fault
           </span>
         </button>
