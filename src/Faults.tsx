@@ -516,7 +516,7 @@ const Faults = () => {
         <>
           {openRows.map((f) => <Card key={f.id} f={f} open={open} detail={detail} busy={busy} reply={reply} setReply={setReply} replyPhotos={replyPhotos} setReplyPhotos={setReplyPhotos} uploading={uploading} addReplyPhotos={addReplyPhotos} resolveHours={resolveHours} setResolveHours={setResolveHours} pendingBand={pendingBand} setPendingBand={setPendingBand} customDays={customDays} setCustomDays={setCustomDays} openFault={openFault} classify={classify} stage={stage} send={send} />)}
           {doneRows.length > 0 && (
-            <div className="text-[#6B7280] font-[Inter] text-[12px] uppercase tracking-[0.06em] mt-7 mb-3">Resolved</div>
+            <div className="text-white font-[Inter] text-[12px] uppercase tracking-[0.06em] mt-7 mb-3">Resolved</div>
           )}
           {doneRows.map((f) => <Card key={f.id} f={f} open={open} detail={detail} busy={busy} reply={reply} setReply={setReply} resolveHours={resolveHours} setResolveHours={setResolveHours} pendingBand={pendingBand} setPendingBand={setPendingBand} customDays={customDays} setCustomDays={setCustomDays} openFault={openFault} classify={classify} stage={stage} send={send} />)}
         </>
