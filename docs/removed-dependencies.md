@@ -69,3 +69,33 @@ template scaffolding.
 | fullcalendar | ^5.11.3 | calendar suite, never built |
 | react-ace | ^10.1.0 | code editor, never built |
 | react-codemirror2 | ^7.3.0 | second code editor, never built |
+
+## Batch 4
+
+Charts, spreadsheets, carousels, drag-and-drop, rich text and assorted widgets.
+
+`react-pdf` is not the same package as `@react-pdf/renderer`, which the contract
+and quote PDFs use and which stays. `tw-elements` also stays — it is a plugin in
+`tailwind.config.ts`.
+
+| Package | Version | Why it was there |
+|---|---|---|
+| apexcharts | ^3.40.0 | template scaffolding, never imported |
+| html-to-image | ^1.11.11 | template scaffolding, never imported |
+| papaparse | ^5.4.1 | template scaffolding, never imported |
+| pdfjs-dist | ^3.4.120 | template scaffolding, never imported |
+| pretty-rating-react | ^2.2.0 | template scaffolding, never imported |
+| qrcode | ^1.5.3 | template scaffolding, never imported |
+| react-apexcharts | ^1.4.0 | template scaffolding, never imported |
+| react-calendar | ^4.2.1 | template scaffolding, never imported |
+| react-contenteditable | ^3.3.7 | template scaffolding, never imported |
+| react-dnd | ^10.0.2 | template scaffolding, never imported |
+| react-dnd-html5-backend | ^16.0.1 | template scaffolding, never imported |
+| react-input-emoji | ^5.4.1 | template scaffolding, never imported |
+| react-modern-calendar-datepicker | ^3.1.6 | template scaffolding, never imported |
+| react-pdf | ^7.7.0 | template scaffolding, never imported |
+| react-quill | ^2.0.0 | template scaffolding, never imported |
+| redux | ^4.2.1 | template scaffolding, never imported |
+| slick-carousel | ^1.8.1 | template scaffolding, never imported |
+| swiper | ^9.3.1 | template scaffolding, never imported |
+| xlsx | ^0.18.5 | template scaffolding, never imported |
