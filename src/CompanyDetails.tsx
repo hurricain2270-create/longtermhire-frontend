@@ -612,12 +612,28 @@ const CompanyDetails = () => {
               <h3 className="text-[#E5E5E5] font-[Inter] font-semibold text-xl">
                 Assigned Equipment
               </h3>
-              <button
-                onClick={() => setShowDiscountModal(true)}
-                className="bg-[#292A2B] border border-[#FDCE06] text-[#FDCE06] px-4 py-2 rounded-md font-[Inter] font-medium text-sm hover:bg-[#333333] transition-colors"
-              >
-                Discount on all items
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShowDiscountModal(true)}
+                  className="bg-[#292A2B] border border-[#FDCE06] text-[#FDCE06] px-4 py-2 rounded-lg font-[Inter] font-medium text-sm hover:bg-[#333333] transition-colors"
+                >
+                  Discount on all items
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className={BTN.success + " flex items-center gap-2"}
+                >
+                  {saving ? (
+                    <>
+                      <ClipLoader size={16} color="#1F1F20" />
+                      Saving...
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Equipment Table */}
@@ -821,23 +837,6 @@ const CompanyDetails = () => {
               />
             </div>
           </div>
-        </div>
-        {/* Save Button */}
-        <div className="flex justify-end">
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="bg-[#FDCE06] text-[#1F1F20] px-8 py-3 rounded-lg font-[Inter] font-bold text-sm hover:bg-[#E5B800] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-          >
-            {saving ? (
-              <>
-                <ClipLoader size={16} color="#1F1F20" />
-                Saving...
-              </>
-            ) : (
-              "Save Changes"
-            )}
-          </button>
         </div>
       </div>
 
