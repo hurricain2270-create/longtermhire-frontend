@@ -91,30 +91,58 @@ const HeaderTicker = ({ text }: { text: string }) => {
     return () => clearInterval(timer);
   }, [text]);
 
+  // A small yellow label instead of a full-width bright bar — the page already
+  // carries plenty of colour, and the eye only needs a flash to know what this is.
   return (
     <div
       style={{
-        background: "linear-gradient(90deg, #FDCE06 0%, #FF6A00 100%)",
+        display: "flex",
+        alignItems: "stretch",
+        background: "#1F1F20",
+        border: "1px solid #333333",
         borderRadius: "8px",
         marginBottom: "32px",
-        padding: "12px 0",
         overflow: "hidden",
-        position: "relative",
         width: "100%",
       }}
     >
-      <div
-        ref={ref}
+      <span
         style={{
-          display: "inline-block",
-          whiteSpace: "nowrap",
+          background: "#FDCE06",
+          color: "#1F1F20",
           fontFamily: "'Inter', sans-serif",
           fontWeight: 700,
-          fontSize: "20px",
-          color: "#1F1F20",
+          fontSize: "12px",
+          letterSpacing: "0.08em",
+          padding: "0 14px",
+          display: "flex",
+          alignItems: "center",
+          flex: "none",
         }}
       >
-        {text}
+        NEWS
+      </span>
+      <div
+        style={{
+          flex: 1,
+          overflow: "hidden",
+          position: "relative",
+          padding: "11px 0",
+        }}
+      >
+        <div
+          ref={ref}
+          style={{
+            display: "inline-block",
+            whiteSpace: "nowrap",
+            fontFamily: "'Inter', sans-serif",
+            fontWeight: 500,
+            fontSize: "15px",
+            color: "#E5E5E5",
+          }}
+        >
+          {text}
+        </div>
       </div>
     </div>
   );
