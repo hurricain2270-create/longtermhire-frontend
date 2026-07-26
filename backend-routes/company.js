@@ -211,7 +211,28 @@ module.exports = function (app) {
           username,
           password,
           role,
+          permissions,
         } = req.body;
+
+        // What this person can see in the portal. The role is only a preset —
+        // these are the areas that actually get switched on, so a company can
+        // be set up the way it really works rather than forced into a template.
+        const AREAS = ["plant", "calculator", "hires", "faults", "onsite"];
+        const PRESETS = {
+          "Company Owner": ["plant", "calculator", "hires"],
+          Engineer: ["plant", "calculator", "hires"],
+          Supervisor: ["plant", "faults", "onsite"],
+        };
+        const cleanPerms = (v, forRole) => {
+          const list = Array.isArray(v)
+            ? v
+            : typeof v === "string" && v.trim()
+            ? (() => { try { return JSON.parse(v); } catch (e) { return null; } })()
+            : null;
+          const chosen = Array.isArray(list) ? list.filter((a) => AREAS.includes(a)) : null;
+          // No explicit choice falls back to the preset for the role.
+          return JSON.stringify(chosen && chosen.length ? chosen : (PRESETS[forRole] || []));
+        };
 
         // Validation
         if (!member_name || !member_email || !role) {
@@ -411,6 +432,7 @@ module.exports = function (app) {
           member_email,
           member_phone,
           role,
+          permissions: cleanPerms(permissions, role),
         });
 
         // Send invitation email
@@ -637,10 +659,29 @@ module.exports = function (app) {
           }
         }
 
-        // Update role
+        // Update role, and the areas that go with it. Permissions sent
+        // explicitly win; otherwise the new role's preset applies.
+        const AREAS = ["plant", "calculator", "hires", "faults", "onsite"];
+        const PRESETS = {
+          "Company Owner": ["plant", "calculator", "hires"],
+          Engineer: ["plant", "calculator", "hires"],
+          Supervisor: ["plant", "faults", "onsite"],
+        };
+        let permsList = null;
+        const raw = req.body.permissions;
+        if (Array.isArray(raw)) permsList = raw;
+        else if (typeof raw === "string" && raw.trim()) {
+          try { permsList = JSON.parse(raw); } catch (e) { permsList = null; }
+        }
+        const perms = JSON.stringify(
+          Array.isArray(permsList)
+            ? permsList.filter((a) => AREAS.includes(a))
+            : PRESETS[role] || []
+        );
+
         await sdk.rawQuery(
-          `UPDATE longtermhire_company_member SET role = ?, updated_at = NOW() WHERE id = ?`,
-          [role, memberId]
+          `UPDATE longtermhire_company_member SET role = ?, permissions = ?, updated_at = NOW() WHERE id = ?`,
+          [role, perms, memberId]
         );
 
         return res.status(200).json({

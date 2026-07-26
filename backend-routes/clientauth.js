@@ -262,7 +262,7 @@ module.exports = function (app) {
       let companyRoles = [];
       try {
         const roles = await sdk.rawQuery(
-          "SELECT company_id, role FROM longtermhire_company_member WHERE user_id = ?",
+          "SELECT company_id, role, permissions FROM longtermhire_company_member WHERE user_id = ?",
           [user.id]
         );
         companyRoles = roles;
