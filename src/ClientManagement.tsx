@@ -429,7 +429,7 @@ const ClientManagement = () => {
       {/* Header */}
       <header className="mb-8">
         <h1 className="text-[#E5E5E5] font-[Inter] font-bold text-[36px] leading-[1.11em]">
-          Company Management
+          Client Management
         </h1>
         <p className="text-[#9CA3AF] text-sm mt-1">Invite clients, assign equipment and pricing, and manage each company's access to the portal.</p>
       </header>
