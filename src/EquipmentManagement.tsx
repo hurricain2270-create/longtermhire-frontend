@@ -529,7 +529,7 @@ const EquipmentManagement = () => {
                         </div>
                       )}
                       {isOnHire(item) && (
-                        <span className="absolute top-3 right-3 px-4 py-1.5 rounded-full bg-[#14352a] text-[#4CAF50] font-[Inter] text-[20px]">
+                        <span className="absolute top-3 right-3 px-4 py-1.5 rounded-full bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[20px]">
                           On hire
                         </span>
                       )}

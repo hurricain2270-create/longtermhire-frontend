@@ -275,7 +275,7 @@ const MachineEditor = ({
         </h2>
         <span className="text-[#9CA3AF] font-[Inter] text-[22px]">{form.equipmentId}</span>
         {onHire && (
-          <span className="px-3.5 py-1 rounded-full bg-[#14352a] text-[#4CAF50] font-[Inter] text-[16px]">
+          <span className="px-3.5 py-1 rounded-full bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[16px]">
             On hire
           </span>
         )}
