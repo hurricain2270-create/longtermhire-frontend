@@ -332,7 +332,8 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                     <div
                       key={index}
                       aria-hidden="true"
-                      className="flex-shrink-0 w-12 h-12 rounded border-2 border-dashed border-[#2F2F31] bg-[#1F1F20]"
+                      // Holds the space so the cards line up, but shows nothing.
+                      className="flex-shrink-0 w-12 h-12"
                     />
                   )
                 )}
