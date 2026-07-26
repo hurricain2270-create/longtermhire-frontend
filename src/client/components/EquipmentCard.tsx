@@ -217,29 +217,6 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
         {/* Image Section */}
         <div className="border-b-2 border-[#333333] p-6 space-y-3">
           <div className="w-full h-[160px] bg-[#2A2A2B] flex items-center justify-center relative rounded">
-            {/* Placeholder X pattern */}
-            <svg
-              className="w-full h-full"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-            >
-              <line
-                x1="0"
-                y1="0"
-                x2="100"
-                y2="100"
-                stroke="#444444"
-                strokeWidth="1"
-              />
-              <line
-                x1="100"
-                y1="0"
-                x2="0"
-                y2="100"
-                stroke="#444444"
-                strokeWidth="1"
-              />
-            </svg>
             {/* Actual image overlay */}
             <img
               src={getMainImageSrc()}
