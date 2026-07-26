@@ -43,6 +43,7 @@ export const BTN = {
   nav: `${base} ${size.md} bg-[#7C3AED] text-white hover:bg-[#6D28D9]`,
   navLg: `${base} ${size.lg} bg-[#7C3AED] text-white hover:bg-[#6D28D9]`,
   navXl: `${base} ${size.xl} bg-[#7C3AED] text-white hover:bg-[#6D28D9]`,
+  navSm: `${base} ${size.sm} bg-[#7C3AED] text-white hover:bg-[#6D28D9]`,
 
   // Extra large, for the machine editor — a screen you work in for a while.
   primaryXl: `${base} ${size.xl} bg-[#FDCE06] text-[#1F1F20] hover:bg-[#E5B800]`,

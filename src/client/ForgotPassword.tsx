@@ -68,7 +68,7 @@ function ForgotPassword() {
           {/* Back Button */}
           <button
             onClick={handleBackToLogin}
-            className={BTN.secondary + " flex items-center mb-6"}
+            className={BTN.nav + " flex items-center mb-6"}
           >
             <svg
               width="16"

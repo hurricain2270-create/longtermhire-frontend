@@ -124,7 +124,7 @@ function VerifyOTP() {
           {/* Back Button */}
           <button
             onClick={handleBackToForgotPassword}
-            className={BTN.secondary + " flex items-center mb-6"}
+            className={BTN.nav + " flex items-center mb-6"}
           >
             <svg
               width="16"

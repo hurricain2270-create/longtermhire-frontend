@@ -116,7 +116,7 @@ function AdminChangePassword({ onBack }) {
       <div className="mb-8">
         <button
           onClick={onBack}
-          className={BTN.secondary + " flex items-center mb-6"}
+          className={BTN.nav + " flex items-center mb-6"}
         >
           <svg
             width="16"
