@@ -443,7 +443,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                 {/* Availability Line for Supervisor */}
                 {availabilityText && (
                   <div
-                    className={`${availabilityText === "Unavailable" ? "text-[#6B7280]" : "text-[#10B981]"} text-sm font-semibold`}
+                    className={`${availabilityText === "Unavailable" ? "text-[#6B7280]" : "text-[#F59E0B]"} text-sm font-semibold`}
                   >
                     {availabilityText}
                   </div>
@@ -476,7 +476,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                   {/* Availability Line */}
                   {availabilityText && (
                     <div
-                      className={`${availabilityText === "Unavailable" ? "text-[#6B7280]" : "text-[#10B981]"} text-sm font-semibold`}
+                      className={`${availabilityText === "Unavailable" ? "text-[#6B7280]" : "text-[#F59E0B]"} text-sm font-semibold`}
                     >
                       {availabilityText}
                     </div>
