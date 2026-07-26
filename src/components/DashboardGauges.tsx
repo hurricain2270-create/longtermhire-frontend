@@ -122,19 +122,24 @@ const DashboardGauges = () => {
         ]);
         const rows = content?.data || [];
         const machines = (eq?.data || []).length;
+        // Described and photographed is what makes a listing usable. Spec
+        // sheets are a bonus — requiring them held every machine at zero.
         const complete = rows.filter((it) => {
           const hasDesc = String(it.description || "").trim().length > 0;
           const hasImg =
             (Array.isArray(it.images) && it.images.length > 0) || !!it.image_url;
-          return hasDesc && hasImg && specCount(it.specs_files) > 0;
+          return hasDesc && hasImg;
         }).length;
+        const withSpecs = rows.filter((it) => specCount(it.specs_files) > 0).length;
         const pct = pctOf(complete, machines);
         setG((s) => ({
           ...s,
           listings: { pct, value: pct + "%",
-                      caption: machines - complete
-                        ? machines - complete + " need work"
-                        : "all complete" },
+                      caption:
+                        (machines - complete
+                          ? machines - complete + " need work"
+                          : "all listed") +
+                        " · " + withSpecs + " with specs" },
         }));
       } catch (e) {
         console.error("Listings gauge:", e);
