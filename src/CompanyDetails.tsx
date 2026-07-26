@@ -585,13 +585,13 @@ const CompanyDetails = () => {
                               setSelectedTeamMember(member);
                               setShowTeamMemberDetailsModal(true);
                             }}
-                            className="text-[#FDCE06] font-[Inter] font-medium text-sm hover:underline"
+                            className={BTN.primarySm}
                           >
                             Details
                           </button>
                           <button
                             onClick={() => handleDeleteTeamMember(member.id)}
-                            className="text-red-400 font-[Inter] font-medium text-sm hover:underline"
+                            className={BTN.dangerSm}
                           >
                             Delete
                           </button>
