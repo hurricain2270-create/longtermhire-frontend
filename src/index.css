@@ -77,3 +77,11 @@
   font-size: 15px;
   color: #1F1F20;
 }
+
+/* Native dropdown panels are white on macOS and Windows, so options inherit
+   the field's light grey text and become unreadable. Set it once here rather
+   than on every screen. */
+select option {
+  background-color: #1F1F20;
+  color: #E5E5E5;
+}
