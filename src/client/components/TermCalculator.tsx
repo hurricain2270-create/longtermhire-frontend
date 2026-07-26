@@ -1,5 +1,10 @@
 // @ts-nocheck
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
+
+// The dashboard renames equipment_name to name when it builds card objects,
+// so read across both.
+const nameOf = (e) =>
+  (e && (e.equipment_name || e.name || e.equipment_id)) || "";
 
 const money = (n) => "$" + Math.round(n || 0).toLocaleString("en-AU");
 
@@ -17,6 +22,20 @@ const TermCalculator = ({ equipment = [], userRole = "member" }) => {
 
   const [id, setId] = useState("");
   const [months, setMonths] = useState(12);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const pickerRef = useRef(null);
+
+  // Close when clicking anywhere else on the page.
+  useEffect(() => {
+    if (!pickerOpen) return;
+    const away = (ev) => {
+      if (pickerRef.current && !pickerRef.current.contains(ev.target)) {
+        setPickerOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", away);
+    return () => document.removeEventListener("mousedown", away);
+  }, [pickerOpen]);
 
   useEffect(() => {
     if (!id && items.length) setId(String(items[0].id ?? items[0].equipment_id));
@@ -80,30 +99,47 @@ const TermCalculator = ({ equipment = [], userRole = "member" }) => {
             <label className="block text-[#9CA3AF] text-[11px] uppercase tracking-[0.07em] mb-2.5">
               Machine
             </label>
-            <div className="relative mb-7">
-              <select
-                value={id}
-                onChange={(e) => setId(e.target.value)}
-                className="w-full appearance-none bg-[#292A2B] border border-[#3A3A3C] rounded-xl pl-5 pr-12 py-4 text-[#E5E5E5] text-[16px] font-medium outline-none focus:border-[#FDCE06] hover:border-[#4A4A4C] transition-colors cursor-pointer"
+            {/* Built rather than a native <select>: the OS draws that panel
+                itself, on a white background, and the options were unreadable
+                however they were styled. */}
+            <div className="relative mb-7" ref={pickerRef}>
+              <button
+                type="button"
+                onClick={() => setPickerOpen((v) => !v)}
+                className="w-full flex items-center justify-between bg-[#292A2B] border border-[#3A3A3C] rounded-xl pl-5 pr-5 py-4 text-[#E5E5E5] text-[16px] font-medium outline-none focus:border-[#FDCE06] hover:border-[#4A4A4C] transition-colors cursor-pointer text-left"
               >
-                {items.map((e) => (
-                  <option
-                    key={e.id ?? e.equipment_id}
-                    value={e.id ?? e.equipment_id}
-                    // The open list is drawn by the OS on a light background,
-                    // so the field's pale text would be invisible in it.
-                    style={{ color: "#1F1F20", backgroundColor: "#FFFFFF" }}
-                  >
-                    {e.equipment_name || e.name || e.equipment_id || "Machine"}
-                  </option>
-                ))}
-              </select>
-              <svg
-                className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2"
-                width="13" height="8" viewBox="0 0 13 8" fill="none" aria-hidden="true"
-              >
-                <path d="M1 1L6.5 6.5L12 1" stroke="#FDCE06" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
+                <span className="truncate">
+                  {nameOf(plant) || "Choose a machine"}
+                </span>
+                <svg width="13" height="8" viewBox="0 0 13 8" fill="none" aria-hidden="true"
+                  className={"flex-none ml-3 transition-transform " + (pickerOpen ? "rotate-180" : "")}>
+                  <path d="M1 1L6.5 6.5L12 1" stroke="#FDCE06" strokeWidth="1.8" strokeLinecap="round" />
+                </svg>
+              </button>
+
+              {pickerOpen && (
+                <div className="absolute left-0 right-0 top-full mt-2 z-30 max-h-[320px] overflow-y-auto bg-[#1F1F20] border border-[#3A3A3C] rounded-xl shadow-2xl py-1">
+                  {items.map((e) => {
+                    const key = String(e.id ?? e.equipment_id);
+                    const chosen = key === String(id);
+                    return (
+                      <button
+                        key={key}
+                        type="button"
+                        onClick={() => { setId(key); setPickerOpen(false); }}
+                        className={
+                          "w-full text-left px-5 py-3 text-[15px] transition-colors " +
+                          (chosen
+                            ? "bg-[#FDCE06] text-[#1F1F20] font-semibold"
+                            : "text-[#E5E5E5] hover:bg-[#292A2B]")
+                        }
+                      >
+                        {nameOf(e)}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="flex items-baseline justify-between mb-2.5">
