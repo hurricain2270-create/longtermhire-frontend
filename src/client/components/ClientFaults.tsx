@@ -277,9 +277,18 @@ const ClientFaults = () => {
           <h2 className="text-[#D1D5DB] text-xl sm:text-2xl font-semibold mb-1">Faults</h2>
           <p className="text-[#9CA3AF] text-sm">Something wrong? Tell us and we'll pick it up straight away.</p>
         </div>
+        {/* Hazard stripes — the one thing on this page that should be
+            impossible to miss. The label sits on a solid panel so it stays
+            readable over the stripes. */}
         <button onClick={() => setReporting(true)}
-          className="px-4 py-2.5 rounded-lg bg-[#ef4444] text-white font-bold text-sm hover:bg-[#dc2626] transition-colors whitespace-nowrap">
-          Report a Fault
+          className="rounded-lg p-[4px] hover:brightness-110 transition-all whitespace-nowrap"
+          style={{
+            background:
+              "repeating-linear-gradient(45deg, #FDCE06 0px, #FDCE06 10px, #1F1F20 10px, #1F1F20 20px)",
+          }}>
+          <span className="block px-4 py-2 rounded-md bg-[#1F1F20] text-[#FDCE06] font-bold text-sm">
+            Report a Fault
+          </span>
         </button>
       </div>
 
