@@ -298,10 +298,16 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
               }
             }
 
+            // Always draw four slots, filled or not. With a variable number of
+            // thumbnails the rest of the tile shifted up and the cards fell out
+            // of line with each other.
+            const SLOTS = 4;
+            const slots = Array.from({ length: SLOTS }, (_, i) => images[i] || null);
+
             return (
-              images.length > 1 && (
-                <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
-                  {images.map((img: any, index: number) => (
+              <div className="flex gap-1.5">
+                {slots.map((img: any, index: number) =>
+                  img ? (
                     <button
                       key={index}
                       onClick={(e) => {
@@ -322,9 +328,15 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                         }}
                       />
                     </button>
-                  ))}
-                </div>
-              )
+                  ) : (
+                    <div
+                      key={index}
+                      aria-hidden="true"
+                      className="flex-shrink-0 w-12 h-12 rounded border-2 border-dashed border-[#2F2F31] bg-[#1F1F20]"
+                    />
+                  )
+                )}
+              </div>
             );
           })()}
         </div>
