@@ -93,6 +93,9 @@ const CompanyDetails = () => {
             email: member.member_email,
             phone: member.member_phone || "",
             role: member.role,
+            // Carry the saved permissions through, or the tick boxes fall back
+            // to the role preset and look like nothing was ever saved.
+            permissions: member.permissions,
             user_id: member.user_id,
             action: "Details",
           }))
