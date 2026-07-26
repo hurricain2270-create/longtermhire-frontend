@@ -68,7 +68,7 @@ const TermCalculator = ({ equipment = [], userRole = "member" }) => {
           <span className="text-[#FDCE06]"> the less you pay.</span>
         </h2>
         <p className="text-[#9CA3AF] text-[14px] leading-relaxed mb-8 max-w-2xl">
-          Your rate falls {calc.comp}{calc.cType === "%" ? "%" : ""} every month a machine stays on
+          Your rate falls {calc.comp}{calc.cType === "$" ? "" : "%"} every month a machine stays on
           site. Move the slider and see what that's worth.
         </p>
 
@@ -88,7 +88,7 @@ const TermCalculator = ({ equipment = [], userRole = "member" }) => {
               >
                 {items.map((e) => (
                   <option key={e.id ?? e.equipment_id} value={e.id ?? e.equipment_id}>
-                    {e.equipment_name}
+                    {e.equipment_name || e.name || e.equipment_id || "Machine"}
                   </option>
                 ))}
               </select>
