@@ -370,7 +370,7 @@ const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
             <div className="relative equipment-dropdown">
               <button
                 type="button"
-                className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-md text-[#E5E5E5] px-4 text-left outline-none hover:border-[#FDCE06] transition-colors flex items-center justify-between font-[Inter] text-base"
+                className="w-full h-11 bg-[#292A2B] border border-[#333333] rounded-lg text-[#E5E5E5] px-4 text-left outline-none hover:border-[#FDCE06] transition-colors flex items-center justify-between font-[Inter] text-base"
                 onClick={() => setShowEquipmentDropdown(!showEquipmentDropdown)}
               >
                 <span>
@@ -463,7 +463,7 @@ const AddClientModal = ({ isOpen, onClose, onSubmit, loading = false }) => {
             <button
               type="submit"
               disabled={loading}
-              className={`h-11 px-8 rounded-md text-[#1F1F20] font-bold text-sm transition-all flex items-center justify-center gap-2 ${loading
+              className={`h-11 px-8 rounded-lg text-[#1F1F20] font-bold text-sm transition-all flex items-center justify-center gap-2 ${loading
                 ? "bg-[#9CA3AF] cursor-not-allowed"
                 : "bg-[#FDCE06] hover:bg-[#E5B800] shadow-lg shadow-[#FDCE06]/10"
                 }`}

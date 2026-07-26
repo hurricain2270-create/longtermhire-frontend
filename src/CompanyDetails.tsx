@@ -742,7 +742,7 @@ const CompanyDetails = () => {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="bg-[#FDCE06] text-[#1F1F20] px-8 py-3 rounded-md font-[Inter] font-bold text-sm hover:bg-[#E5B800] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+            className="bg-[#FDCE06] text-[#1F1F20] px-8 py-3 rounded-lg font-[Inter] font-bold text-sm hover:bg-[#E5B800] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
           >
             {saving ? (
               <>
@@ -1077,7 +1077,7 @@ const CompanyDetails = () => {
                 <button
                   onClick={handleApplyBulkDiscount}
                   disabled={applyingDiscount}
-                  className="flex-1 bg-[#FDCE06] text-[#1F1F20] py-2 px-4 rounded-md font-[Inter] font-bold text-sm hover:bg-[#E5B800] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+                  className="flex-1 bg-[#FDCE06] text-[#1F1F20] py-2 px-4 rounded-lg font-[Inter] font-bold text-sm hover:bg-[#E5B800] disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                 >
                   {applyingDiscount ? (
                     <>

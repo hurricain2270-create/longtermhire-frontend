@@ -73,7 +73,7 @@ const UploadTest = () => {
       <button
         onClick={handleUpload}
         disabled={!selectedFile || uploading}
-        className="w-full h-12 bg-[#FDCE06] text-[#1A1A1A] font-medium rounded hover:bg-[#E5B800] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+        className="w-full h-12 bg-[#FDCE06] text-[#1A1A1A] font-medium rounded-lg hover:bg-[#E5B800] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
       >
         {uploading ? (
           <>

@@ -188,7 +188,7 @@ function VerifyOTP() {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full h-12 rounded-md font-[Inter] font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${loading
+              className={`w-full h-12 rounded-lg font-[Inter] font-semibold text-sm transition-colors flex items-center justify-center gap-2 ${loading
                   ? "bg-[#9CA3AF] text-[#666] cursor-not-allowed"
                   : "bg-[#FDCE06] text-[#1F1F20] hover:bg-[#E5B800]"
                 }`}

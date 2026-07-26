@@ -576,7 +576,7 @@ const ContractSetup = () => {
           )}
         </div>
         <button onClick={save} disabled={saving}
-          className="px-4 py-2 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors whitespace-nowrap">
+          className="px-4 py-2 rounded-lg bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors whitespace-nowrap">
           {saving ? "Saving..." : editingId ? "Save changes" : "Save draft"}
         </button>
         <button

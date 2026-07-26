@@ -651,7 +651,7 @@ const HireManagement = () => {
                 </button>
                 <button
                   onClick={runConfirmedAction}
-                  className={"px-4 py-1.5 border rounded text-[#1F1F20] font-[Inter] font-bold text-[14px] transition-colors " + cfg.btn}
+                  className={"px-4 py-1.5 border rounded-lg text-[#1F1F20] font-[Inter] font-bold text-[14px] transition-colors " + cfg.btn}
                 >
                   {cfg.label}
                 </button>

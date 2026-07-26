@@ -244,7 +244,7 @@ const QuoteModal: React.FC<QuoteModalProps> = ({ isOpen, onClose, equipment }) =
                         <button
                             onClick={saveQuote}
                             disabled={saving}
-                            className="px-4 py-2 bg-[#FDCE06] text-[#1F1F20] rounded font-bold hover:bg-[#E5B800] transition-colors disabled:opacity-50"
+                            className="px-4 py-2 bg-[#FDCE06] text-[#1F1F20] rounded-lg font-bold hover:bg-[#E5B800] transition-colors disabled:opacity-50"
                         >
                             {saving ? "Sending..." : "Send Quote to Long Term Hire"}
                         </button>

@@ -187,7 +187,7 @@ const EquipmentQuickViewModal = ({
                             <button
                                 onClick={handleRequest}
                                 disabled={requestLoading}
-                                className="bg-[#FDCE06] text-[#1F1F20] px-4 py-2 rounded hover:bg-[#e5b800] disabled:opacity-50"
+                                className="bg-[#FDCE06] text-[#1F1F20] px-4 py-2 rounded-lg hover:bg-[#e5b800] disabled:opacity-50"
                             >
                                 {requestLoading ? <ClipLoader size={16} color="#1F1F20" /> : "Request"}
                             </button>

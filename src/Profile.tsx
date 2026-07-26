@@ -647,7 +647,7 @@ const Profile = () => {
               <button
                 onClick={handleSaveChanges}
                 disabled={saving}
-                className={`rounded-md px-6 py-3 border-none cursor-pointer transition-colors font-bold flex items-center gap-2 ${saving
+                className={`rounded-lg px-6 py-3 border-none cursor-pointer transition-colors font-bold flex items-center gap-2 ${saving
                   ? "bg-[#9CA3AF] text-[#666] cursor-not-allowed"
                   : "bg-[#FDCE06] text-[#1F1F20] hover:bg-[#E5B800]"
                   }`}

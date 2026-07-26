@@ -217,7 +217,7 @@ const AddEquipmentModal = ({ isOpen, onClose, onSave }) => {
               <button
                 type="button"
                 onClick={handleAddCategory}
-                className="w-[44px] h-[44px] bg-[#333333] hover:bg-[#404040] border-none rounded-[6px] cursor-pointer flex items-center justify-center transition-colors"
+                className="w-[44px] h-[44px] bg-[#333333] hover:bg-[#404040] border-none rounded-lg cursor-pointer flex items-center justify-center transition-colors"
                 title="Add new category"
               >
                 <svg width="16" height="16" viewBox="0 0 16 16" fill="none">

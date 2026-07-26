@@ -152,7 +152,7 @@ function Login() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className={`w-full h-[38px] border text-[#1F1F20] font-[Inter] transition-colors flex items-center justify-center gap-2 rounded-md text-sm font-semibold ${loading
+                                className={`w-full h-[38px] border text-[#1F1F20] font-[Inter] transition-colors flex items-center justify-center gap-2 rounded-lg text-sm font-semibold ${loading
                                     ? "bg-[#9CA3AF] border-[#9CA3AF] cursor-not-allowed"
                                     : "bg-[#FDCE06] border-[#FDCE06] hover:bg-[#e6b800]"
                                     }`}

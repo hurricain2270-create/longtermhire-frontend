@@ -403,7 +403,7 @@ const QuoteManagement = () => {
               <button
                 onClick={saveTemplate}
                 disabled={saving}
-                className="px-4 py-2 text-sm bg-[#FDCE06] text-[#1F1F20] rounded font-semibold hover:bg-[#E5B800] disabled:opacity-50"
+                className="px-4 py-2 text-sm bg-[#FDCE06] text-[#1F1F20] rounded-lg font-semibold hover:bg-[#E5B800] disabled:opacity-50"
               >
                 {saving ? "Saving..." : "Save template"}
               </button>

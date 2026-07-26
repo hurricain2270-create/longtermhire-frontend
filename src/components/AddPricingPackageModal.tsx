@@ -215,7 +215,7 @@ const AddPricingPackageModal = ({ isOpen, onClose, onSubmit, loading }) => {
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 bg-[#FDCE06] hover:bg-[#E5B800] border-none rounded-[6px] text-[#1F1F20] font-[Inter] font-bold text-[16px] cursor-pointer transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-[#FDCE06] hover:bg-[#E5B800] border-none rounded-lg text-[#1F1F20] font-[Inter] font-bold text-[16px] cursor-pointer transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {loading ? "Creating..." : "Create Package"}
             </button>

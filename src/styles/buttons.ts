@@ -13,7 +13,7 @@
 //   Everything else — bordered, grey, yellow on hover
 
 const base =
-  "rounded font-[Inter] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
+  "rounded-lg font-[Inter] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
 
 const size = {
   xl: "px-7 py-3.5 text-[19px]",

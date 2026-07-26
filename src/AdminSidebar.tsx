@@ -415,7 +415,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
 
             <button
               onClick={handleLogout}
-              className="p-2 ml-2 text-white hover:text-[#FDCE06] hover:bg-[#333333] rounded-md transition-colors"
+              className="p-2 ml-2 text-white hover:text-[#FDCE06] hover:bg-[#333333] rounded-lg transition-colors"
               title="Logout"
             >
               <svg

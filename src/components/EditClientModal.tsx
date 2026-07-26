@@ -308,7 +308,7 @@ const EditClientModal = ({
             <button
               type="submit"
               disabled={loading}
-              className={`h-11 px-8 rounded-md text-[#1F1F20] font-bold text-sm transition-all flex items-center justify-center gap-2 ${loading
+              className={`h-11 px-8 rounded-lg text-[#1F1F20] font-bold text-sm transition-all flex items-center justify-center gap-2 ${loading
                 ? "bg-[#9CA3AF] cursor-not-allowed"
                 : "bg-[#FDCE06] hover:bg-[#E5B800] shadow-lg shadow-[#FDCE06]/10"
                 }`}

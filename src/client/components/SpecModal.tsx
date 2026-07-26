@@ -236,7 +236,7 @@ const SpecModal: React.FC<SpecModalProps> = ({
             <button
               onClick={handleDownloadAll}
               disabled={downloading}
-              className="px-4 py-2 bg-[#FDCE06] text-[#1F1F20] rounded hover:bg-[#E5B800] transition-colors font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-4 py-2 bg-[#FDCE06] text-[#1F1F20] rounded-lg hover:bg-[#E5B800] transition-colors font-bold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {downloading ? (
                 <>

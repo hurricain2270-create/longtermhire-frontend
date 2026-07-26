@@ -339,7 +339,7 @@ const Maintenance = () => {
                 Cancel
               </button>
               <button onClick={save} disabled={busy}
-                className="px-4 py-1.5 rounded bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors">
+                className="px-4 py-1.5 rounded-lg bg-[#FDCE06] text-[#1F1F20] font-[Inter] font-bold text-[14px] hover:bg-[#E5B800] disabled:opacity-50 transition-colors">
                 {busy ? "Saving..." : "Save"}
               </button>
             </div>
