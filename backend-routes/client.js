@@ -1293,6 +1293,26 @@ module.exports = function (app) {
       const { assignmentId } = req.params;
       const startDate = req.body.start_date || new Date().toISOString().slice(0, 10);
       const currentTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+      // A machine can sit in more than one client's catalogue, but it can only
+      // be physically on hire to one of them. Refuse rather than let the same
+      // machine go out twice.
+      const clash = await sdk.rawQuery(
+        'SELECT c.company_name, ce.hire_start_date FROM longtermhire_client_equipment ce ' +
+        'JOIN longtermhire_client c ON c.user_id = ce.client_user_id ' +
+        'WHERE ce.equipment_id = (SELECT equipment_id FROM longtermhire_client_equipment WHERE id = ?) ' +
+        "AND ce.hire_status = 'active' AND ce.id <> ? LIMIT 1",
+        [assignmentId, assignmentId]
+      );
+      if (clash && clash.length > 0) {
+        return res.status(409).json({
+          error: true,
+          message:
+            'That machine is already on hire to ' + clash[0].company_name +
+            '. End that hire first.',
+        });
+      }
+
       await sdk.rawQuery(
         'UPDATE longtermhire_client_equipment SET hire_start_date = ?, hire_status = ?, updated_at = ? WHERE id = ?',
         [startDate, 'active', currentTime, assignmentId]
@@ -1314,6 +1334,26 @@ module.exports = function (app) {
       const { assignmentId } = req.params;
       const startDate = req.body.start_date || new Date().toISOString().slice(0, 10);
       const currentTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+      // A machine can sit in more than one client's catalogue, but it can only
+      // be physically on hire to one of them. Refuse rather than let the same
+      // machine go out twice.
+      const clash = await sdk.rawQuery(
+        'SELECT c.company_name, ce.hire_start_date FROM longtermhire_client_equipment ce ' +
+        'JOIN longtermhire_client c ON c.user_id = ce.client_user_id ' +
+        'WHERE ce.equipment_id = (SELECT equipment_id FROM longtermhire_client_equipment WHERE id = ?) ' +
+        "AND ce.hire_status = 'active' AND ce.id <> ? LIMIT 1",
+        [assignmentId, assignmentId]
+      );
+      if (clash && clash.length > 0) {
+        return res.status(409).json({
+          error: true,
+          message:
+            'That machine is already on hire to ' + clash[0].company_name +
+            '. End that hire first.',
+        });
+      }
+
       await sdk.rawQuery(
         'UPDATE longtermhire_client_equipment SET hire_start_date = ?, hire_status = ?, updated_at = ? WHERE id = ?',
         [startDate, 'active', currentTime, assignmentId]
@@ -1499,6 +1539,25 @@ module.exports = function (app) {
       sdk.setProjectId('longtermhire');
       const { assignmentId } = req.params;
       const currentTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+      // Same rule as starting a hire — the machine may have gone out to someone
+      // else while this one was ended.
+      const clash = await sdk.rawQuery(
+        'SELECT c.company_name FROM longtermhire_client_equipment ce ' +
+        'JOIN longtermhire_client c ON c.user_id = ce.client_user_id ' +
+        'WHERE ce.equipment_id = (SELECT equipment_id FROM longtermhire_client_equipment WHERE id = ?) ' +
+        "AND ce.hire_status = 'active' AND ce.id <> ? LIMIT 1",
+        [assignmentId, assignmentId]
+      );
+      if (clash && clash.length > 0) {
+        return res.status(409).json({
+          error: true,
+          message:
+            'That machine is already on hire to ' + clash[0].company_name +
+            '. End that hire first.',
+        });
+      }
+
       await sdk.rawQuery(
         'UPDATE longtermhire_client_equipment SET hire_end_date = NULL, hire_status = ?, updated_at = ? WHERE id = ?',
         ['active', currentTime, assignmentId]
