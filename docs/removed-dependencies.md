@@ -23,3 +23,27 @@ Each batch was checked two ways before removal: no import statement anywhere in
 | bootstrap | ^5.2.3 | competing CSS framework, app uses Tailwind |
 | react-addons-update | ^15.6.3 | React 15 era, app is on React 18 |
 | moment | ^2.29.4 | deprecated by its own maintainers |
+
+## Batch 2
+
+The whole Uppy file-uploader suite. Uploads in this app go through
+`equipmentApi.uploadFile` to S3; none of this was ever wired in.
+
+| Package | Version | Why it was there |
+|---|---|---|
+| @uppy/core | ^3.7.1 | file uploader suite, never built |
+| @uppy/dashboard | ^3.4.1 | file uploader suite, never built |
+| @uppy/drag-drop | ^3.0.2 | file uploader suite, never built |
+| @uppy/facebook | ^3.1.3 | file uploader suite, never built |
+| @uppy/file-input | ^3.0.3 | file uploader suite, never built |
+| @uppy/golden-retriever | ^3.1.0 | file uploader suite, never built |
+| @uppy/google-drive | ^3.1.1 | file uploader suite, never built |
+| @uppy/image-editor | ^2.1.2 | file uploader suite, never built |
+| @uppy/instagram | ^3.1.3 | file uploader suite, never built |
+| @uppy/onedrive | ^3.1.1 | file uploader suite, never built |
+| @uppy/progress-bar | ^3.0.3 | file uploader suite, never built |
+| @uppy/react | ^3.1.2 | file uploader suite, never built |
+| @uppy/tus | ^3.4.0 | file uploader suite, never built |
+| @uppy/webcam | ^3.3.1 | file uploader suite, never built |
+| @uppy/xhr-upload | ^3.5.0 | file uploader suite, never built |
+| uppy | ^3.20.0 | file uploader suite, never built |
