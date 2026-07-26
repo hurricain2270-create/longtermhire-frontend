@@ -216,6 +216,43 @@ const CompanyDetails = () => {
     }
   };
 
+  const permsOf = (member) => {
+    const raw = member.permissions;
+    try {
+      const list = Array.isArray(raw)
+        ? raw
+        : typeof raw === "string" && raw.trim()
+        ? JSON.parse(raw)
+        : null;
+      if (Array.isArray(list) && list.length) return list;
+    } catch (e) { /* fall through to the preset */ }
+    return PRESETS[member.role] || [];
+  };
+
+  // Tick or untick one area for an existing member, without touching their role.
+  const togglePermission = async (member, key) => {
+    const current = permsOf(member);
+    const next = current.includes(key)
+      ? current.filter((k) => k !== key)
+      : [...current, key];
+    // Show it immediately; put it back if the save fails.
+    setTeamMembers((list) =>
+      list.map((m) => (m.id === member.id ? { ...m, permissions: next } : m))
+    );
+    try {
+      const res = await companyApi.updateTeamMemberRole(id, member.id, {
+        role: member.role,
+        permissions: next,
+      });
+      if (res.error) throw new Error(res.message || "save failed");
+    } catch (e) {
+      setTeamMembers((list) =>
+        list.map((m) => (m.id === member.id ? { ...m, permissions: current } : m))
+      );
+      toast.error("Could not save that change");
+    }
+  };
+
   const handleRoleChange = async (memberId, newRole, currentRole) => {
     // Prevent changing Company Owner role
     if (currentRole === "Company Owner") {
@@ -256,7 +293,9 @@ const CompanyDetails = () => {
         // Update local state
         setTeamMembers(
           teamMembers.map((member) =>
-            member.id === memberId ? { ...member, role: newRole } : member
+            member.id === memberId
+              ? { ...member, role: newRole, permissions: PRESETS[newRole] || [] }
+              : member
           )
         );
         toast.success("Role updated successfully");
@@ -463,6 +502,9 @@ const CompanyDetails = () => {
                   <th className="text-[#9CA3AF] font-[Inter] font-bold text-xs text-left px-4 py-3">
                     Role
                   </th>
+                  <th className="text-[#9CA3AF] font-[Inter] font-bold text-xs text-left px-4 py-3">
+                    What they can see
+                  </th>
                   <th className="text-[#9CA3AF] font-[Inter] font-bold text-xs text-center px-4 py-3">
                     Action
                   </th>
@@ -471,7 +513,7 @@ const CompanyDetails = () => {
               <tbody>
                 {teamMembers.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="text-center text-[#9CA3AF] font-[Inter] text-sm px-4 py-8">
+                    <td colSpan={6} className="text-center text-[#9CA3AF] font-[Inter] text-sm px-4 py-8">
                       No team members found. Click "Add Team Member" to add one.
                     </td>
                   </tr>
@@ -511,6 +553,27 @@ const CompanyDetails = () => {
                           <option>Engineer</option>
                           <option>Supervisor</option>
                         </select>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex flex-wrap gap-x-4 gap-y-1.5">
+                          {AREAS.map((a) => {
+                            const on = permsOf(member).includes(a.key);
+                            return (
+                              <label key={a.key}
+                                className="flex items-center gap-2 cursor-pointer select-none">
+                                <input
+                                  type="checkbox"
+                                  checked={on}
+                                  onChange={() => togglePermission(member, a.key)}
+                                  className="w-4 h-4 accent-[#FDCE06]"
+                                />
+                                <span className="text-[#9CA3AF] font-[Inter] text-[13px] whitespace-nowrap">
+                                  {a.label}
+                                </span>
+                              </label>
+                            );
+                          })}
+                        </div>
                       </td>
                       <td className="px-4 py-4">
                         <div className="flex gap-2 items-center justify-center">
