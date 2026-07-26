@@ -15,6 +15,7 @@ const base =
   "rounded font-[Inter] font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
 
 const size = {
+  xl: "px-7 py-3.5 text-[19px]",
   lg: "px-5 py-2.5 text-[16px]",
   md: "px-3 py-1.5 text-[14px]",
   sm: "px-2.5 py-1 text-[12px]",
@@ -35,6 +36,11 @@ export const BTN = {
 
   // Destructive — always red, always dark text, so it reads the same everywhere.
   danger: `${base} ${size.md} bg-[#ef4444] text-[#1F1F20] hover:bg-[#dc2626]`,
+
+  // Extra large, for the machine editor — a screen you work in for a while.
+  primaryXl: `${base} ${size.xl} bg-[#FDCE06] text-[#1F1F20] hover:bg-[#E5B800]`,
+  secondaryXl: `${base} ${size.xl} border border-[#333] text-[#9CA3AF] hover:border-[#FDCE06] hover:text-[#FDCE06]`,
+  dangerXl: `${base} ${size.xl} bg-[#ef4444] text-[#1F1F20] hover:bg-[#dc2626]`,
 
   // Larger, for editing screens where you're working for a while and shouldn't
   // have to aim.

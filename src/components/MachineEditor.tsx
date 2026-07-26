@@ -250,38 +250,38 @@ const MachineEditor = ({
       <div className="flex items-center justify-between gap-3 mb-1">
         <div className="flex items-center gap-3 font-[Inter]">
           <button onClick={onPrev} disabled={index <= 0} aria-label="Previous machine"
-            className="w-12 h-12 rounded-lg border border-[#333] text-[#9CA3AF] text-[26px] leading-none flex items-center justify-center hover:border-[#FDCE06] hover:text-[#FDCE06] disabled:opacity-25 transition-colors">
+            className="w-16 h-16 rounded-lg border border-[#333] text-[#9CA3AF] text-[34px] leading-none flex items-center justify-center hover:border-[#FDCE06] hover:text-[#FDCE06] disabled:opacity-25 transition-colors">
             &#8249;
           </button>
-          <span className="text-[#9CA3AF] text-[16px] min-w-[70px] text-center">
+          <span className="text-[#9CA3AF] text-[19px] min-w-[90px] text-center">
             {index + 1} of {total}
           </span>
           <button onClick={onNext} disabled={index >= total - 1} aria-label="Next machine"
-            className="w-12 h-12 rounded-lg border border-[#333] text-[#9CA3AF] text-[26px] leading-none flex items-center justify-center hover:border-[#FDCE06] hover:text-[#FDCE06] disabled:opacity-25 transition-colors">
+            className="w-16 h-16 rounded-lg border border-[#333] text-[#9CA3AF] text-[34px] leading-none flex items-center justify-center hover:border-[#FDCE06] hover:text-[#FDCE06] disabled:opacity-25 transition-colors">
             &#8250;
           </button>
-          <button onClick={onBack} className={BTN.secondaryLg + " ml-2"}>
+          <button onClick={onBack} className={BTN.secondaryXl + " ml-2"}>
             Back to fleet
           </button>
         </div>
-        <button onClick={save} disabled={saving} className={BTN.primaryLg}>
+        <button onClick={save} disabled={saving} className={BTN.primaryXl}>
           {saving ? "Saving…" : "Save"}
         </button>
       </div>
 
       <div className="flex items-baseline gap-2.5 flex-wrap mb-1">
-        <h2 className="text-[#E5E5E5] font-[Inter] text-[24px] font-semibold">
+        <h2 className="text-[#E5E5E5] font-[Inter] text-[44px] leading-tight font-semibold">
           {form.equipmentName || "Unnamed machine"}
         </h2>
-        <span className="text-[#9CA3AF] font-[Inter] text-[16px]">{form.equipmentId}</span>
+        <span className="text-[#9CA3AF] font-[Inter] text-[22px]">{form.equipmentId}</span>
         {onHire && (
-          <span className="px-2.5 py-0.5 rounded-full bg-[#14352a] text-[#4CAF50] font-[Inter] text-[12px]">
+          <span className="px-3.5 py-1 rounded-full bg-[#14352a] text-[#4CAF50] font-[Inter] text-[16px]">
             On hire
           </span>
         )}
       </div>
 
-      <div className="flex flex-wrap gap-x-5 gap-y-1.5 font-[Inter] text-[15px] pb-4 mb-4 border-b border-[#333]">
+      <div className="flex flex-wrap gap-x-6 gap-y-2 font-[Inter] text-[19px] pb-5 mb-5 border-b border-[#333]">
         {mark(written, written ? "Description" : "No description")}
         {mark(photos.length > 0, photos.length + (photos.length === 1 ? " photo" : " photos"))}
         {mark(specs.length > 0, specs.length > 0 ? specs.length + " spec" : "No spec sheet")}
@@ -361,10 +361,10 @@ const MachineEditor = ({
 
           {shownPhoto && shownPhoto.id !== "legacy" && (
             <div className="flex gap-2 mt-2">
-              <button onClick={() => makeMain(shownPhoto)} className={BTN.secondary}>
+              <button onClick={() => makeMain(shownPhoto)} className={BTN.secondaryLg}>
                 Set as main
               </button>
-              <button onClick={() => dropPhoto(shownPhoto)} className={BTN.danger + " ml-auto"}>
+              <button onClick={() => dropPhoto(shownPhoto)} className={BTN.dangerLg + " ml-auto"}>
                 Remove photo
               </button>
             </div>
