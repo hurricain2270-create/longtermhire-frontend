@@ -71,8 +71,8 @@ const TurnoverGauge = () => {
         Turnover this month
       </div>
 
-      <div className="flex flex-wrap items-center gap-6">
-        <svg width="230" height="150" viewBox="0 0 150 130" role="img"
+      <div className="flex flex-wrap items-center gap-8">
+        <svg width="460" height="300" viewBox="0 0 150 130" role="img"
           aria-label={
             data
               ? `Turnover ${money(data.current)}, ${pct} percent of the best month`
@@ -94,10 +94,10 @@ const TurnoverGauge = () => {
             stroke="#E5E5E5" strokeWidth="3.5" strokeLinecap="round" />
           <circle cx={CX} cy={CY} r="6" fill="#E5E5E5" />
 
-          <text x={CX} y="64" textAnchor="middle" fontSize="24" fontWeight="500" fill="#E5E5E5">
+          <text x={CX} y="62" textAnchor="middle" fontSize="20" fontWeight="500" fill="#E5E5E5">
             {data ? money(data.current) : "—"}
           </text>
-          <text x={CX} y="124" textAnchor="middle" fontSize="11"
+          <text x={CX} y="122" textAnchor="middle" fontSize="9"
             fill={over ? "#7F77DD" : "#6B7280"}>
             {!data
               ? ""
