@@ -1,28 +1,7 @@
 // @ts-nocheck
 import React, { useEffect, useState } from "react";
 import api from "../services/api";
-
-// Dial geometry. 0% sits at the left horizon, 100% at the right horizon, and
-// the last 20% runs below the horizon — so beating your best month is the only
-// state where the needle drops past the line.
-const CX = 75;
-const CY = 80;
-const R = 55;
-const NEEDLE = 45;
-
-const angleFor = (pct) => {
-  const p = Math.max(0, Math.min(120, pct));
-  return p <= 100 ? 180 - p * 1.8 : -(p - 100) * 1.5;
-};
-const pointOn = (radius, deg) => {
-  const rad = (deg * Math.PI) / 180;
-  return [CX + radius * Math.cos(rad), CY - radius * Math.sin(rad)];
-};
-const arc = (fromPct, toPct) => {
-  const [x1, y1] = pointOn(R, angleFor(fromPct));
-  const [x2, y2] = pointOn(R, angleFor(toPct));
-  return `M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${R} ${R} 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`;
-};
+import Gauge from "./Gauge";
 
 const money = (n) =>
   "$" + Math.round(n || 0).toLocaleString("en-AU");
@@ -63,7 +42,6 @@ const TurnoverGauge = () => {
 
   const pct = data ? data.percent : 0;
   const over = pct > 100;
-  const [nx, ny] = pointOn(NEEDLE, angleFor(pct));
 
   return (
     <div className="bg-[#1F1F20] border border-[#333333] rounded-xl p-5">
@@ -72,42 +50,28 @@ const TurnoverGauge = () => {
       </div>
 
       <div className="flex flex-wrap items-center gap-8">
-        <svg width="460" height="300" viewBox="0 0 150 130" role="img"
-          aria-label={
-            data
-              ? `Turnover ${money(data.current)}, ${pct} percent of the best month`
-              : "Loading turnover"
-          }>
-          <line x1="12" y1={CY} x2="138" y2={CY} stroke="#2F2F31" strokeWidth="1" />
-
-          <path d={arc(0, 50)} fill="none" stroke="#d03b3b" strokeWidth="12" />
-          <path d={arc(50, 70)} fill="none" stroke="#eb6834" strokeWidth="12" />
-          <path d={arc(70, 90)} fill="none" stroke="#fab219" strokeWidth="12" />
-          <path d={arc(90, 100)} fill="none" stroke="#0ca30c" strokeWidth="12" />
-          {/* The beyond-target stretch sits grey until it's earned. */}
-          <path d={arc(100, 120)} fill="none" stroke="#2F2F31" strokeWidth="12" />
-          {over && (
-            <path d={arc(100, Math.min(120, pct))} fill="none" stroke="#7F77DD" strokeWidth="12" />
-          )}
-
-          <line x1={CX} y1={CY} x2={nx.toFixed(1)} y2={ny.toFixed(1)}
-            stroke="#E5E5E5" strokeWidth="3.5" strokeLinecap="round" />
-          <circle cx={CX} cy={CY} r="6" fill="#E5E5E5" />
-
-          <text x={CX} y="62" textAnchor="middle" fontSize="20" fontWeight="500" fill="#E5E5E5">
-            {data ? money(data.current) : "—"}
-          </text>
-          <text x={CX} y="122" textAnchor="middle" fontSize="9"
-            fill={over ? "#7F77DD" : "#6B7280"}>
-            {!data
+        <Gauge
+          pct={pct}
+          value={data ? money(data.current) : "—"}
+          caption={
+            !data
               ? ""
               : over
               ? pct - 100 + "% past your best"
               : data.best
               ? pct + "% of your best"
-              : "no history yet"}
-          </text>
-        </svg>
+              : "no history yet"
+          }
+          width={460}
+          height={300}
+          valueSize={20}
+          captionSize={9}
+          ariaLabel={
+            data
+              ? `Turnover ${money(data.current)}, ${pct} percent of the best month`
+              : "Loading turnover"
+          }
+        />
 
         <div className="font-[Inter]">
           <div className="text-[#E5E5E5] text-[15px] font-semibold mb-0.5">

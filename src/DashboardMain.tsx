@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { dashboardApi } from "./services/dashboardApi";
 import { BTN } from "./styles/buttons";
 import TurnoverGauge from "./components/TurnoverGauge";
+import DashboardGauges from "./components/DashboardGauges";
 
 // Skeleton Loading Components
 const StatCardSkeleton = () => (
@@ -137,6 +138,8 @@ function DashboardMain() {
           <div className="mb-6">
             <TurnoverGauge />
           </div>
+
+          <DashboardGauges />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4 sm:gap-6">
             {/* Total Companies Card */}
