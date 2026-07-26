@@ -87,7 +87,13 @@ const TermCalculator = ({ equipment = [], userRole = "member" }) => {
                 className="w-full appearance-none bg-[#292A2B] border border-[#3A3A3C] rounded-xl pl-5 pr-12 py-4 text-[#E5E5E5] text-[16px] font-medium outline-none focus:border-[#FDCE06] hover:border-[#4A4A4C] transition-colors cursor-pointer"
               >
                 {items.map((e) => (
-                  <option key={e.id ?? e.equipment_id} value={e.id ?? e.equipment_id}>
+                  <option
+                    key={e.id ?? e.equipment_id}
+                    value={e.id ?? e.equipment_id}
+                    // The open list is drawn by the OS on a light background,
+                    // so the field's pale text would be invisible in it.
+                    style={{ color: "#1F1F20", backgroundColor: "#FFFFFF" }}
+                  >
                     {e.equipment_name || e.name || e.equipment_id || "Machine"}
                   </option>
                 ))}
