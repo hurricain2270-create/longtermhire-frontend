@@ -82,7 +82,8 @@ const HeaderTicker = ({ text }: { text: string }) => {
     const el = ref.current;
     pos.current = el.parentElement ? el.parentElement.clientWidth : 0;
     const timer = setInterval(() => {
-      pos.current -= 0.7;
+      // 1.05px per frame — half again as quick as the original 0.7.
+      pos.current -= 1.05;
       if (pos.current < -el.scrollWidth) {
         pos.current = el.parentElement ? el.parentElement.clientWidth : 0;
       }
@@ -119,9 +120,10 @@ const HeaderTicker = ({ text }: { text: string }) => {
           style={{
             display: "inline-block",
             whiteSpace: "nowrap",
-            fontFamily: "'Inter', sans-serif",
+            fontFamily: "'Roboto Condensed', 'Inter', sans-serif",
             fontWeight: 500,
-            fontSize: "21px",
+            fontSize: "22px",
+            letterSpacing: "0.01em",
             // Same colour as this month's sticky note, so the two message
             // elements on the page read as a pair.
             color: stickyColourForNow().top,
