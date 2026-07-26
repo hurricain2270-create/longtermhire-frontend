@@ -292,7 +292,7 @@ function ClientDashboard() {
   // the role's defaults for anyone created before permissions existed.
   const getPermissions = () => {
     const FALLBACK = {
-      "Company Owner": ["plant", "calculator", "hires"],
+      "Company Owner": ["plant", "calculator", "hires", "faults", "onsite"],
       Engineer: ["plant", "calculator", "hires"],
       Supervisor: ["plant", "faults", "onsite"],
     };

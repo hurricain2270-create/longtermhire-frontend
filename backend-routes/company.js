@@ -219,7 +219,7 @@ module.exports = function (app) {
         // be set up the way it really works rather than forced into a template.
         const AREAS = ["plant", "calculator", "hires", "faults", "onsite"];
         const PRESETS = {
-          "Company Owner": ["plant", "calculator", "hires"],
+          "Company Owner": ["plant", "calculator", "hires", "faults", "onsite"],
           Engineer: ["plant", "calculator", "hires"],
           Supervisor: ["plant", "faults", "onsite"],
         };
@@ -663,7 +663,7 @@ module.exports = function (app) {
         // explicitly win; otherwise the new role's preset applies.
         const AREAS = ["plant", "calculator", "hires", "faults", "onsite"];
         const PRESETS = {
-          "Company Owner": ["plant", "calculator", "hires"],
+          "Company Owner": ["plant", "calculator", "hires", "faults", "onsite"],
           Engineer: ["plant", "calculator", "hires"],
           Supervisor: ["plant", "faults", "onsite"],
         };

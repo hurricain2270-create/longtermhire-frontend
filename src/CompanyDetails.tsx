@@ -20,7 +20,7 @@ const AREAS = [
   { key: "onsite", label: "Machines on hire" },
 ];
 const PRESETS = {
-  "Company Owner": ["plant", "calculator", "hires"],
+  "Company Owner": ["plant", "calculator", "hires", "faults", "onsite"],
   Engineer: ["plant", "calculator", "hires"],
   Supervisor: ["plant", "faults", "onsite"],
 };
