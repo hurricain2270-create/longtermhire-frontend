@@ -46,17 +46,23 @@ const state = (e) => {
     };
   }
 
+  // Each track gets its own reading, so a machine with both an hours interval
+  // and a calendar interval shows both — you can see which one is driving the
+  // service and how much room the other has.
+  const tracks = options.map((o) => {
+    const pct = Math.max(0, Math.min(100, Math.round((o.used / o.total) * 100)));
+    const band = o.left < 0 ? "overdue" : o.left <= o.total * 0.1 ? "soon" : "ok";
+    const label =
+      o.left < 0
+        ? "Overdue by " + Math.abs(Math.round(o.left)) + " " + o.unit
+        : "Due in " + Math.round(o.left) + " " + o.unit;
+    return { ...o, pct, band, label };
+  });
+
+  // The one falling due first still decides the row's band and sort order.
   const s = options.sort((a, b) => a.left / a.total - b.left / b.total)[0];
-  const pct = Math.max(0, Math.min(100, Math.round((s.used / s.total) * 100)));
-  if (s.left < 0) {
-    return { band: "overdue", pct: 100,
-      label: "Overdue by " + Math.abs(Math.round(s.left)) + " " + s.unit, sort: s.left };
-  }
-  if (s.left <= s.total * 0.1) {
-    return { band: "soon", pct,
-      label: "Due in " + Math.round(s.left) + " " + s.unit, sort: s.left };
-  }
-  return { band: "ok", pct, label: "Due in " + Math.round(s.left) + " " + s.unit, sort: s.left };
+  const lead = tracks.find((t) => t.unit === s.unit) || tracks[0];
+  return { band: lead.band, pct: lead.pct, label: lead.label, sort: s.left, tracks };
 };
 
 const BANDS = [
@@ -226,14 +232,22 @@ const Maintenance = () => {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        {barColour(r.s.band, r.s.pct) && (
-                          <div className="bg-[#2F2F31] rounded h-1.5 w-full mb-1.5">
-                            <div className="h-1.5 rounded" style={{ width: r.s.pct + "%", background: barColour(r.s.band, r.s.pct) }} />
-                          </div>
+                        {r.s.tracks && r.s.tracks.length ? (
+                          r.s.tracks.map((t) => (
+                            <div key={t.unit} className="mb-2 last:mb-0">
+                              <div className="bg-[#2F2F31] rounded h-1.5 w-full mb-1">
+                                <div className="h-1.5 rounded"
+                                  style={{ width: t.pct + "%", background: barColour(t.band, t.pct) }} />
+                              </div>
+                              <div className="font-[Inter] text-[11.5px]"
+                                style={{ color: barColour(t.band, t.pct) || "#6B7280" }}>
+                                {t.label}
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="font-[Inter] text-[11.5px] text-[#6B7280]">{r.s.label}</div>
                         )}
-                        <div className="font-[Inter] text-[11.5px]" style={{ color: barColour(r.s.band, r.s.pct) || "#6B7280" }}>
-                          {r.s.label}
-                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex gap-2 justify-end">
