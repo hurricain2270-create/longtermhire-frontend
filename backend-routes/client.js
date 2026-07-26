@@ -1325,6 +1325,17 @@ module.exports = function (app) {
         'WHERE id = (SELECT equipment_id FROM longtermhire_client_equipment WHERE id = ?)',
         [assignmentId]
       );
+
+      // Pencil in when it's due back: hire start plus the minimum term. Only
+      // if nothing is set — a date entered by hand, or for a maintenance
+      // period, must not be overwritten.
+      await sdk.rawQuery(
+        'UPDATE longtermhire_equipment_item ' +
+        "SET unavailability_due_month = DATE_FORMAT(DATE_ADD(?, INTERVAL COALESCE(NULLIF(minimum_duration,0),3) MONTH), '%M %Y') " +
+        'WHERE id = (SELECT equipment_id FROM longtermhire_client_equipment WHERE id = ?) ' +
+        "AND (unavailability_due_month IS NULL OR unavailability_due_month = '')",
+        [startDate, assignmentId]
+      );
       return res.status(200).json({ error: false, message: 'Hire started', data: { start_date: startDate, status: 'active' } });
     } catch (error) {
       console.error('Start hire error:', error);
@@ -1373,6 +1384,17 @@ module.exports = function (app) {
         'UPDATE longtermhire_equipment_item SET availability = 0 ' +
         'WHERE id = (SELECT equipment_id FROM longtermhire_client_equipment WHERE id = ?)',
         [assignmentId]
+      );
+
+      // Pencil in when it's due back: hire start plus the minimum term. Only
+      // if nothing is set — a date entered by hand, or for a maintenance
+      // period, must not be overwritten.
+      await sdk.rawQuery(
+        'UPDATE longtermhire_equipment_item ' +
+        "SET unavailability_due_month = DATE_FORMAT(DATE_ADD(?, INTERVAL COALESCE(NULLIF(minimum_duration,0),3) MONTH), '%M %Y') " +
+        'WHERE id = (SELECT equipment_id FROM longtermhire_client_equipment WHERE id = ?) ' +
+        "AND (unavailability_due_month IS NULL OR unavailability_due_month = '')",
+        [startDate, assignmentId]
       );
       return res.status(200).json({ error: false, message: 'Hire started', data: { start_date: startDate, status: 'active' } });
     } catch (error) {
@@ -1509,7 +1531,7 @@ module.exports = function (app) {
       );
       if (!stillOut || stillOut.length === 0) {
         await sdk.rawQuery(
-          'UPDATE longtermhire_equipment_item SET availability = 1 ' +
+          'UPDATE longtermhire_equipment_item SET availability = 1, unavailability_due_month = NULL ' +
           'WHERE id = (SELECT equipment_id FROM longtermhire_client_equipment WHERE id = ?)',
           [assignmentId]
         );
@@ -1597,6 +1619,14 @@ module.exports = function (app) {
       await sdk.rawQuery(
         'UPDATE longtermhire_equipment_item SET availability = 0 ' +
         'WHERE id = (SELECT equipment_id FROM longtermhire_client_equipment WHERE id = ?)',
+        [assignmentId]
+      );
+
+      await sdk.rawQuery(
+        'UPDATE longtermhire_equipment_item ' +
+        "SET unavailability_due_month = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL COALESCE(NULLIF(minimum_duration,0),3) MONTH), '%M %Y') " +
+        'WHERE id = (SELECT equipment_id FROM longtermhire_client_equipment WHERE id = ?) ' +
+        "AND (unavailability_due_month IS NULL OR unavailability_due_month = '')",
         [assignmentId]
       );
       return res.status(200).json({ error: false, message: 'Hire restarted' });
