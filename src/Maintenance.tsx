@@ -33,7 +33,7 @@ const state = (e) => {
   const options = [];
   if (ih && e.current_hours !== null && e.current_hours !== undefined && e.current_hours !== "") {
     const used = parseFloat(e.current_hours) - parseFloat(e.last_service_hours || 0);
-    options.push({ used, total: ih, left: ih - used, unit: "hours" });
+    options.push({ used, total: ih, left: ih - used, unit: "hrs/km" });
   }
   if (im && e.last_service_date) {
     const used = monthsSince(e.last_service_date);
@@ -42,7 +42,7 @@ const state = (e) => {
   if (!options.length) {
     return {
       band: "waiting", pct: 0,
-      label: ih ? "Log hours to start the countdown" : "Set a last service date",
+      label: ih ? "Log a reading to start the countdown" : "Set a last service date",
     };
   }
 
@@ -205,7 +205,7 @@ const Maintenance = () => {
             <tr className="bg-[#1A1A1B] border-b border-[#2A2A2A]">
               <th className="text-left px-4 py-2.5 text-[12px] uppercase tracking-[0.05em] text-[#9CA3AF] font-medium w-[24%]">Machine</th>
               <th className="text-left px-4 py-2.5 text-[12px] uppercase tracking-[0.05em] text-[#9CA3AF] font-medium w-[15%]">Where</th>
-              <th className="text-left px-4 py-2.5 text-[12px] uppercase tracking-[0.05em] text-[#9CA3AF] font-medium w-[14%]">Hours</th>
+              <th className="text-left px-4 py-2.5 text-[12px] uppercase tracking-[0.05em] text-[#9CA3AF] font-medium w-[14%]">Hrs/Km</th>
               <th className="text-left px-4 py-2.5 text-[12px] uppercase tracking-[0.05em] text-[#9CA3AF] font-medium w-[27%]">Next service</th>
               <th className="text-right px-4 py-2.5 w-[20%]"></th>
             </tr>
@@ -314,7 +314,7 @@ const Maintenance = () => {
 
               {modal.mode === "done" && (
                 <>
-                  <Field label="Serviced at (hours)">
+                  <Field label="Serviced at (hrs/km)">
                     <input type="number" className={inputCls} value={form.hours}
                       onChange={(e) => setForm({ ...form, hours: e.target.value })} />
                   </Field>
@@ -331,7 +331,7 @@ const Maintenance = () => {
               {modal.mode === "schedule" && (
                 <>
                   <div className="grid grid-cols-2 gap-4">
-                    <Field label="Every (hours)">
+                    <Field label="Every (hrs/km)">
                       <input type="number" className={inputCls} value={form.service_interval_hours}
                         onChange={(e) => setForm({ ...form, service_interval_hours: e.target.value })} />
                     </Field>
@@ -341,7 +341,7 @@ const Maintenance = () => {
                     </Field>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
-                    <Field label="Last serviced at (hours)">
+                    <Field label="Last serviced at (hrs/km)">
                       <input type="number" className={inputCls} value={form.last_service_hours}
                         onChange={(e) => setForm({ ...form, last_service_hours: e.target.value })} />
                     </Field>

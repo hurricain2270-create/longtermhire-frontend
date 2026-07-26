@@ -37,7 +37,7 @@ const serviceState = (e) => {
   let byHours = null, byMonths = null;
   if (ih && e.current_hours !== null && e.current_hours !== undefined) {
     const since = parseFloat(e.current_hours || 0) - parseFloat(e.last_service_hours || 0);
-    byHours = { used: since, total: ih, left: ih - since, unit: "hours" };
+    byHours = { used: since, total: ih, left: ih - since, unit: "hrs/km" };
   }
   if (im && e.last_service_date) {
     const used = monthsSince(e.last_service_date);
@@ -99,7 +99,7 @@ const ClientSite = ({ userRole = "member" }) => {
       });
       const json = await res.json();
       if (json.error) { toast.error(json.message || "Could not log that reading"); return; }
-      toast.success("Logged " + value + " hours on " + item.equipment_name);
+      toast.success("Logged " + value + " on " + item.equipment_name);
       setDrafts((d) => ({ ...d, [item.equipment_id]: "" }));
       load();
     } catch (e) {
@@ -137,7 +137,7 @@ const ClientSite = ({ userRole = "member" }) => {
           </div>
         </div>
         <div className="bg-[#1F1F20] border border-[#333] rounded-lg px-4 py-3">
-          <div className="text-[#9CA3AF] text-[11px] uppercase tracking-[0.06em] mb-1">Hours logged</div>
+          <div className="text-[#9CA3AF] text-[11px] uppercase tracking-[0.06em] mb-1">Hrs/Km logged</div>
           <div className="text-[#E5E5E5] text-[20px] font-semibold">
             {lastLogged === undefined ? "never" : lastLogged === 0 ? "today" : lastLogged + "d ago"}
           </div>
@@ -191,7 +191,7 @@ const ClientSite = ({ userRole = "member" }) => {
                 </div>
 
                 <div>
-                  <div className="text-[#9CA3AF] text-[11px] uppercase tracking-[0.06em] mb-2">Machine hours</div>
+                  <div className="text-[#9CA3AF] text-[11px] uppercase tracking-[0.06em] mb-2">Machine hrs/km</div>
                   <div className="flex gap-2">
                     <input
                       type="number"
