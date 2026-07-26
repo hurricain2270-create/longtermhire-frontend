@@ -287,6 +287,34 @@ function ClientDashboard() {
   };
 
   // Get user's role from company_roles in localStorage
+  // Which areas of the portal this person can see. Set per member when they
+  // are onboarded; the role is only the preset that fills it in. Falls back to
+  // the role's defaults for anyone created before permissions existed.
+  const getPermissions = () => {
+    const FALLBACK = {
+      "Company Owner": ["plant", "calculator", "hires"],
+      Engineer: ["plant", "calculator", "hires"],
+      Supervisor: ["plant", "faults", "onsite"],
+    };
+    try {
+      const rows = JSON.parse(localStorage.getItem("clientCompanyRoles") || "[]");
+      if (rows && rows.length) {
+        const raw = rows[0].permissions;
+        const list =
+          Array.isArray(raw) ? raw
+          : typeof raw === "string" && raw.trim()
+          ? JSON.parse(raw)
+          : null;
+        if (Array.isArray(list) && list.length) return list;
+        return FALLBACK[rows[0].role] || ["plant"];
+      }
+    } catch (e) {
+      console.error("Could not read portal permissions:", e);
+    }
+    return ["plant"];
+  };
+  const can = (area) => getPermissions().includes(area);
+
   const getUserRole = () => {
     try {
       const companyRoles = JSON.parse(
@@ -1522,19 +1550,21 @@ function ClientDashboard() {
             )}
 
             {/* Faults */}
-            <ClientFaults />
+            {can("faults") && <ClientFaults />}
 
             {/* Machines on hire */}
-            <ClientSite userRole={getUserRole()} />
+            {can("onsite") && <ClientSite userRole={getUserRole()} />}
 
             {/* Term calculator */}
-            <TermCalculator
-              equipment={Object.values(equipmentData || {}).flat()}
-              userRole={getUserRole()}
-            />
+            {can("calculator") && (
+              <TermCalculator
+                equipment={Object.values(equipmentData || {}).flat()}
+                userRole={getUserRole()}
+              />
+            )}
 
             {/* Category Filter */}
-            {allCategories.length > 0 && (
+            {can("plant") && allCategories.length > 0 && (
               <div className="mb-6">
                 <div className="flex items-center gap-3">
                   <span className="text-[#9CA3AF] text-sm font-medium">
@@ -1550,7 +1580,7 @@ function ClientDashboard() {
             )}
 
             {/* Dynamic Equipment Sections */}
-            {Object.keys(equipmentData).length === 0 ? (
+            {can("plant") && (Object.keys(equipmentData).length === 0 ? (
               <section className="mb-12 lg:mb-16">
                 <div className="text-center py-12">
                   <div className="text-[#9CA3AF] text-lg mb-4">
@@ -1587,10 +1617,10 @@ function ClientDashboard() {
                   </div>
                 </section>
               ))
-            )}
+            ))}
 
             {/* Current Hires */}
-            <ClientHires userRole={getUserRole()} />
+            {can("hires") && <ClientHires userRole={getUserRole()} />}
           </div>
         </main>
 
