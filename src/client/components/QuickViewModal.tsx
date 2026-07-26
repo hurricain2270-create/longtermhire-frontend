@@ -385,7 +385,7 @@ const QuickViewModal: React.FC<QuickViewModalProps> = ({
                 <div className="flex items-center gap-2">
                   <span className="text-[#9CA3AF] text-sm">Base Price:</span>
                   <span
-                    className={`text-lg font-bold ${hasDiscount ? "line-through text-[#6B7280]" : "text-[#E5E5E5]"}`}
+                    className={`text-lg font-bold ${hasDiscount ? "line-through decoration-[#ef4444] decoration-2 text-[#6B7280]" : "text-[#E5E5E5]"}`}
                   >
                     {formatCurrency(basePrice)}
                   </span>

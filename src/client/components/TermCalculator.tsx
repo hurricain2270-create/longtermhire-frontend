@@ -174,7 +174,7 @@ const TermCalculator = ({ equipment = [], userRole = "member" }) => {
             <div className="flex gap-8">
               <div>
                 <div className="text-[#6B7280] text-[12px] mb-1">Flat rate</div>
-                <div className="text-[#9CA3AF] text-[17px] font-medium tabular-nums line-through decoration-[#4A4A4C]">
+                <div className="text-[#9CA3AF] text-[17px] font-medium tabular-nums line-through decoration-[#ef4444] decoration-2">
                   {money(calc.flat)}
                 </div>
               </div>

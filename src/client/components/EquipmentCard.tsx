@@ -460,7 +460,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
                 {/* Price Display */}
                 {hasDiscount ? (
                   <div className="flex items-center gap-2 mb-2 flex-wrap">
-                    <span className="text-[#6B7280] text-lg font-bold line-through">
+                    <span className="text-[#6B7280] text-lg font-bold line-through decoration-[#ef4444] decoration-2">
                       {formatCurrency(basePrice)}
                     </span>
                     <span className="text-[#E5E5E5] text-lg font-bold">
