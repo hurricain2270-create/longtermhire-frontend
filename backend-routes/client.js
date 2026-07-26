@@ -1340,6 +1340,97 @@ module.exports = function (app) {
   });
 
 
+  /**
+   * Monthly turnover history, worked out from the hires themselves.
+   * GET /v1/api/longtermhire/super_admin/turnover
+   *
+   * A machine's rate falls each month it stays on site, so the figure for any
+   * given month depends on how long each hire had been running by then. The
+   * maths mirrors the client-side term calculator so the dashboard and the
+   * client portal can never disagree.
+   */
+  app.get('/v1/api/longtermhire/super_admin/turnover', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+
+      const rows = await sdk.rawQuery(
+        'SELECT ce.hire_start_date, ce.hire_end_date, ce.hire_status, ' +
+        'ce.discount, ce.discount_type, ce.compounding_discount, ce.compounding_discount_type, ' +
+        'ce.custom_base_price, e.base_price ' +
+        'FROM longtermhire_client_equipment ce ' +
+        'JOIN longtermhire_equipment_item e ON e.id = ce.equipment_id ' +
+        "WHERE ce.hire_start_date IS NOT NULL AND ce.hire_start_date <> '0000-00-00'",
+        []
+      );
+
+      const monthKey = (d) => d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0');
+      const monthsBetween = (a, b) =>
+        (b.getUTCFullYear() - a.getUTCFullYear()) * 12 + (b.getUTCMonth() - a.getUTCMonth());
+
+      const now = new Date();
+      const thisMonth = monthKey(now);
+      const totals = {};
+
+      (rows || []).forEach((r) => {
+        const start = new Date(r.hire_start_date);
+        if (isNaN(start.getTime())) return;
+
+        // An open hire runs to today; a finished one to its end date.
+        const end = r.hire_end_date ? new Date(r.hire_end_date) : now;
+        const last = isNaN(end.getTime()) || end > now ? now : end;
+
+        const base = parseFloat(r.custom_base_price || r.base_price || 0);
+        if (!base) return;
+        const disc = parseFloat(r.discount || 0);
+        const dType = r.discount_type;
+        const comp = parseFloat(r.compounding_discount || 0);
+        const cType = r.compounding_discount_type;
+
+        let rate = base;
+        if (dType === '%' || dType === 'percentage') rate = rate - (rate * disc) / 100;
+        else if (disc > 0) rate = rate - disc;
+
+        const span = monthsBetween(start, last);
+        for (let i = 0; i <= span; i++) {
+          const d = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + i, 1));
+          const key = monthKey(d);
+          totals[key] = (totals[key] || 0) + Math.max(0, rate);
+          if (comp > 0) {
+            rate = cType === '%' || cType === 'percentage' ? rate - (rate * comp) / 100 : rate - comp;
+          }
+          rate = Math.max(0, rate);
+        }
+      });
+
+      const months = Object.keys(totals).sort().map((k) => ({
+        month: k,
+        total: Math.round(totals[k]),
+      }));
+
+      // The best month sets the top of the dial. Exclude the month in progress
+      // so a part-month can't become the target it is measured against.
+      const past = months.filter((m) => m.month !== thisMonth);
+      const best = past.reduce((a, m) => (m.total > a.total ? m : a), { month: null, total: 0 });
+      const current = totals[thisMonth] ? Math.round(totals[thisMonth]) : 0;
+
+      return res.status(200).json({
+        error: false,
+        data: {
+          current_month: thisMonth,
+          current: current,
+          best_month: best.month,
+          best: best.total,
+          percent: best.total > 0 ? Math.round((current / best.total) * 100) : 0,
+          months: months,
+        },
+      });
+    } catch (error) {
+      console.error('Turnover error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
   // End a hire for a client equipment assignment
   app.post('/v1/api/longtermhire/super_admin/end-hire/:assignmentId', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
     try {
