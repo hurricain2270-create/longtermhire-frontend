@@ -120,7 +120,7 @@ const ClientSite = ({ userRole = "member" }) => {
 
   return (
     <section className="mb-12 lg:mb-16">
-      <h2 className="text-[#D1D5DB] text-xl sm:text-2xl font-semibold mb-2">Your site</h2>
+      <h2 className="text-[#D1D5DB] text-xl sm:text-2xl font-semibold mb-2">Machines on hire</h2>
       <p className="text-[#9CA3AF] text-sm mb-6">
         What's here, when it's next due for service, and where the meters are up to.
       </p>

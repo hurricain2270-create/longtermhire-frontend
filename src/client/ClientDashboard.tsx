@@ -1524,7 +1524,7 @@ function ClientDashboard() {
             {/* Faults */}
             <ClientFaults />
 
-            {/* Your site */}
+            {/* Machines on hire */}
             <ClientSite userRole={getUserRole()} />
 
             {/* Term calculator */}
