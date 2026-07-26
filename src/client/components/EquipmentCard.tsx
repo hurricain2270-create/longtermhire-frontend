@@ -138,23 +138,28 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
     }
 
     if (equipment.unavailability_due_month) {
-      // Try to parse the date
-      let date = new Date(equipment.unavailability_due_month);
+      const raw = String(equipment.unavailability_due_month).trim();
 
-      // If invalid date, use next month instead
-      if (isNaN(date.getTime())) {
-        const nextMonth = new Date();
-        nextMonth.setMonth(nextMonth.getMonth() + 1);
-        date = nextMonth;
+      // The admin stores this as a label like "March 2027". JavaScript can't
+      // parse a month and year without a day, so the old code fell through to
+      // "next month" and quietly showed the wrong date. If it already reads as
+      // a month and year, show it as it was written.
+      if (/^[A-Za-z]+\s+\d{4}$/.test(raw)) {
+        return `Available ${raw}`;
       }
 
-      return `Available ${date.toLocaleDateString("en-US", { month: "long", year: "numeric" })}`;
+      const date = new Date(raw);
+      if (!isNaN(date.getTime())) {
+        return `Available ${date.toLocaleDateString("en-US", { month: "long", year: "numeric" })}`;
+      }
+
+      // Something unreadable — say it's out rather than invent a date.
+      return "Currently unavailable";
     }
 
-    // If no date provided but equipment is unavailable, show next month
-    const nextMonth = new Date();
-    nextMonth.setMonth(nextMonth.getMonth() + 1);
-    return `Available ${nextMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" })}`;
+    // No date set. Inventing "next month" told clients a machine was coming
+    // back when nobody had said any such thing.
+    return "Currently unavailable";
   };
 
   // Get maintenance date string and days until
