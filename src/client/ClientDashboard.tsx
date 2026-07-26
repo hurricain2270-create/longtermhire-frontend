@@ -122,7 +122,9 @@ const HeaderTicker = ({ text }: { text: string }) => {
             fontFamily: "'Inter', sans-serif",
             fontWeight: 500,
             fontSize: "21px",
-            color: "#E5E5E5",
+            // Same colour as this month's sticky note, so the two message
+            // elements on the page read as a pair.
+            color: stickyColourForNow().top,
           }}
         >
           {text}
