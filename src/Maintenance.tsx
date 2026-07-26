@@ -62,7 +62,16 @@ const state = (e) => {
   // The one falling due first still decides the row's band and sort order.
   const s = options.sort((a, b) => a.left / a.total - b.left / b.total)[0];
   const lead = tracks.find((t) => t.unit === s.unit) || tracks[0];
-  return { band: lead.band, pct: lead.pct, label: lead.label, sort: s.left, tracks };
+  // Sort on how much of the interval is left as a proportion, not on raw
+  // units — 200 hours and 2 months aren't comparable numbers, and using them
+  // directly put machines in the wrong order.
+  return {
+    band: lead.band,
+    pct: lead.pct,
+    label: lead.label,
+    sort: s.left / s.total,
+    tracks,
+  };
 };
 
 const BANDS = [
@@ -205,7 +214,7 @@ const Maintenance = () => {
             {BANDS.map((band) => {
               const list = withState
                 .filter((r) => r.s.band === band.key)
-                .sort((a, b) => (a.s.sort ?? 0) - (b.s.sort ?? 0));
+                .sort((a, b) => (a.s.sort ?? 99) - (b.s.sort ?? 99));
               if (!list.length) return null;
               return (
                 <React.Fragment key={band.key}>
