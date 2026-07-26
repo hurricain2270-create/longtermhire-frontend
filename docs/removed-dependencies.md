@@ -47,3 +47,25 @@ The whole Uppy file-uploader suite. Uploads in this app go through
 | @uppy/webcam | ^3.3.1 | file uploader suite, never built |
 | @uppy/xhr-upload | ^3.5.0 | file uploader suite, never built |
 | uppy | ^3.20.0 | file uploader suite, never built |
+
+## Batch 3
+
+Calendars, a third UI library, two code editors and a page builder — all
+template scaffolding.
+
+| Package | Version | Why it was there |
+|---|---|---|
+| @craftjs/core | ^0.2.0-beta.11 | drag-and-drop page builder from the template |
+| @fullcalendar/core | ^5.11.3 | calendar suite, never built |
+| @fullcalendar/daygrid | ^5.11.3 | calendar suite, never built |
+| @fullcalendar/interaction | ^5.11.3 | calendar suite, never built |
+| @fullcalendar/list | ^5.11.3 | calendar suite, never built |
+| @fullcalendar/react | ^5.11.2 | calendar suite, never built |
+| @fullcalendar/timegrid | ^5.11.3 | calendar suite, never built |
+| @mantine/core | ^6.0.19 | third UI library, app uses Tailwind |
+| @mantine/hooks | ^6.0.19 | third UI library, app uses Tailwind |
+| ace-builds | ^1.4.12 | code editor, never built |
+| codemirror | ^5.65.16 | second code editor, never built |
+| fullcalendar | ^5.11.3 | calendar suite, never built |
+| react-ace | ^10.1.0 | code editor, never built |
+| react-codemirror2 | ^7.3.0 | second code editor, never built |
