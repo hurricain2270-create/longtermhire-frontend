@@ -260,7 +260,7 @@ const MachineEditor = ({
             className="w-16 h-16 rounded-lg border border-[#333] text-[#9CA3AF] text-[34px] leading-none flex items-center justify-center hover:border-[#FDCE06] hover:text-[#FDCE06] disabled:opacity-25 transition-colors">
             &#8250;
           </button>
-          <button onClick={onBack} className={BTN.secondaryXl + " ml-2"}>
+          <button onClick={onBack} className={BTN.navXl + " ml-2"}>
             Back to fleet
           </button>
         </div>

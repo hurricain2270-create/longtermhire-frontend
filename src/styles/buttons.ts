@@ -8,6 +8,7 @@
 //   View / primary  — yellow, dark text
 //   Edit            — blue, dark text
 //   Start / go       — green, dark text
+//   Back / navigate  — purple, white text
 //   Delete / danger — red, dark text
 //   Everything else — bordered, grey, yellow on hover
 
@@ -36,6 +37,12 @@ export const BTN = {
 
   // Destructive — always red, always dark text, so it reads the same everywhere.
   danger: `${base} ${size.md} bg-[#ef4444] text-[#1F1F20] hover:bg-[#dc2626]`,
+
+  // Navigate away / step back out — purple with white text, so it reads as
+  // "leave this screen" rather than as an action on the thing you're editing.
+  nav: `${base} ${size.md} bg-[#7C3AED] text-white hover:bg-[#6D28D9]`,
+  navLg: `${base} ${size.lg} bg-[#7C3AED] text-white hover:bg-[#6D28D9]`,
+  navXl: `${base} ${size.xl} bg-[#7C3AED] text-white hover:bg-[#6D28D9]`,
 
   // Extra large, for the machine editor — a screen you work in for a while.
   primaryXl: `${base} ${size.xl} bg-[#FDCE06] text-[#1F1F20] hover:bg-[#E5B800]`,
