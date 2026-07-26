@@ -164,8 +164,10 @@ function ClientDashboard() {
   const [loading, setLoading] = useState(true);
   const [equipment, setEquipment] = useState([]);
   const [error, setError] = useState("");
-  const [isChatOpen, setIsChatOpen] = useState(true);
-  const [isChatVisible, setIsChatVisible] = useState(true);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  // Chat starts closed. A client opens it when they want it rather than
+  // arriving to a panel already taking up the screen.
+  const [isChatVisible, setIsChatVisible] = useState(false);
   const [selectedImages, setSelectedImages] = useState({}); // Track selected image for each equipment
   const [imageObjectFit, setImageObjectFit] = useState({}); // Track object-fit class for each image
   const [isQuickViewOpen, setIsQuickViewOpen] = useState(false);
