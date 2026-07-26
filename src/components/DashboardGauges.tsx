@@ -4,20 +4,9 @@ import Gauge from "./Gauge";
 import api from "../services/api";
 import { clientApi } from "../services/clientApi";
 import { equipmentApi } from "../services/equipmentApi";
-import { contentApi } from "../services/contentApi";
 
 const pctOf = (part, whole) => (whole > 0 ? Math.round((part / whole) * 100) : 0);
 
-const specCount = (raw) => {
-  if (!raw) return 0;
-  if (Array.isArray(raw)) return raw.length;
-  try {
-    const p = JSON.parse(raw);
-    return Array.isArray(p) ? p.length : p ? 1 : 0;
-  } catch (e) {
-    return String(raw).trim() ? 1 : 0;
-  }
-};
 
 const DashboardGauges = () => {
   const [g, setG] = useState({});
@@ -61,39 +50,6 @@ const DashboardGauges = () => {
       }
 
       try {
-        const res = await api.get("/v1/api/longtermhire/super_admin/maintenance");
-        const rows = res?.data?.data || [];
-        const scheduled = rows.filter(
-          (r) => Number(r.service_interval_hours) > 0 || Number(r.service_interval_months) > 0
-        );
-        const overdue = scheduled.filter((r) => {
-          const ih = Number(r.service_interval_hours) || 0;
-          const cur = Number(r.current_hours);
-          const lastH = Number(r.last_service_hours) || 0;
-          if (ih > 0 && !isNaN(cur) && cur - lastH > ih) return true;
-          const im = Number(r.service_interval_months) || 0;
-          if (im > 0 && r.last_service_date) {
-            const d = new Date(r.last_service_date);
-            if (!isNaN(d.getTime())) {
-              const months =
-                (new Date().getFullYear() - d.getFullYear()) * 12 +
-                (new Date().getMonth() - d.getMonth());
-              if (months > im) return true;
-            }
-          }
-          return false;
-        }).length;
-        const pct = scheduled.length ? pctOf(scheduled.length - overdue, scheduled.length) : 100;
-        setG((s) => ({
-          ...s,
-          service: { pct, value: pct + "%",
-                     caption: overdue ? overdue + " overdue" : "all on schedule" },
-        }));
-      } catch (e) {
-        console.error("Servicing gauge:", e);
-      }
-
-      try {
         const res = await clientApi.getClients(1, 200, {});
         const rows = res?.data || [];
         const ready = rows.filter(
@@ -115,44 +71,13 @@ const DashboardGauges = () => {
         console.error("Clients gauge:", e);
       }
 
-      try {
-        const [content, eq] = await Promise.all([
-          contentApi.getContent(1, 200, {}),
-          equipmentApi.getEquipment(1, 200, {}),
-        ]);
-        const rows = content?.data || [];
-        const machines = (eq?.data || []).length;
-        // Described and photographed is what makes a listing usable. Spec
-        // sheets are a bonus — requiring them held every machine at zero.
-        const complete = rows.filter((it) => {
-          const hasDesc = String(it.description || "").trim().length > 0;
-          const hasImg =
-            (Array.isArray(it.images) && it.images.length > 0) || !!it.image_url;
-          return hasDesc && hasImg;
-        }).length;
-        const withSpecs = rows.filter((it) => specCount(it.specs_files) > 0).length;
-        const pct = pctOf(complete, machines);
-        setG((s) => ({
-          ...s,
-          listings: { pct, value: pct + "%",
-                      caption:
-                        (machines - complete
-                          ? machines - complete + " need work"
-                          : "all listed") +
-                        " · " + withSpecs + " with specs" },
-        }));
-      } catch (e) {
-        console.error("Listings gauge:", e);
-      }
     })();
   }, []);
 
   const dials = [
     { key: "fleet", label: "Fleet on hire" },
     { key: "faults", label: "Fault response" },
-    { key: "service", label: "Servicing" },
     { key: "clients", label: "Clients ready" },
-    { key: "listings", label: "Listings" },
   ];
 
   return (
