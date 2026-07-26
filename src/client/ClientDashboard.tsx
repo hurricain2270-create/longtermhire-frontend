@@ -317,7 +317,8 @@ function ClientDashboard() {
     }
     return ["plant"];
   };
-  const can = (area) => getPermissions().includes(area);
+  const [perms, setPerms] = useState(getPermissions);
+  const can = (area) => perms.includes(area);
 
   const getUserRole = () => {
     try {
@@ -438,6 +439,16 @@ function ClientDashboard() {
             data?.client_profile?.client_name ||
             data?.user?.username ||
             null;
+          // Permissions can change while someone is logged in, so take the
+          // server's word for it rather than what login cached.
+          if (Array.isArray(data?.company_roles) && data.company_roles.length) {
+            localStorage.setItem(
+              "clientCompanyRoles",
+              JSON.stringify(data.company_roles)
+            );
+            setPerms(getPermissions());
+          }
+
           const companyName = data?.client_profile?.company_name || null;
           if (realName || companyName)
             setUser((u) => ({

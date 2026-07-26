@@ -367,6 +367,18 @@ module.exports = function (app) {
           console.log("⚠️ No client profile found for user:", req.user_id);
         }
 
+        // Company roles and portal permissions, so a permission change takes
+        // effect on the next page load rather than needing a fresh login.
+        let companyRoles = [];
+        try {
+          companyRoles = await sdk.rawQuery(
+            "SELECT company_id, role, permissions FROM longtermhire_company_member WHERE user_id = ?",
+            [req.user_id]
+          );
+        } catch (error) {
+          console.log("⚠️ Error fetching company roles on profile:", error);
+        }
+
         // Remove password from response
         const { password, ...userProfile } = user;
 
@@ -375,6 +387,7 @@ module.exports = function (app) {
           data: {
             user: userProfile,
             client_profile: clientProfile,
+            company_roles: companyRoles,
           },
         });
       } catch (error) {
