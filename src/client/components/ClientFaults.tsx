@@ -281,14 +281,17 @@ const ClientFaults = () => {
             impossible to miss. The label sits on a solid panel so it stays
             readable over the stripes. */}
         <button onClick={() => setReporting(true)}
-          className="rounded-lg p-[4px] hover:brightness-110 transition-all whitespace-nowrap"
+          className="px-4 py-2.5 rounded-lg font-bold text-sm hover:brightness-110 transition-all whitespace-nowrap"
           style={{
             background:
               "repeating-linear-gradient(45deg, #FDCE06 0px, #FDCE06 10px, #1F1F20 10px, #1F1F20 20px)",
+            color: "#ef4444",
+            // The label crosses both the yellow and the black, so it needs an
+            // outline to stay readable on either.
+            textShadow:
+              "0 0 3px #000, 0 0 3px #000, 0 0 3px #000, 0 1px 2px #000",
           }}>
-          <span className="block px-4 py-2 rounded-md bg-white text-[#dc2626] font-bold text-sm">
-            Report a Fault
-          </span>
+          Report a Fault
         </button>
       </div>
 
