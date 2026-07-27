@@ -144,7 +144,7 @@ module.exports = function (app) {
               req.headers["x-forwarded-for"] ||
               "unknown";
 
-            const emailSubject = `New Client First Login - ${clientName}`;
+            const emailSubject = `New client first login — ${clientName}`;
             const emailHtml = `
               <div style="font-family: 'Inter', Arial, sans-serif; max-width: 640px; margin: 0 auto; padding: 20px; background-color: #292A2B;">
                 <div style="background-color: #1F1F20; padding: 24px; border-radius: 8px; border: 1px solid #333333;">

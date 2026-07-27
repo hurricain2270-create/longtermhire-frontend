@@ -150,7 +150,7 @@ class ChatNotificationService {
 
       if (isFromClient) {
         // Client to Admin email template
-        emailSubject = `New Message from ${
+        emailSubject = `New message from ${
           senderData?.client_name || senderData?.first_name || "Client"
         } ${senderData?.last_name || ""}`;
         htmlContent = `
@@ -231,7 +231,7 @@ class ChatNotificationService {
         `;
       } else {
         // Admin to Client email template
-        emailSubject = "New Message from Long Term Hire Team";
+        emailSubject = "New message from Long Term Hire";
         htmlContent = `
           <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #292A2B;">
             <div style="background-color: #1F1F20; padding: 30px; border-radius: 8px; border: 1px solid #333333; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
