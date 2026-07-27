@@ -508,7 +508,7 @@ const EquipmentManagement = () => {
               Nothing matches those filters.
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-y-4 gap-x-12">
               {visible.map((item) => {
                 const photo = mainPhoto(item);
                 const pc = photosOf(item).length;
