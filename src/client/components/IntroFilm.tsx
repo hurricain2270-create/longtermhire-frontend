@@ -181,8 +181,8 @@ const IntroFilm = ({ onClose }) => {
               <rect x="84" y="194" width="440" height="8" rx="4" fill="#2F2F31" />
               <rect className="rbar2" x="84" y="194" width="0" height="8" rx="4" fill="#4CAF50" />
               <g className="reply" opacity="0">
-                <rect x="300" y="216" width="224" height="22" rx="11" fill="#FDCE06" />
-                <text x="412" y="231" fill="#1F1F20" fontSize="12" textAnchor="middle">Fitter on the way</text>
+                <rect x="330" y="216" width="194" height="22" rx="11" fill="#FDCE06" />
+                <text x="427" y="231" fill="#1F1F20" fontSize="12" textAnchor="middle">Seals on the way</text>
               </g>
             </Panel>
 
