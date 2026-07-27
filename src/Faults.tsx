@@ -248,7 +248,7 @@ const Card = ({
               return (
                 <div key={u.id}>
                   {gap !== null && (
-                    <div className="border-l border-dashed border-[#333] ml-[5px] pl-4 py-1.5 text-[#6B7280] font-[Inter] text-[12px]">
+                    <div className="border-l border-dashed border-[#333] ml-[5px] pl-4 py-1.5 text-[#6B7280] font-[Inter] text-[13px]">
                       <span className="text-[#9CA3AF]">{human(gap)}</span>
                     </div>
                   )}
@@ -256,7 +256,7 @@ const Card = ({
                     <span className="w-2.5 h-2.5 rounded-full mt-1.5 flex-none"
                       style={{ background: u.author_side === "admin" ? "#4CAF50" : "#F59E0B" }} />
                     <div className="flex-1">
-                      <div className="text-[#6B7280] font-[Inter] text-[12px]">
+                      <div className="text-[#6B7280] font-[Inter] text-[13px]">
                         {u.author_side === "admin" ? "You" : u.author_name}
                         {EVENT_LABEL[u.event_type] ? " · " + EVENT_LABEL[u.event_type] : ""}
                         {" · " + stamp(u.created_at)}
