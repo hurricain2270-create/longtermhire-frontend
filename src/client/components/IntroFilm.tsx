@@ -11,7 +11,7 @@ const LINES = [
   "Rates, specifications and quotes, there when you want them. Eleven at night, pricing a job. No phone calls. No waiting.",
   "And when something goes wrong, it is reported from the seat. Photo, machine, what it is doing.",
   "You see it as it happens. The clock starts. We answer in the same place.",
-  "Hours and kilometres come off the machine, so it is serviced on time and stays safe to work.",
+  "Hours or kilometres, whichever it runs on, come off the machine — so it is serviced on time and stays safe to work.",
   "Long Term Hire. The longer you keep it, the more you save.",
 ];
 const DURATIONS = [8000, 9000, 7000, 10000, 8000, 8000, 6000, 4000];
