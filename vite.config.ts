@@ -1,4 +1,3 @@
-import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import { defineConfig, UserConfig } from "vite";
@@ -8,25 +7,12 @@ import { VitePWA, VitePWAOptions } from "vite-plugin-pwa";
 
 const dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const { dependencies } = JSON.parse(
-  fs.readFileSync(path.join(dirname, "package.json"), "utf-8")
-) as { dependencies: Record<string, string> };
-
 const vendorPackages: string[] = [
   "react",
   "react-router-dom",
   "react-router",
   "react-dom",
 ];
-
-function renderChunks(deps: Record<string, string>) {
-  const chunks: Record<string, string[]> = {};
-  Object.keys(deps).forEach((key) => {
-    if (vendorPackages.includes(key)) return;
-    chunks[key] = [key];
-  });
-  return chunks;
-}
 
 export const OUTPUT_DIRECTORY = "dist";
 
@@ -103,9 +89,12 @@ const config: UserConfig = {
     rollupOptions: {
       external: ["fsevents", "@tailwindcss/oxide"],
       output: {
+        // One vendor chunk for React and the router; Rollup splits the rest
+        // sensibly on its own. Giving every dependency its own file meant the
+        // service worker precached over a hundred of them, which is why a
+        // refresh never picked up a new build.
         manualChunks: {
           vendor: vendorPackages,
-          ...renderChunks(dependencies),
         },
       },
     },
