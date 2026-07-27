@@ -11,7 +11,7 @@ const LINES = [
   "Rates, specifications and quotes, there when you want them. Eleven at night, pricing a job. No phone calls. No waiting.",
   "And when something goes wrong, it is reported from the seat. Photo, machine, what it is doing.",
   "You see it as it happens. The clock starts. We answer in the same place.",
-  "Hours or kilometres, whichever it runs on, come off the machine — so it is serviced on time and stays safe to work.",
+  "Hours come off the machine, so it is serviced on time and stays safe to work.",
   "Long Term Hire. The longer you keep it, the more you save.",
 ];
 const DURATIONS = [8000, 9000, 7000, 10000, 8000, 8000, 6000, 4000];
@@ -193,6 +193,7 @@ const IntroFilm = ({ onClose }) => {
               <rect className="sbar" x="70" y="196" width="0" height="12" rx="6" fill="#F59E0B" />
               <line x1="500" y1="182" x2="500" y2="222" stroke="#fff" strokeWidth="3" />
               <text x="500" y="244" fill="#888" fontSize="13" textAnchor="middle">service</text>
+              <text x="155" y="172" fill="#6B7280" fontSize="12" textAnchor="middle">hours</text>
               <path d="M330 120 h110 v66 h-110 z M330 120 l55 -30 l55 30" fill="none" stroke="#3a3a3a" strokeWidth="2" />
             </Panel>
 
