@@ -1420,6 +1420,103 @@ module.exports = function (app) {
 
 
   /**
+   * Prices we have learnt about the market.
+   * GET  /v1/api/longtermhire/super_admin/price-history
+   * POST /v1/api/longtermhire/super_admin/price-history
+   *
+   * Nobody publishes long term dry hire rates, so the only way to know the
+   * market is to write down what we pick up in conversation. Stored against a
+   * category rather than a machine — a price learnt about someone else's bus
+   * still helps price ours.
+   */
+  app.get('/v1/api/longtermhire/super_admin/price-history', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+
+      const rows = await sdk.rawQuery(
+        'SELECT id, category_name, monthly_price, applied_period, applied_date, source, note, created_at ' +
+        'FROM longtermhire_price_history ORDER BY applied_date DESC, id DESC',
+        []
+      );
+
+      // The categories we actually hire out, so the dropdown matches the fleet.
+      const cats = await sdk.rawQuery(
+        'SELECT DISTINCT category_name FROM longtermhire_equipment_item ' +
+        "WHERE category_name IS NOT NULL AND category_name <> '' ORDER BY category_name",
+        []
+      );
+
+      // What we currently ask, per category, to sit beside what we have learnt.
+      const asking = await sdk.rawQuery(
+        'SELECT category_name, AVG(base_price) AS asking FROM longtermhire_equipment_item ' +
+        "WHERE category_name IS NOT NULL AND base_price > 0 GROUP BY category_name",
+        []
+      );
+
+      return res.status(200).json({
+        error: false,
+        data: {
+          prices: rows || [],
+          categories: (cats || []).map((c) => c.category_name),
+          asking: asking || [],
+        },
+      });
+    } catch (error) {
+      console.error('Price history error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  app.post('/v1/api/longtermhire/super_admin/price-history', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+
+      const { category_name, monthly_price, applied_period, source, note } = req.body;
+      if (!category_name || !monthly_price) {
+        return res.status(400).json({ error: true, message: 'A category and a price are needed' });
+      }
+
+      // "2 years ago" is as precise as anyone remembers. Turn the rough period
+      // into a date so it can be sorted and charted, but keep the words too.
+      const MONTHS_BACK = {
+        now: 0, '3 months ago': 3, '6 months ago': 6, 'a year ago': 12,
+        '2 years ago': 24, '3 years ago': 36, 'longer ago': 60,
+      };
+      const back = MONTHS_BACK[applied_period] != null ? MONTHS_BACK[applied_period] : 0;
+      const d = new Date();
+      d.setMonth(d.getMonth() - back);
+      const appliedDate = d.toISOString().slice(0, 10);
+      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+      const result = await sdk.rawQuery(
+        'INSERT INTO longtermhire_price_history ' +
+        '(category_name, monthly_price, applied_period, applied_date, source, note, created_at) ' +
+        'VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [category_name, parseFloat(monthly_price) || 0, applied_period || 'now',
+         appliedDate, source || 'owner told me', note || null, now]
+      );
+
+      return res.status(200).json({ error: false, data: { id: result.insertId } });
+    } catch (error) {
+      console.error('Add price error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  app.delete('/v1/api/longtermhire/super_admin/price-history/:id', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      await sdk.rawQuery('DELETE FROM longtermhire_price_history WHERE id = ?', [req.params.id]);
+      return res.status(200).json({ error: false, message: 'Removed' });
+    } catch (error) {
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  /**
    * Monthly turnover history, worked out from the hires themselves.
    * GET /v1/api/longtermhire/super_admin/turnover
    *

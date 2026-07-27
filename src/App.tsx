@@ -33,6 +33,7 @@ import ClientProfile from "./client/ClientProfile";
 import ForgotPassword from "./client/ForgotPassword";
 import VerifyOTP from "./client/VerifyOTP";
 import ResetPassword from "./client/ResetPassword";
+import PriceHistory from "./PriceHistory";
 
 // Without this, a single error anywhere unmounts the whole app and every page
 // goes blank with nothing on screen to explain it. Now the page that broke says
@@ -218,6 +219,7 @@ function App() {
         />
         <Route path="/contract-setup" element={<PrivateRoute allowedRoles={["super_admin"]}><DashboardLayout><ContractSetup /></DashboardLayout></PrivateRoute>} />
         <Route path="/maintenance" element={<PrivateRoute allowedRoles={["super_admin"]}><DashboardLayout><Maintenance /></DashboardLayout></PrivateRoute>} />
+        <Route path="/price-history" element={<PrivateRoute allowedRoles={["super_admin"]}><DashboardLayout><PriceHistory /></DashboardLayout></PrivateRoute>} />
         <Route path="/faults" element={<PrivateRoute allowedRoles={["super_admin"]}><DashboardLayout><Faults /></DashboardLayout></PrivateRoute>} />
         <Route
           path="/chat"

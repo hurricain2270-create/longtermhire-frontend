@@ -224,6 +224,16 @@ const AdminSidebar = ({ isOpen, onClose }) => {
       ),
     },
     {
+      path: "/price-history",
+      name: "Price History",
+      icon: (
+        <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 1.75V13.25M9.75 4.25H5.625a1.875 1.875 0 0 0 0 3.75h2.75a1.875 1.875 0 0 1 0 3.75H4"
+            stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ),
+    },
+    {
       path: "/chat",
       name: "Chat",
       badge: "chat",
