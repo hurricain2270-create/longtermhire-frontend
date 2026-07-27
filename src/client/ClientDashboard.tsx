@@ -21,6 +21,7 @@ import ClientFaults from "./components/ClientFaults";
 import { calculateMonthlyPrices } from "../utils/pricingCalculator";
 import { BTN } from "../styles/buttons";
 import { clientProfileApi } from "../services/clientProfileApi";
+import IntroFilm from "./components/IntroFilm";
 
 // Add custom CSS for scrollbar hiding and range input styling
 const scrollbarHideStyles = `
@@ -320,6 +321,17 @@ function ClientDashboard() {
     return ["plant"];
   };
   const [perms, setPerms] = useState(getPermissions);
+
+  // The introduction plays once, the first time this person opens the portal.
+  // They have been set up to look around rather than to hire, so it makes the
+  // case rather than explaining the buttons.
+  const [showFilm, setShowFilm] = useState(
+    () => localStorage.getItem("ltIntroSeen") !== "yes"
+  );
+  const dismissFilm = () => {
+    localStorage.setItem("ltIntroSeen", "yes");
+    setShowFilm(false);
+  };
   const can = (area) => perms.includes(area);
 
   const getUserRole = () => {
@@ -1537,6 +1549,12 @@ function ClientDashboard() {
                 {user?.company ? " · " + user.company : ""}
               </span>
               <button
+                onClick={() => setShowFilm(true)}
+                className="text-[#9CA3AF] text-xs sm:text-sm hover:text-[#FDCE06] transition-colors hidden sm:block"
+              >
+                Watch again
+              </button>
+              <button
                 onClick={() => navigate("/client/profile")}
                 className="text-[#E5E5E5] text-xs sm:text-sm hover:text-[#FDCE06] transition-colors"
               >
@@ -1558,6 +1576,8 @@ function ClientDashboard() {
         {/* Main Content */}
         <main className="flex-1 px-4 sm:px-8 lg:px-20 pb-[100px] py-6 lg:py-8 lg:max-w-[866px] xl:max-w-full">
           <div className="max-w-full lg:max-w-[810px]">
+            {showFilm && <IntroFilm onClose={dismissFilm} />}
+
             {/* Header Ad Ticker */}
             {(newsHeadline || companySettings.header_ad_text) && (
               <HeaderTicker text={newsHeadline || (companySettings.header_ad_text || "").replace(/<[^>]*>/g, "")} />
