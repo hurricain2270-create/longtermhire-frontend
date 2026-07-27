@@ -522,8 +522,8 @@ module.exports = function (app) {
 
           const htmlContent = `
             <div style="font-family: 'Inter', Arial, sans-serif; max-width: 640px; margin: 0 auto; padding: 20px; background-color: #292A2B;">
-              <div style="background-color: #1F1F20; padding: 24px; border-radius: 8px; border: 2px solid #E5E7EB;">
-                <h2 style="color: #E5E5E5; margin: 0; font-weight: 500;">📝 New Equipment Request</h2>
+              <div style="background-color: #1F1F20; padding: 24px; border-radius: 8px; border: 1px solid #333333;">
+                <h2 style="color: #E5E5E5; margin: 0; font-weight: 500;">New equipment request</h2>
                 <p style="color: #ADAEBC; margin: 12px 0 0 0;">A client submitted a new equipment request.</p>
                 <div style="background: #292A2B; padding: 16px; border-radius: 6px; margin: 16px 0; border: 1px solid #444444;">
                   <p style="color: #E5E5E5; margin: 0;">
@@ -549,7 +549,7 @@ module.exports = function (app) {
           await mailService.send(
             from,
             to,
-            "📝 New Equipment Request Submitted",
+            "New equipment request",
             htmlContent
           );
 

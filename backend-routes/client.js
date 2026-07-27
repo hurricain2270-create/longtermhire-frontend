@@ -353,7 +353,7 @@ module.exports = function (app) {
           // Create HTML email template
           const htmlContent = `
             <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #292A2B;">
-              <div style="background-color: #1F1F20; padding: 30px; border-radius: 8px; border: 2px solid #E5E7EB; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+              <div style="background-color: #1F1F20; padding: 30px; border-radius: 8px; border: 1px solid #333333; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
                 
                 <!-- Header with Logo -->
                 <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #333333;">
