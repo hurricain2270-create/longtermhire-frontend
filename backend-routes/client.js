@@ -429,7 +429,7 @@ module.exports = function (app) {
             emailResult = await mailService.send(
               config.mail?.from_mail || "noreply@longtermhire.com",
               email,
-              `🎉 Welcome to Long Term Hire - Your Account is Ready!`,
+              `Welcome to Long Term Hire — your account is ready`,
               htmlContent
             );
             const invitedTime = new Date().toISOString().slice(0, 19).replace('T', ' ');
