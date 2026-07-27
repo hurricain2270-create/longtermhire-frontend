@@ -157,7 +157,7 @@ const MachineEditor = ({
       }
       await saveEquipment({ specs_files: JSON.stringify(next) });
       setSpecs(next);
-      toast.success("Spec sheet added");
+      toast.success("Information added");
       onSaved && onSaved();
     } catch (e) {
       console.error("Spec upload failed:", e);
@@ -168,14 +168,14 @@ const MachineEditor = ({
   };
 
   const dropSpec = async (i) => {
-    if (!window.confirm("Remove this spec sheet?")) return;
+    if (!window.confirm("Remove this information?")) return;
     const next = specs.filter((_, k) => k !== i);
     try {
       await saveEquipment({ specs_files: JSON.stringify(next) });
       setSpecs(next);
       onSaved && onSaved();
     } catch (e) {
-      toast.error("Could not remove that spec sheet");
+      toast.error("Could not remove that information");
     }
   };
 
@@ -284,7 +284,7 @@ const MachineEditor = ({
       <div className="flex flex-wrap gap-x-6 gap-y-2 font-[Inter] text-[19px] pb-5 mb-5 border-b border-[#333]">
         {mark(written, written ? "Description" : "No description")}
         {mark(photos.length > 0, photos.length + (photos.length === 1 ? " photo" : " photos"))}
-        {mark(specs.length > 0, specs.length > 0 ? specs.length + " spec" : "No spec sheet")}
+        {mark(specs.length > 0, specs.length > 0 ? specs.length + " info" : "No information")}
         {mark(priced, priced ? "Priced" : "No price")}
       </div>
 
@@ -371,7 +371,7 @@ const MachineEditor = ({
           )}
 
           <div className="text-[#9CA3AF] font-[Inter] text-[14px] uppercase tracking-[0.06em] mt-5 mb-2.5">
-            Spec sheets
+            Information
           </div>
           {specs.map((s, i) => (
             <div key={i}
@@ -387,7 +387,7 @@ const MachineEditor = ({
             </div>
           ))}
           <label className="block border border-dashed border-[#444] rounded-lg py-4 text-center text-[#9CA3AF] font-[Inter] text-[15px] hover:border-[#FDCE06] hover:text-[#FDCE06] cursor-pointer">
-            Add a spec sheet
+            Add information
             <input type="file" accept=".pdf,application/pdf" multiple hidden
               onChange={(e) => { addSpec(e.target.files); e.target.value = ""; }} />
           </label>

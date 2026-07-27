@@ -145,11 +145,11 @@ const ContentDetails = () => {
           ...prev,
           specsFiles: [...(prev.specsFiles || []), response.url],
         }));
-        toast.success("Specs uploaded successfully");
+        toast.success("Information uploaded");
       }
     } catch (error) {
       console.error("Error uploading specs:", error);
-      toast.error("Failed to upload specs");
+      toast.error("Could not upload that information");
     }
   };
 

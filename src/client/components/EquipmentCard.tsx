@@ -587,7 +587,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
               }}
               className="flex-1 px-3 py-2 border-2 border-[#333333] bg-[#2A2A2B] text-[#E5E5E5] text-sm font-semibold hover:bg-[#333333] transition-colors whitespace-nowrap rounded"
             >
-              Spec
+              Info
             </button>
           </div>
         </div>

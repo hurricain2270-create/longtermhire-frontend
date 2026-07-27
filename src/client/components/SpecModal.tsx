@@ -123,7 +123,7 @@ const SpecModal: React.FC<SpecModalProps> = ({
         ? `${equipmentName}_specifications.zip`
         : "specifications.zip";
       saveAs(content, zipName);
-      toast.success("Specifications downloaded successfully!");
+      toast.success("Information downloaded");
     } catch (error) {
       console.error("Error creating zip", error);
       toast.error("Failed to create zip file");
@@ -140,7 +140,7 @@ const SpecModal: React.FC<SpecModalProps> = ({
         {/* Header */}
         <div className="p-6 border-b border-[#333333] flex justify-between items-center">
           <h2 className="text-[#E5E5E5] text-xl font-bold">
-            Specifications: {equipmentName}
+            Information: {equipmentName}
           </h2>
           <button
             onClick={onClose}

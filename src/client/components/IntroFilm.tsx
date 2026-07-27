@@ -149,7 +149,7 @@ const IntroFilm = ({ onClose }) => {
                 <rect x="308" y="184" width="46" height="20" rx="5" fill="#FDCE06" />
                 <text x="331" y="198" fill="#1F1F20" fontSize="10" textAnchor="middle">Request</text>
                 <rect x="360" y="184" width="26" height="20" rx="5" fill="none" stroke="#555" />
-                <text x="373" y="198" fill="#9CA3AF" fontSize="9" textAnchor="middle">Spec</text>
+                <text x="373" y="198" fill="#9CA3AF" fontSize="9" textAnchor="middle">Info</text>
               </g>
             </Panel>
 

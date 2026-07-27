@@ -379,7 +379,7 @@ const ContentManagement = () => {
               act: () => setDescFilter(descFilter === "no" ? "all" : "no") },
             { key: "img", label: "No photos", n: countImg("no"), on: imgFilter === "no",
               act: () => setImgFilter(imgFilter === "no" ? "all" : "no") },
-            { key: "spec", label: "No spec", n: countSpec("no"), on: specFilter === "no",
+            { key: "spec", label: "No information", n: countSpec("no"), on: specFilter === "no",
               act: () => setSpecFilter(specFilter === "no" ? "all" : "no") },
           ].map((o) => (
             <button key={o.key} onClick={o.act} className={CHIP(o.on)}>
@@ -486,7 +486,7 @@ const ContentManagement = () => {
                         {pc} {pc === 1 ? "photo" : "photos"}
                       </span>
                       <span className={sc > 0 ? "text-[#9CA3AF]" : "text-[#F59E0B]"}>
-                        {sc > 0 ? sc + (sc === 1 ? " spec" : " specs") : "No spec"}
+                        {sc > 0 ? sc + " info" : "No information"}
                       </span>
                     </div>
 

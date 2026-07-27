@@ -428,7 +428,7 @@ const EquipmentManagement = () => {
                 { key: "all", label: "All" },
                 { key: "desc", label: "No description" },
                 { key: "photo", label: "No photos" },
-                { key: "spec", label: "No spec" },
+                { key: "spec", label: "No information" },
                 { key: "price", label: "No price" },
               ].map((o) => (
                 <button key={o.key} onClick={() => setGapFilter(o.key)}
@@ -552,7 +552,7 @@ const EquipmentManagement = () => {
                           {pc} {pc === 1 ? "photo" : "photos"}
                         </span>
                         <span className={sc > 0 ? "text-[#9CA3AF]" : "text-[#F59E0B]"}>
-                          {sc > 0 ? sc + (sc === 1 ? " spec" : " specs") : "No spec"}
+                          {sc > 0 ? sc + " info" : "No information"}
                         </span>
                         <span className={item.base_price ? "text-[#9CA3AF]" : "text-[#F59E0B]"}>
                           {item.base_price ? "Priced" : "No price"}
