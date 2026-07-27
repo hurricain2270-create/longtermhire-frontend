@@ -799,27 +799,24 @@ function ClientDashboard() {
           scrollChatToBottom(true);
           setHasUnreadFromPolling(false); // Reset the flag
         }
-        // Check for new admin messages when chat is not visible
-        else if (messages.length > 0) {
-          console.log("📩 Checking for admin message notifications");
+        // A message that arrived while you were looking. Loading the page and
+        // finding an old unread message is not news — that announced itself on
+        // every refresh, and forced the chat open each time.
+        else if (
+          lastMessageCountRef.current > 0 &&
+          messages.length > lastMessageCountRef.current
+        ) {
           const latestMessage = messages[messages.length - 1];
           const currentUserId = getCurrentUserId();
 
-          // If message is from admin (not from current user) and chat is hidden
           if (
             latestMessage.from_user_id !== currentUserId &&
             !isChatVisible &&
             !isChatOpen
           ) {
-            console.log("🔔 Admin message received - auto-opening chat");
-            // Auto-open the chat when new message arrives from admin
-            setIsChatVisible(true);
-
-            // Show notification toast
-            toast.info("New message received! Chat opened automatically.", {
-              position: "top-right",
-              autoClose: 3000,
-            });
+            // Say so, but leave the chat closed — the unread count is on the
+            // button, and opening it uninvited takes over the screen.
+            toast.info("New message from Long Term Hire");
           }
         }
       } else {

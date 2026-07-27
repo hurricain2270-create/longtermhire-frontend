@@ -106,7 +106,9 @@ select option {
 .Toastify__toast--warning { border-left-color: #F59E0B; }
 .Toastify__toast--info { border-left-color: #60A5FA; }
 .Toastify__toast-body { color: #E5E5E5; padding: 8px; }
-.Toastify__toast-icon { display: none; }
+.Toastify__toast-icon,
+.Toastify__toast-body > .Toastify__toast-icon,
+.Toastify__toast > button > svg { display: none; }
 .Toastify__progress-bar { display: none; }
 .Toastify__close-button {
   color: #6B7280;
