@@ -319,9 +319,25 @@ class ChatNotificationService {
       console.log("📧 MailService config:", this.config);
 
       // Send email using correct MailService format (4 parameters)
+      // Notifications to us go wherever we actually read mail. The Zoho
+      // mailbox we send from cannot forward on a free plan, so mail addressed
+      // to it was piling up unread. Clients still see admin@longtermhire.com
+      // as the sender; only the destination changes, and only for our copy.
+      const adminInbox =
+        process.env.ADMIN_NOTIFY_EMAIL ||
+        this.config.mail?.admin_notify ||
+        recipientData.email;
+      const toAddress = isFromClient ? adminInbox : recipientData.email;
+      console.log(
+        `📧 Sending to: ${toAddress}` +
+          (isFromClient && toAddress !== recipientData.email
+            ? ` (redirected from ${recipientData.email})`
+            : "")
+      );
+
       const emailResult = await this.mailService.send(
         this.config.mail?.from_mail || "admin@longtermhire.com", // from
-        recipientData.email, // to
+        toAddress, // to
         emailSubject, // subject
         htmlContent // html
       );
@@ -434,7 +450,7 @@ class ChatNotificationService {
         }
       }
 
-      console.log(`📧 Chat notification sent to: ${recipientData.email}`);
+      console.log(`📧 Chat notification sent to: ${toAddress}`);
       console.log(
         `📧 ✅ EMAIL SENT SUCCESSFULLY - ${
           isFromClient
