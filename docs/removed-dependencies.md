@@ -99,3 +99,41 @@ and quote PDFs use and which stays. `tw-elements` also stays — it is a plugin 
 | slick-carousel | ^1.8.1 | template scaffolding, never imported |
 | swiper | ^9.3.1 | template scaffolding, never imported |
 | xlsx | ^0.18.5 | template scaffolding, never imported |
+
+## Batch 5
+
+The remainder: four icon libraries, two UI kits, an unused form-validation
+stack, react-query, and assorted helpers. Fonts are loaded from the Google
+Fonts link in `index.html`, so the two `@fontsource` packages were doing
+nothing either.
+
+| Package | Version | Why it was there |
+|---|---|---|
+| @fontsource/inter | ^5.0.15 | fonts come from the Google Fonts link in index.html |
+| @fontsource/roboto-mono | ^5.0.16 | fonts come from the Google Fonts link in index.html |
+| @fortawesome/fontawesome-svg-core | ^6.4.0 | icon or UI library, never imported |
+| @fortawesome/free-brands-svg-icons | ^6.4.0 | icon or UI library, never imported |
+| @fortawesome/free-regular-svg-icons | ^6.4.0 | icon or UI library, never imported |
+| @fortawesome/free-solid-svg-icons | ^6.4.0 | icon or UI library, never imported |
+| @fortawesome/react-fontawesome | ^0.2.0 | icon or UI library, never imported |
+| @headlessui/react | ^1.7.14 | UI kit, never imported |
+| @heroicons/react | ^2.0.18 | icon set, never imported |
+| @hookform/resolvers | ^3.1.0 | form validation, never built |
+| @tanstack/react-query | ^5.67.1 | data fetching, app uses axios directly |
+| @tippyjs/react | ^4.2.6 | icon or UI library, never imported |
+| framer-motion | ^10.16.4 | icon or UI library, never imported |
+| lucide-react | ^0.475.0 | icon or UI library, never imported |
+| pluralize | ^8.0.0 | never imported |
+| react-hook-form | ^7.46.1 | form validation, never built |
+| react-icons | ^4.11.0 | icon or UI library, never imported |
+| react-loading-skeleton | ^3.3.1 | icon or UI library, never imported |
+| react-modal | ^3.16.1 | icon or UI library, never imported |
+| react-outside-click-handler | ^1.3.0 | icon or UI library, never imported |
+| react-select | ^5.8.0 | icon or UI library, never imported |
+| react-timeago | ^7.2.0 | icon or UI library, never imported |
+| react-toggle | ^4.1.3 | icon or UI library, never imported |
+| react-tooltip | ^5.25.2 | icon or UI library, never imported |
+| regenerator-runtime | ^0.14.1 | Babel polyfill, not needed with Vite |
+| use-debounce | ^9.0.4 | icon or UI library, never imported |
+| uuid | ^9.0.1 | never imported |
+| yup | ^1.2.0 | form validation, never built |
