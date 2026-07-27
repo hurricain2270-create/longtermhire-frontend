@@ -19,7 +19,7 @@ module.exports = function (app) {
       // Create a simple HTML email template
       const htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #333; text-align: center;">🎉 Equipment Hire Client Invitation</h2>
+          <h2 style="color: #333; text-align: center;">Test email</h2>
           <p>Hello <strong>${testName}</strong>,</p>
           <p>You have been invited to join the Equipment Hire Platform!</p>
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -44,7 +44,7 @@ module.exports = function (app) {
       const result = await mailService.send(
         config.mail?.from_mail || "noreply@equipmenthire.com",
         testEmail,
-        "🎉 Test: Equipment Hire Client Invitation",
+        "Test email from Long Term Hire",
         htmlContent
       );
 
@@ -55,7 +55,7 @@ module.exports = function (app) {
         message: "Test email sent successfully!",
         data: {
           recipient: testEmail,
-          subject: "🎉 Test: Equipment Hire Client Invitation",
+          subject: "Test email from Long Term Hire",
           result: result,
           timestamp: new Date().toISOString(),
         },
@@ -86,7 +86,7 @@ module.exports = function (app) {
       // Create HTML email template
       const htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #333; text-align: center;">🎉 Equipment Hire Client Invitation</h2>
+          <h2 style="color: #333; text-align: center;">Test email</h2>
           <p>Hello <strong>${name}</strong>,</p>
           <p>You have been invited to join the Equipment Hire Platform!</p>
           <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
@@ -111,7 +111,7 @@ module.exports = function (app) {
       const result = await mailService.send(
         config.mail?.from_mail || "noreply@equipmenthire.com",
         email,
-        "🎉 Test: Equipment Hire Client Invitation",
+        "Test email from Long Term Hire",
         htmlContent
       );
 
@@ -124,7 +124,7 @@ module.exports = function (app) {
           recipient: email,
           name: name,
           company: company,
-          subject: "🎉 Test: Equipment Hire Client Invitation",
+          subject: "Test email from Long Term Hire",
           result: result,
           timestamp: new Date().toISOString(),
         },
@@ -156,7 +156,7 @@ module.exports = function (app) {
           <p>Hello!</p>
           <p>This is a test email to verify that the email sending functionality is working correctly.</p>
           <p><strong>Timestamp:</strong> ${new Date().toISOString()}</p>
-          <p>If you received this email, the email service is working properly! 🎉</p>
+          <p>If you received this, the mail service is working.</p>
           <hr>
           <p style="color: #666; font-size: 12px;">
             This is an automated test email from the Equipment Hire Platform.
@@ -168,7 +168,7 @@ module.exports = function (app) {
       const result = await mailService.send(
         config.mail?.from_mail || "noreply@equipmenthire.com",
         testEmail,
-        "🧪 Simple Test Email from Equipment Hire Platform",
+        "Test email from Long Term Hire",
         htmlContent
       );
 
@@ -179,7 +179,7 @@ module.exports = function (app) {
         message: "Simple test email sent successfully!",
         data: {
           recipient: testEmail,
-          subject: "🧪 Simple Test Email from Equipment Hire Platform",
+          subject: "Test email from Long Term Hire",
           result: result,
           timestamp: new Date().toISOString(),
         },
