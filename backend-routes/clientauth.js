@@ -163,11 +163,6 @@ module.exports = function (app) {
                     </p>
                   </div>
 
-                  <div style="background: #1a4d1a; padding: 16px; border-radius: 6px; margin: 16px 0; border: 1px solid #28a745;">
-                    <p style="margin: 0; color: #90EE90;">
-                      <strong>This client has logged in for the first time using the credentials issued to them.</strong>
-                    </p>
-                  </div>
 
                   <p style="color:#ADAEBC; margin: 0;">Please monitor this client's activity in the admin dashboard.</p>
                   <p style="color:#666; font-size:12px; margin-top:16px;">Sent on ${new Date().toLocaleString(
