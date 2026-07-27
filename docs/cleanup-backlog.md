@@ -8,6 +8,23 @@ this version**, then ask for the commit to be reverted.
 
 ## Done
 
+- [x] **B3 — dependencies pruned, 102 down to 13.** Five batches, a build
+      confirmed between each. Every package removed is recorded with its exact
+      version in `docs/removed-dependencies.md`; restoring one is a single
+      `npm install`.
+- [x] **B4 — `renderChunks` removed from `vite.config.ts`.** It forced every
+      dependency into its own bundle, which the PWA plugin then precached —
+      the reason a refresh never picked up a new build. Now one vendor chunk
+      and Rollup's own splitting.
+- [x] **Notifications.** Sixteen `ToastContainer` instances reduced to one at
+      the app root, styled to match the cards. Note for anyone tempted to hide
+      the progress bar in CSS: react-toastify closes a toast when that
+      element's animation ends, so `display: none` leaves toasts on screen
+      forever. Use the container's `hideProgressBar` prop.
+- [x] **Emails.** All six templates in one plain style, no emoji, consistent
+      subject casing: client invitation, team member invitation, both chat
+      notifications, equipment request, first login.
+
 - [x] **Error boundary.** One exception used to unmount the whole app and blank
       every page with nothing on screen to explain it. `App.tsx` now catches it,
       shows the error text, and keeps the rest of the app working. Added after a
