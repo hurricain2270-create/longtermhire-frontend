@@ -4,7 +4,7 @@ import { pricingApi } from "./services/pricingApi";
 import ClipLoader from "react-spinners/ClipLoader";
 import AddPricingPackageModal from "./components/AddPricingPackageModal";
 import EditPricingModal from "./components/EditPricingModal";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { BTN } from "./styles/buttons";
 
@@ -417,19 +417,7 @@ const PricingManagement = () => {
         loading={addLoading}
       />
 
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-      />
-    </div>
+</div>
   );
 };
 

@@ -7,7 +7,7 @@ import { equipmentApi } from "./services/equipmentApi";
 import { contentApi } from "./services/contentApi";
 import api from "./services/api";
 import ClipLoader from "react-spinners/ClipLoader";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router";
 import { BTN } from "./styles/buttons";
@@ -673,19 +673,7 @@ const EquipmentManagement = () => {
         />
 
         {/* Toast Container */}
-        <ToastContainer
-          position="top-right"
-          autoClose={3000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="dark"
-        />
-      </div>
+</div>
     </div>
   );
 };

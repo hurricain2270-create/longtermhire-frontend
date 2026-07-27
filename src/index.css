@@ -85,3 +85,32 @@ select option {
   background-color: #1F1F20;
   color: #E5E5E5;
 }
+
+/* Notifications ------------------------------------------------------------
+   Styled to match the cards rather than react-toastify's defaults: same panel
+   colour and border as everything else, with a coloured left edge carrying the
+   meaning instead of an icon and a progress bar. */
+.Toastify__toast {
+  background-color: #1F1F20;
+  border: 1px solid #333333;
+  border-left: 3px solid #4CAF50;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  color: #E5E5E5;
+  font-family: "Inter", sans-serif;
+  font-size: 14px;
+  min-height: auto;
+  padding: 4px 8px;
+}
+.Toastify__toast--error { border-left-color: #ef4444; }
+.Toastify__toast--warning { border-left-color: #F59E0B; }
+.Toastify__toast--info { border-left-color: #60A5FA; }
+.Toastify__toast-body { color: #E5E5E5; padding: 8px; }
+.Toastify__toast-icon { display: none; }
+.Toastify__progress-bar { display: none; }
+.Toastify__close-button {
+  color: #6B7280;
+  opacity: 1;
+  align-self: center;
+}
+.Toastify__close-button:hover { color: #E5E5E5; }

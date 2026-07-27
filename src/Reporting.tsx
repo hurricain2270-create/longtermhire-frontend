@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect } from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import ClipLoader from "react-spinners/ClipLoader";
 import api from "./services/api";
@@ -296,8 +296,7 @@ const Reporting = () => {
         ))}
       />
 
-      <ToastContainer position="top-right" autoClose={3000} theme="dark" />
-    </div>
+</div>
   );
 };
 

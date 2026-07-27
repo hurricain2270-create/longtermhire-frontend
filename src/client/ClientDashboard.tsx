@@ -9,7 +9,7 @@ import { equipmentApi } from "../services/equipmentApi";
 import { useClientChat } from "../hooks/useClientChat";
 import { useCompanyLogo } from "../hooks/useCompanyLogo";
 import { ClipLoader } from "react-spinners";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import EquipmentCard from "./components/EquipmentCard";
 import QuickViewModal from "./components/QuickViewModal";
@@ -2690,19 +2690,7 @@ function ClientDashboard() {
 
 
       {/* Toast notifications */}
-      <ToastContainer
-        position="top-right"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-      />
-      {/* Quick View Modal */}
+{/* Quick View Modal */}
       <QuickViewModal
         isOpen={isQuickViewOpen}
         onClose={() => setIsQuickViewOpen(false)}

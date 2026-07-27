@@ -5,7 +5,7 @@ import ClipLoader from "react-spinners/ClipLoader";
 import AddContentModal from "./components/AddContentModal";
 import EditContentModal from "./components/EditContentModal";
 import ContentDetailsModal from "./components/ContentDetailsModal";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { isImageUrl } from "./utils/uploadUtils";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -603,19 +603,7 @@ const ContentManagement = () => {
       />
 
       {/* Toast Container */}
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="dark"
-      />
-    </div>
+</div>
   );
 };
 
