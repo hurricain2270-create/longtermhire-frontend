@@ -107,7 +107,9 @@ select option {
 .Toastify__toast--info { border-left-color: #60A5FA !important; }
 .Toastify__toast-body { color: #E5E5E5 !important; padding: 8px; }
 .Toastify__toast-icon { display: none !important; }
-.Toastify__progress-bar { display: none !important; }
+/* Do not hide the progress bar with display:none — react-toastify closes the
+   toast when that element's animation ends, so hiding it this way leaves the
+   toast on screen forever. The container's hideProgressBar prop handles it. */
 .Toastify__close-button {
   color: #6B7280;
   opacity: 1;
