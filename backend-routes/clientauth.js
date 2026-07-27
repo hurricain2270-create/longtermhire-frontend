@@ -148,7 +148,7 @@ module.exports = function (app) {
             const emailHtml = `
               <div style="font-family: 'Inter', Arial, sans-serif; max-width: 640px; margin: 0 auto; padding: 20px; background-color: #292A2B;">
                 <div style="background-color: #1F1F20; padding: 24px; border-radius: 8px; border: 1px solid #333333;">
-                  <h2 style="color: #E5E5E5; margin: 0; font-weight: 500;">🎉 New Client First Login</h2>
+                  <h2 style="color: #E5E5E5; margin: 0; font-weight: 500;">New client first login</h2>
                   <p style="color: #ADAEBC; margin: 12px 0 0 0;">A client has successfully logged in for the first time using their provided credentials.</p>
                   
                   <div style="background: #292A2B; padding: 16px; border-radius: 6px; margin: 16px 0; border: 1px solid #444444;">
@@ -165,7 +165,7 @@ module.exports = function (app) {
 
                   <div style="background: #1a4d1a; padding: 16px; border-radius: 6px; margin: 16px 0; border: 1px solid #28a745;">
                     <p style="margin: 0; color: #90EE90;">
-                      <strong>✅ This client has successfully logged in for the first time using their provided credentials.</strong>
+                      <strong>This client has logged in for the first time using the credentials issued to them.</strong>
                     </p>
                   </div>
 

@@ -496,7 +496,7 @@ module.exports = function (app) {
                 <!-- Footer -->
                 <div style="border-top: 1px solid #333333; padding-top: 20px; margin-top: 30px; text-align: center;">
                   <p style="color: #ADAEBC; font-size: 14px; margin: 0;">
-                    Need assistance? Contact our support team <b>admin@longtermhire.com</b>.<br>
+                    Any questions, contact us at <b>admin@longtermhire.com</b>.<br>
                     <small style="color: #666666;">Invitation sent on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</small>
                   </p>
                 </div>
