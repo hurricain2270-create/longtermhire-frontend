@@ -241,13 +241,16 @@ function App() {
         />
         <Route path="/incoming" element={<Incoming />} />
 
-        {/* Client Portal Routes */}
-        <Route path="/client/login" element={<ClientLogin />} />
+        {/* Client Portal Routes. Each is wrapped so a crash shows the client
+            what went wrong instead of a blank screen — the boundary in
+            DashboardLayout only covers the admin side. */}
+        <Route path="/client/login" element={
+          <PageErrorBoundary><ClientLogin /></PageErrorBoundary>} />
         <Route
           path="/client/dashboard"
           element={
             <ClientPrivateRoute>
-              <ClientDashboard />
+              <PageErrorBoundary><ClientDashboard /></PageErrorBoundary>
             </ClientPrivateRoute>
           }
         />
@@ -255,13 +258,16 @@ function App() {
           path="/client/profile"
           element={
             <ClientPrivateRoute>
-              <ClientProfile />
+              <PageErrorBoundary><ClientProfile /></PageErrorBoundary>
             </ClientPrivateRoute>
           }
         />
-        <Route path="/client/forgot-password" element={<ForgotPassword />} />
-        <Route path="/client/verify-otp" element={<VerifyOTP />} />
-        <Route path="/client/reset-password" element={<ResetPassword />} />
+        <Route path="/client/forgot-password" element={
+          <PageErrorBoundary><ForgotPassword /></PageErrorBoundary>} />
+        <Route path="/client/verify-otp" element={
+          <PageErrorBoundary><VerifyOTP /></PageErrorBoundary>} />
+        <Route path="/client/reset-password" element={
+          <PageErrorBoundary><ResetPassword /></PageErrorBoundary>} />
       </Routes>
 
       {/* Global Toast Container */}
