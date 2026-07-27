@@ -1454,11 +1454,16 @@ module.exports = function (app) {
         []
       );
 
+      // Miscellaneous is not a real category — it is somewhere to put a price
+      // learnt on the phone before there is time to work out where it belongs.
+      const categories = (cats || []).map((c) => c.category_name);
+      categories.push('Miscellaneous');
+
       return res.status(200).json({
         error: false,
         data: {
           prices: rows || [],
-          categories: (cats || []).map((c) => c.category_name),
+          categories: categories,
           asking: asking || [],
         },
       });
@@ -1501,6 +1506,22 @@ module.exports = function (app) {
       return res.status(200).json({ error: false, data: { id: result.insertId } });
     } catch (error) {
       console.error('Add price error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  app.put('/v1/api/longtermhire/super_admin/price-history/:id', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const { category_name, note } = req.body;
+      await sdk.rawQuery(
+        'UPDATE longtermhire_price_history SET category_name = COALESCE(?, category_name), ' +
+        'note = COALESCE(?, note) WHERE id = ?',
+        [category_name || null, note != null ? note : null, req.params.id]
+      );
+      return res.status(200).json({ error: false, message: 'Updated' });
+    } catch (error) {
       return res.status(500).json({ error: true, message: error.message });
     }
   });

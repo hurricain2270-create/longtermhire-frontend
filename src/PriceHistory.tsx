@@ -74,6 +74,18 @@ const PriceHistory = () => {
     }
   };
 
+  // Anything parked in Miscellaneous can be filed properly later, without
+  // retyping it.
+  const reclassify = async (id, category_name) => {
+    try {
+      await api.put("/v1/api/longtermhire/super_admin/price-history/" + id, { category_name });
+      toast.success("Filed under " + category_name);
+      load();
+    } catch (e) {
+      toast.error("Could not move that");
+    }
+  };
+
   const remove = async (id) => {
     if (!window.confirm("Remove this price?")) return;
     try {
@@ -93,7 +105,9 @@ const PriceHistory = () => {
     });
     const askingBy = {};
     (data.asking || []).forEach((a) => { askingBy[a.category_name] = Number(a.asking); });
-    return Object.keys(by).sort().map((cat) => {
+    const order = (a, b) =>
+      a === "Miscellaneous" ? 1 : b === "Miscellaneous" ? -1 : a.localeCompare(b);
+    return Object.keys(by).sort(order).map((cat) => {
       const rows = by[cat];
       const vals = rows.map((r) => Number(r.monthly_price)).filter((n) => n > 0);
       return {
@@ -241,7 +255,9 @@ const PriceHistory = () => {
                 <div>
                   <h3 className="text-[#E5E5E5] font-[Inter] text-[17px] font-semibold">{g.cat}</h3>
                   <p className="text-[#6B7280] font-[Inter] text-[12px] mt-0.5">
-                    {g.rows.length} recorded · {money(g.low)} to {money(g.high)}
+                    {g.cat === "Miscellaneous"
+                      ? g.rows.length + " to file"
+                      : g.rows.length + " recorded · " + money(g.low) + " to " + money(g.high)}
                   </p>
                 </div>
                 <div className="text-right flex-none">
@@ -260,6 +276,18 @@ const PriceHistory = () => {
                       </span>
                       <span className="text-[#6B7280] font-[Inter] text-[12px]"> · {yearOf(r.applied_date)} · {r.source}</span>
                       {r.note ? <p className="text-[#6B7280] font-[Inter] text-[12px] mt-0.5">{r.note}</p> : null}
+                      {g.cat === "Miscellaneous" && (
+                        <select
+                          value=""
+                          onChange={(e) => e.target.value && reclassify(r.id, e.target.value)}
+                          className="mt-1.5 bg-[#292A2B] border border-[#333] rounded-md text-[#9CA3AF] text-[12px] px-2 py-1 outline-none focus:border-[#FDCE06]"
+                        >
+                          <option value="">File under…</option>
+                          {(data.categories || [])
+                            .filter((x) => x !== "Miscellaneous")
+                            .map((x) => <option key={x} value={x}>{x}</option>)}
+                        </select>
+                      )}
                     </div>
                     <button onClick={() => remove(r.id)}
                       className="text-[#6B7280] hover:text-[#ef4444] text-[16px] flex-none">×</button>
