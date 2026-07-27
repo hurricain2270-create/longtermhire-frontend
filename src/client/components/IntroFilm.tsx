@@ -6,7 +6,7 @@ import React, { useEffect, useRef, useState } from "react";
 // hire rather than explaining an interface they have not committed to.
 const LINES = [
   "Hire short term and you pay the top rate every time. Float on, float off, again next month.",
-  "Keep it, and the rate falls. One percent every month it stays on your site, compounding.",
+  "Keep it, and you save more every month. One percent off the rate, compounding, for as long as it stays on your site.",
   "No capital tied up. No maintenance bill. Nothing to sell at the end of it.",
   "Rates, specifications and quotes, there when you want them. Eleven at night, pricing a job. No phone calls. No waiting.",
   "And when something goes wrong, it is reported from the seat. Photo, machine, what it is doing.",
