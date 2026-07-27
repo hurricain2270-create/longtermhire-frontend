@@ -155,20 +155,20 @@ class ChatNotificationService {
         } ${senderData?.last_name || ""}`;
         htmlContent = `
           <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #292A2B;">
-            <div style="background-color: #1F1F20; padding: 30px; border-radius: 8px; border: 2px solid #E5E7EB; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <div style="background-color: #1F1F20; padding: 30px; border-radius: 8px; border: 1px solid #333333; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
 
               <!-- Header with Logo -->
               <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #333333;">
                 <img src="https://longtermhire.com/login-logo.png"
                      alt="Longterm Hire Logo"
                      style="width: 240px; height: 135px; margin-bottom: 15px;">
-                <h1 style="color: #E5E5E5; margin: 0; font-size: 24px; font-weight: 400;">💬 New Client Message</h1>
-                <p style="color: #ADAEBC; margin: 10px 0 0 0; font-size: 16px;">A client has sent you a new message</p>
+                <h1 style="color: #E5E5E5; margin: 0; font-size: 24px; font-weight: 400;">New client message</h1>
+                <p style="color: #ADAEBC; margin: 10px 0 0 0; font-size: 16px;">A client has sent you a message</p>
               </div>
 
               <!-- Message Content -->
               <div style="background: #1C1C1C; padding: 25px; border-radius: 6px; margin: 25px 0; border: 1px solid #444444;">
-                <h3 style="color: #E5E5E5; margin-top: 0; font-size: 18px; font-weight: 400;">Hello Admin!</h3>
+                <h3 style="color: #E5E5E5; margin-top: 0; font-size: 18px; font-weight: 400;">Hello</h3>
                 <p style="color: #ADAEBC; line-height: 1.6; margin: 15px 0;">
                   You have received a new message from a client at <strong>Long Term Hire</strong>.
                 </p>
@@ -207,13 +207,13 @@ class ChatNotificationService {
               <div style="text-align: center; margin: 30px 0;">
                 <a href="https://www.longtermhire.com/login" 
                    style="background: #FDCE06; color: #1F1F20; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block; border: 1px solid #FDCE06;">
-                  🔗 Login to View Message
+                  Read the message
                 </a>
               </div>
 
               <!-- Notice -->
               <div style="background: #1C1C1C; padding: 20px; border-radius: 6px; margin: 25px 0; border: 1px solid #444444; border-left: 4px solid #FDCE06;">
-                <h4 style="color: #FDCE06; margin-top: 0; font-size: 16px; font-weight: 400;">ℹ️ Client Communication</h4>
+                <h4 style="color: #FDCE06; margin-top: 0; font-size: 16px; font-weight: 400;">Client communication</h4>
                 <p style="color: #ADAEBC; margin: 10px 0 0 0; font-size: 14px; line-height: 1.5;">
                   Please respond to this client message promptly. You will receive notifications for all client messages.
                 </p>
@@ -222,7 +222,7 @@ class ChatNotificationService {
               <!-- Footer -->
               <div style="border-top: 1px solid #333333; padding-top: 20px; margin-top: 30px; text-align: center;">
                 <p style="color: #ADAEBC; font-size: 14px; margin: 0;">
-                  Need assistance? Contact our support team.<br>
+                  Any questions, contact us at admin@longtermhire.com.<br>
                   <small style="color: #666666;">Notification sent on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</small>
                 </p>
               </div>
@@ -234,15 +234,15 @@ class ChatNotificationService {
         emailSubject = "New Message from Long Term Hire Team";
         htmlContent = `
           <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #292A2B;">
-            <div style="background-color: #1F1F20; padding: 30px; border-radius: 8px; border: 2px solid #E5E7EB; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+            <div style="background-color: #1F1F20; padding: 30px; border-radius: 8px; border: 1px solid #333333; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
 
               <!-- Header with Logo -->
               <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #333333;">
                 <img src="https://longtermhire.com/login-logo.png"
                      alt="Longterm Hire Logo"
                      style="width: 240px; height: 135px; margin-bottom: 15px;">
-                <h1 style="color: #E5E5E5; margin: 0; font-size: 24px; font-weight: 400;">💬 New Message Available</h1>
-                <p style="color: #ADAEBC; margin: 10px 0 0 0; font-size: 16px;">You have a new message from our team</p>
+                <h1 style="color: #E5E5E5; margin: 0; font-size: 24px; font-weight: 400;">New message</h1>
+                <p style="color: #ADAEBC; margin: 10px 0 0 0; font-size: 16px;">You have a message from Long Term Hire</p>
               </div>
 
               <!-- Message Content -->
@@ -290,13 +290,13 @@ class ChatNotificationService {
               <div style="text-align: center; margin: 30px 0;">
                 <a href="https://www.longtermhire.com/client/login" 
                    style="background: #FDCE06; color: #1F1F20; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block; border: 1px solid #FDCE06;">
-                  🔗 Login to View Message
+                  Read the message
                 </a>
               </div>
 
               <!-- Notice -->
               <div style="background: #1C1C1C; padding: 20px; border-radius: 6px; margin: 25px 0; border: 1px solid #444444; border-left: 4px solid #FDCE06;">
-                <h4 style="color: #FDCE06; margin-top: 0; font-size: 16px; font-weight: 400;">ℹ️ Notification Policy</h4>
+                <h4 style="color: #FDCE06; margin-top: 0; font-size: 16px; font-weight: 400;">About these notifications</h4>
                 <p style="color: #ADAEBC; margin: 10px 0 0 0; font-size: 14px; line-height: 1.5;">
                   To avoid spam, you will only receive one notification per 24 hours. 
                   Please log in to view all your messages and respond.
@@ -306,7 +306,7 @@ class ChatNotificationService {
               <!-- Footer -->
               <div style="border-top: 1px solid #333333; padding-top: 20px; margin-top: 30px; text-align: center;">
                 <p style="color: #ADAEBC; font-size: 14px; margin: 0;">
-                  Need assistance? Contact our support team.<br>
+                  Any questions, contact us at admin@longtermhire.com.<br>
                   <small style="color: #666666;">Notification sent on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</small>
                 </p>
               </div>
