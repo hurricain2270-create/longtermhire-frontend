@@ -461,7 +461,6 @@ module.exports = function (app) {
                   <h3 style="color: #E5E5E5; margin-top: 0; font-size: 20px; font-weight: 400;">Hello ${member_name}</h3>
                   <p style="color: #ADAEBC; line-height: 1.6; margin: 15px 0;">
                     <strong>${company.company_name}</strong> has added you to their account on Long Term Hire as <strong>${role}</strong>. You can view the equipment on hire, report faults and message us from the portal.
-                    You have been assigned the role of <strong>${role}</strong>.
                   </p>
                 </div>
 
