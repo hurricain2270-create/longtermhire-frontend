@@ -324,7 +324,7 @@ const ClientFaults = () => {
                 <div className="mt-4 border-t border-[#2A2A2A] pt-4">
                   {thread.map((u) => (
                     <div key={u.id} className="mb-4 last:mb-0">
-                      <div className="text-[11px] text-[#6B7280] mb-1">
+                      <div className="text-[13px] text-[#6B7280] mb-1">
                         {u.author_side === "admin" ? "Long Term Hire" : u.author_name}
                         {EVENT_LABEL[u.event_type] ? " · " + EVENT_LABEL[u.event_type] : ""}
                         {" · " + stamp(u.created_at)}
