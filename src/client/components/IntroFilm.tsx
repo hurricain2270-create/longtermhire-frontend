@@ -53,6 +53,16 @@ const CSS = `
 @keyframes ltfSb { to { width:420px; } }
 `;
 
+// Defined outside the component on purpose. Declared inside, this would be a
+// new component type on every render, so React would unmount and remount the
+// panels — restarting every animation. The dashboard re-renders often (chat
+// polling, unread counts), which made the slides flicker and repeat.
+const Panel = ({ n, active, children, bg }) => (
+  <div className={"ltf-panel" + (active ? " on" : "")} style={bg ? { background: bg } : undefined}>
+    <svg viewBox="0 0 640 300" style={{ width: "100%", height: "100%" }}>{children}</svg>
+  </div>
+);
+
 const IntroFilm = ({ onClose }) => {
   const [i, setI] = useState(0);
   const timer = useRef(null);
@@ -64,12 +74,6 @@ const IntroFilm = ({ onClose }) => {
     }
     return () => clearTimeout(timer.current);
   }, [i]);
-
-  const P = ({ n, children, bg }) => (
-    <div className={"ltf-panel" + (i === n ? " on" : "")} style={bg ? { background: bg } : undefined}>
-      <svg viewBox="0 0 640 300" style={{ width: "100%", height: "100%" }}>{children}</svg>
-    </div>
-  );
 
   return (
     <div
@@ -87,7 +91,7 @@ const IntroFilm = ({ onClose }) => {
         <div style={{ background: "#111", border: "1px solid #333", borderRadius: "12px", overflow: "hidden" }}>
           <div style={{ position: "relative", aspectRatio: "16/9", background: "#111" }}>
 
-            <P n={0}>
+            <Panel n={0} active={i === 0}>
               <g stroke="#fff" strokeWidth="2" fill="none">
                 <path d="M70 200 h120 v-30 h30 l18 30 h20" /><circle cx="100" cy="212" r="13" /><circle cx="172" cy="212" r="13" />
                 <path d="M120 170 l28 -38 l24 14" />
@@ -99,9 +103,9 @@ const IntroFilm = ({ onClose }) => {
                 <path d="M300 200 h60 M360 200 l-12 -8 M360 200 l-12 8" />
                 <path d="M420 200 h60 M480 200 l-12 -8 M480 200 l-12 8" />
               </g>
-            </P>
+            </Panel>
 
-            <P n={1}>
+            <Panel n={1} active={i === 1}>
               <g stroke="#fff" strokeWidth="2" fill="none">
                 <path d="M60 210 h110 v-28 h28 l16 28 h18" /><circle cx="88" cy="222" r="12" /><circle cx="156" cy="222" r="12" />
               </g>
@@ -114,9 +118,9 @@ const IntroFilm = ({ onClose }) => {
               <text className="lbl1" x="321" y="70" fill="#9CA3AF" fontSize="13" textAnchor="middle" opacity="0">$6,000</text>
               <text className="lbl5" x="553" y="152" fill="#4CAF50" fontSize="13" textAnchor="middle" opacity="0">$5,706</text>
               <text className="pct" x="445" y="272" fill="#4CAF50" fontSize="15" textAnchor="middle" opacity="0">−1% every month</text>
-            </P>
+            </Panel>
 
-            <P n={2}>
+            <Panel n={2} active={i === 2}>
               <g className="fade3" stroke="#fff" strokeWidth="2" fill="none" opacity=".85">
                 <rect x="80" y="130" width="80" height="60" /><path d="M100 130 v-24 h40 v24" />
                 <rect x="200" y="130" width="80" height="60" /><path d="M220 130 v-24 h40 v24" />
@@ -129,9 +133,9 @@ const IntroFilm = ({ onClose }) => {
                 <path d="M450 200 h110 v-28 h28 l16 28 h16" /><circle cx="478" cy="212" r="13" /><circle cx="546" cy="212" r="13" />
                 <path d="M498 172 l28 -36 l24 14" />
               </g>
-            </P>
+            </Panel>
 
-            <P n={3} bg="#080808">
+            <Panel n={3} active={i === 3} bg="#080808">
               <circle cx="560" cy="60" r="22" fill="none" stroke="#444" strokeWidth="2" />
               <g stroke="#3a3a3a" strokeWidth="2" fill="none">
                 <path d="M40 250 h200 M60 250 v-60 h160 v60" /><path d="M88 190 v-34 h104 v34" />
@@ -147,9 +151,9 @@ const IntroFilm = ({ onClose }) => {
                 <rect x="360" y="184" width="26" height="20" rx="5" fill="none" stroke="#555" />
                 <text x="373" y="198" fill="#9CA3AF" fontSize="9" textAnchor="middle">Spec</text>
               </g>
-            </P>
+            </Panel>
 
-            <P n={4}>
+            <Panel n={4} active={i === 4}>
               <g stroke="#fff" strokeWidth="2" fill="none">
                 <path d="M50 210 h100 v-28 h26 l16 28 h16" /><circle cx="76" cy="222" r="12" /><circle cx="140" cy="222" r="12" />
               </g>
@@ -162,9 +166,9 @@ const IntroFilm = ({ onClose }) => {
               <rect className="alert" x="426" y="140" width="80" height="14" rx="3" fill="#ef4444" opacity="0" />
               <line x1="426" y1="172" x2="574" y2="172" stroke="#3a3a3a" strokeWidth="3" />
               <line x1="426" y1="192" x2="520" y2="192" stroke="#3a3a3a" strokeWidth="3" />
-            </P>
+            </Panel>
 
-            <P n={5}>
+            <Panel n={5} active={i === 5}>
               <rect x="60" y="50" width="520" height="200" rx="12" fill="#1F1F20" stroke="#333" strokeWidth="2" />
               <text x="84" y="86" fill="#E5E5E5" fontSize="17">Hydraulic leak on boom</text>
               <text x="84" y="106" fill="#6B7280" fontSize="12">Reported from site · 2 hours ago</text>
@@ -180,9 +184,9 @@ const IntroFilm = ({ onClose }) => {
                 <rect x="300" y="216" width="224" height="22" rx="11" fill="#FDCE06" />
                 <text x="412" y="231" fill="#1F1F20" fontSize="12" textAnchor="middle">Fitter on the way</text>
               </g>
-            </P>
+            </Panel>
 
-            <P n={6}>
+            <Panel n={6} active={i === 6}>
               <rect x="70" y="90" width="170" height="60" rx="6" fill="none" stroke="#fff" strokeWidth="2" />
               <text x="155" y="132" fill="#FDCE06" fontSize="32" textAnchor="middle" fontFamily="monospace">3590</text>
               <rect x="70" y="196" width="500" height="12" rx="6" fill="#2F2F31" />
@@ -190,13 +194,13 @@ const IntroFilm = ({ onClose }) => {
               <line x1="500" y1="182" x2="500" y2="222" stroke="#fff" strokeWidth="3" />
               <text x="500" y="244" fill="#888" fontSize="13" textAnchor="middle">service</text>
               <path d="M330 120 h110 v66 h-110 z M330 120 l55 -30 l55 30" fill="none" stroke="#3a3a3a" strokeWidth="2" />
-            </P>
+            </Panel>
 
-            <P n={7}>
+            <Panel n={7} active={i === 7}>
               <text x="320" y="150" fill="#FDCE06" fontSize="42" textAnchor="middle" fontWeight="700">LONG TERM HIRE</text>
               <line x1="180" y1="176" x2="460" y2="176" stroke="#333" strokeWidth="2" />
               <text x="320" y="206" fill="#9CA3AF" fontSize="15" textAnchor="middle">longtermhire.com</text>
-            </P>
+            </Panel>
 
           </div>
 
