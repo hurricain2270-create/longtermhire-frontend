@@ -450,15 +450,15 @@ module.exports = function (app) {
                 <!-- Header with Logo -->
                 <div style="text-align: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #333333;">
                   <img src="https://longtermhire.com/login-logo.png" 
-                       alt="" 
+                       alt="Long Term Hire" 
                        style="width: 240px; height: 135px; margin-bottom: 15px;">
                   <h1 style="color: #E5E5E5; margin: 0; font-size: 28px; font-weight: 400;">Welcome to Long Term Hire</h1>
-                  <p style="color: #ADAEBC; margin: 10px 0 0 0; font-size: 16px;">You have been invited to join a team!</p>
+                  <p style="color: #ADAEBC; margin: 10px 0 0 0; font-size: 16px;">You have been added to a company account</p>
                 </div>
 
                 <!-- Welcome Message -->
                 <div style="background: #1C1C1C; padding: 25px; border-radius: 6px; margin: 25px 0; border: 1px solid #444444;">
-                  <h3 style="color: #E5E5E5; margin-top: 0; font-size: 20px; font-weight: 400;">👋 Hello ${member_name}!</h3>
+                  <h3 style="color: #E5E5E5; margin-top: 0; font-size: 20px; font-weight: 400;">Hello ${member_name}</h3>
                   <p style="color: #ADAEBC; line-height: 1.6; margin: 15px 0;">
                     You have been invited to your company <strong>${company.company_name
             }</strong> by <strong>Long Term Hire</strong>.
@@ -468,7 +468,7 @@ module.exports = function (app) {
 
                 <!-- Login Credentials -->
                 <div style="background: #1C1C1C; padding: 25px; border-radius: 6px; margin: 25px 0; border: 1px solid #444444;">
-                  <h3 style="color: #E5E5E5; margin-top: 0; font-size: 18px; font-weight: 400;">🔐 Your Login Credentials</h3>
+                  <h3 style="color: #E5E5E5; margin-top: 0; font-size: 18px; font-weight: 400;">Your login details</h3>
                   <table style="width: 100%; border-collapse: collapse;">
                     <tr>
                       <td style="padding: 12px 0; color: #E5E5E5; font-weight: 400; font-size: 14px;">Email:</td>
@@ -489,7 +489,7 @@ module.exports = function (app) {
                 <div style="text-align: center; margin: 30px 0;">
                   <a href="${loginUrl}"
                      style="background: #FDCE06; color: #1F1F20; padding: 15px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block; border: 1px solid #FDCE06;">
-                    🚀 Login to Your Account
+                    Log in
                   </a>
                 </div>
 
