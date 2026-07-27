@@ -91,9 +91,9 @@ select option {
    colour and border as everything else, with a coloured left edge carrying the
    meaning instead of an icon and a progress bar. */
 .Toastify__toast {
-  background-color: #1F1F20;
-  border: 1px solid #333333;
-  border-left: 3px solid #4CAF50;
+  background-color: #1F1F20 !important;
+  border: 1px solid #333333 !important;
+  border-left: 3px solid #4CAF50 !important;
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
   color: #E5E5E5;
@@ -102,14 +102,12 @@ select option {
   min-height: auto;
   padding: 4px 8px;
 }
-.Toastify__toast--error { border-left-color: #ef4444; }
-.Toastify__toast--warning { border-left-color: #F59E0B; }
-.Toastify__toast--info { border-left-color: #60A5FA; }
-.Toastify__toast-body { color: #E5E5E5; padding: 8px; }
-.Toastify__toast-icon,
-.Toastify__toast-body > .Toastify__toast-icon,
-.Toastify__toast > button > svg { display: none; }
-.Toastify__progress-bar { display: none; }
+.Toastify__toast--error { border-left-color: #ef4444 !important; }
+.Toastify__toast--warning { border-left-color: #F59E0B !important; }
+.Toastify__toast--info { border-left-color: #60A5FA !important; }
+.Toastify__toast-body { color: #E5E5E5 !important; padding: 8px; }
+.Toastify__toast-icon { display: none !important; }
+.Toastify__progress-bar { display: none !important; }
 .Toastify__close-button {
   color: #6B7280;
   opacity: 1;

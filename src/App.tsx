@@ -271,7 +271,7 @@ function App() {
         hideProgressBar
         newestOnTop
         closeOnClick
-        pauseOnFocusLoss
+        pauseOnFocusLoss={false}
         pauseOnHover
         draggable
         theme="dark"
