@@ -145,6 +145,18 @@ always on.
 - [ ] Permissions are read at login, so changes need a log out and back in
       before they take effect.
 
+## Client portal
+
+- [ ] **Time gaps in the client fault thread.** The admin thread shows "3 hours
+      later" dividers between messages; the client thread does not. Larry is the
+      one waiting on a reply, so the gaps arguably matter more on his side.
+      `ClientFaults.tsx`, mirroring the `hrs()` / `human()` helpers in
+      `Faults.tsx`.
+- [ ] **Fault resolution notes.** When a fault is closed, record what it turned
+      out to be and what fixed it. Not a form — a sentence. Nothing depends on
+      it today, but it is what any future troubleshooting assistant would learn
+      from, and it costs nothing to start collecting now.
+
 ## From the Equipment / Content merge
 
 - [ ] **Retire Content Management properly.** Now greyed and last in the menu
