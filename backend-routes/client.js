@@ -1420,6 +1420,133 @@ module.exports = function (app) {
 
 
   /**
+   * Suppliers who fix things, and which machines they cover.
+   * GET    /v1/api/longtermhire/super_admin/suppliers
+   * POST   /v1/api/longtermhire/super_admin/suppliers
+   * PUT    /v1/api/longtermhire/super_admin/suppliers/:id
+   * DELETE /v1/api/longtermhire/super_admin/suppliers/:id
+   * POST   /v1/api/longtermhire/super_admin/suppliers/:id/machines
+   */
+  app.get('/v1/api/longtermhire/super_admin/suppliers', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+
+      const suppliers = await sdk.rawQuery(
+        'SELECT * FROM longtermhire_supplier ORDER BY trade, business_name', []
+      );
+      const links = await sdk.rawQuery(
+        'SELECT es.supplier_id, es.equipment_id, e.equipment_id AS plant_code, e.equipment_name ' +
+        'FROM longtermhire_equipment_supplier es ' +
+        'JOIN longtermhire_equipment_item e ON e.id = es.equipment_id', []
+      );
+      // Machines, with whether automatic dispatch is switched on for each.
+      const machines = await sdk.rawQuery(
+        'SELECT id, equipment_id AS plant_code, equipment_name, category_name, ' +
+        'COALESCE(auto_dispatch, 0) AS auto_dispatch FROM longtermhire_equipment_item ' +
+        'ORDER BY equipment_name', []
+      );
+
+      return res.status(200).json({
+        error: false,
+        data: { suppliers: suppliers || [], links: links || [], machines: machines || [] },
+      });
+    } catch (error) {
+      console.error('Suppliers error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  app.post('/v1/api/longtermhire/super_admin/suppliers', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const { trade, business_name, contact_name, mobile, email, area, notes } = req.body;
+      if (!trade || !business_name) {
+        return res.status(400).json({ error: true, message: 'A trade and a business name are needed' });
+      }
+      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      const result = await sdk.rawQuery(
+        'INSERT INTO longtermhire_supplier ' +
+        '(trade, business_name, contact_name, mobile, email, area, notes, created_at, updated_at) ' +
+        'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [trade, business_name, contact_name || null, mobile || null, email || null,
+         area || null, notes || null, now, now]
+      );
+      return res.status(200).json({ error: false, data: { id: result.insertId } });
+    } catch (error) {
+      console.error('Add supplier error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  app.put('/v1/api/longtermhire/super_admin/suppliers/:id', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const { trade, business_name, contact_name, mobile, email, area, notes } = req.body;
+      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      await sdk.rawQuery(
+        'UPDATE longtermhire_supplier SET trade = COALESCE(?, trade), ' +
+        'business_name = COALESCE(?, business_name), contact_name = ?, mobile = ?, ' +
+        'email = ?, area = ?, notes = ?, updated_at = ? WHERE id = ?',
+        [trade || null, business_name || null, contact_name || null, mobile || null,
+         email || null, area || null, notes || null, now, req.params.id]
+      );
+      return res.status(200).json({ error: false, message: 'Saved' });
+    } catch (error) {
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  app.delete('/v1/api/longtermhire/super_admin/suppliers/:id', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      await sdk.rawQuery('DELETE FROM longtermhire_equipment_supplier WHERE supplier_id = ?', [req.params.id]);
+      await sdk.rawQuery('DELETE FROM longtermhire_supplier WHERE id = ?', [req.params.id]);
+      return res.status(200).json({ error: false, message: 'Removed' });
+    } catch (error) {
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  // Which machines this supplier covers. Sent as a full list each time, so a
+  // machine moving to another area is just a re-tick rather than a diff.
+  app.post('/v1/api/longtermhire/super_admin/suppliers/:id/machines', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const ids = Array.isArray(req.body.equipment_ids) ? req.body.equipment_ids : [];
+      await sdk.rawQuery('DELETE FROM longtermhire_equipment_supplier WHERE supplier_id = ?', [req.params.id]);
+      for (const eid of ids) {
+        await sdk.rawQuery(
+          'INSERT INTO longtermhire_equipment_supplier (supplier_id, equipment_id) VALUES (?, ?)',
+          [req.params.id, eid]
+        );
+      }
+      return res.status(200).json({ error: false, message: 'Saved' });
+    } catch (error) {
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  // The go switch, per machine.
+  app.put('/v1/api/longtermhire/super_admin/equipment/:id/auto-dispatch', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      await sdk.rawQuery(
+        'UPDATE longtermhire_equipment_item SET auto_dispatch = ? WHERE id = ?',
+        [req.body.auto_dispatch ? 1 : 0, req.params.id]
+      );
+      return res.status(200).json({ error: false, message: 'Saved' });
+    } catch (error) {
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  /**
    * Prices we have learnt about the market.
    * GET  /v1/api/longtermhire/super_admin/price-history
    * POST /v1/api/longtermhire/super_admin/price-history
