@@ -255,8 +255,8 @@ module.exports = function (app) {
       if (!trade) return res.status(400).json({ error: true, message: "Pick what it is" });
 
       const rows = await sdk.rawQuery(
-        "SELECT f.id, f.title, f.description, f.equipment_id, COALESCE(e.auto_dispatch,0) AS auto_dispatch, " +
-        "e.equipment_id AS plant_code, e.equipment_name, c.company_name, c.site_address " +
+        "SELECT f.*, COALESCE(e.auto_dispatch,0) AS auto_dispatch, " +
+        "e.equipment_id AS plant_code, e.equipment_name, c.company_name " +
         "FROM longtermhire_fault f " +
         "JOIN longtermhire_equipment_item e ON e.id = f.equipment_id " +
         "LEFT JOIN longtermhire_client c ON c.user_id = f.client_user_id " +
