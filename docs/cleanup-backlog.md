@@ -145,6 +145,22 @@ always on.
 - [ ] Permissions are read at login, so changes need a log out and back in
       before they take effect.
 
+## Dashboard
+
+- [ ] **The turnover dial pegs above 120%.** Seen live reading "252% past your
+      best" with the needle at the far end. Anything from 121% upward looks
+      identical. Decide whether the needle pegs and the caption carries the
+      number, or the scale follows an exceptional month. Pegging is probably
+      right — a dial that rescales is hard to read at a glance.
+- [ ] **"252% past your best" reads oddly.** Arithmetically correct. Something
+      like "3.5x your best month" says the same thing more plainly once past
+      roughly 150%.
+- [ ] **The figure sits over the arc.** $24,012 fits at five characters; six
+      will collide with the coloured band. Shrink it or drop it lower.
+- [ ] **Fleet count.** The dial says 6 of 18 while the fleet was 19 machines.
+      Either one was deleted or something is being excluded from the count —
+      worth checking which before the number is trusted.
+
 ## Client portal
 
 - [ ] **Time gaps in the client fault thread.** The admin thread shows "3 hours
