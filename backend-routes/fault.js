@@ -207,6 +207,133 @@ module.exports = function (app) {
     }
   });
 
+  /**
+   * Can this fault be dispatched, and to which trades?
+   * The machine has to have the switch on and at least one supplier against it.
+   * Coverage decides — if nobody covers the machine, the client never sees the
+   * option and goes back to talking to us, which is the old way and is fine.
+   */
+  app.get("/v1/api/longtermhire/client/faults/:id/dispatch-options", TokenMiddleware(), async (req, res) => {
+    try {
+      const sdk = sdkFor();
+      const owner = await ownerFor(sdk, req.user_id);
+      const rows = await sdk.rawQuery(
+        "SELECT f.id, f.equipment_id, COALESCE(e.auto_dispatch,0) AS auto_dispatch " +
+        "FROM longtermhire_fault f " +
+        "JOIN longtermhire_equipment_item e ON e.id = f.equipment_id " +
+        "WHERE f.id = ? AND f.client_user_id = ? LIMIT 1",
+        [req.params.id, owner]
+      );
+      if (!rows || !rows.length) return res.status(404).json({ error: true, message: "Not found" });
+      if (Number(rows[0].auto_dispatch) !== 1) {
+        return res.status(200).json({ error: false, data: { trades: [] } });
+      }
+      const sup = await sdk.rawQuery(
+        "SELECT DISTINCT s.trade FROM longtermhire_equipment_supplier es " +
+        "JOIN longtermhire_supplier s ON s.id = es.supplier_id " +
+        "WHERE es.equipment_id = ? AND s.active = 1 AND s.trade IS NOT NULL ORDER BY s.trade",
+        [rows[0].equipment_id]
+      );
+      return res.status(200).json({
+        error: false,
+        data: { trades: (sup || []).map((r) => r.trade) },
+      });
+    } catch (e) {
+      console.error("Dispatch options error:", e);
+      return res.status(500).json({ error: true, message: e.message });
+    }
+  });
+
+  /**
+   * Send the job to whoever covers that trade on that machine.
+   */
+  app.post("/v1/api/longtermhire/client/faults/:id/dispatch", TokenMiddleware(), async (req, res) => {
+    try {
+      const sdk = sdkFor();
+      const owner = await ownerFor(sdk, req.user_id);
+      const { trade, answers } = req.body;
+      if (!trade) return res.status(400).json({ error: true, message: "Pick what it is" });
+
+      const rows = await sdk.rawQuery(
+        "SELECT f.id, f.title, f.description, f.equipment_id, COALESCE(e.auto_dispatch,0) AS auto_dispatch, " +
+        "e.equipment_id AS plant_code, e.equipment_name, c.company_name, c.site_address " +
+        "FROM longtermhire_fault f " +
+        "JOIN longtermhire_equipment_item e ON e.id = f.equipment_id " +
+        "LEFT JOIN longtermhire_client c ON c.user_id = f.client_user_id " +
+        "WHERE f.id = ? AND f.client_user_id = ? LIMIT 1",
+        [req.params.id, owner]
+      );
+      if (!rows || !rows.length) return res.status(404).json({ error: true, message: "Not found" });
+      const f = rows[0];
+      if (Number(f.auto_dispatch) !== 1) {
+        return res.status(400).json({ error: true, message: "Not set up for this machine" });
+      }
+
+      const sup = await sdk.rawQuery(
+        "SELECT s.* FROM longtermhire_equipment_supplier es " +
+        "JOIN longtermhire_supplier s ON s.id = es.supplier_id " +
+        "WHERE es.equipment_id = ? AND s.trade = ? AND s.active = 1 LIMIT 1",
+        [f.equipment_id, trade]
+      );
+      if (!sup || !sup.length) {
+        return res.status(400).json({ error: true, message: "Nobody covers that on this machine" });
+      }
+      const s = sup[0];
+
+      const reporter = await nameFor(sdk, req.user_id);
+      const lines = Object.keys(answers || {}).map((k) => `<li><b>${k}:</b> ${answers[k]}</li>`).join("");
+
+      const html = `
+        <div style="font-family: Inter, Arial, sans-serif; max-width: 600px; background:#f6f6f6; padding:20px;">
+          <div style="background:#fff; border:1px solid #ddd; border-radius:8px; padding:24px;">
+            <h2 style="margin:0 0 4px; font-size:20px; color:#111;">${trade} — job on site</h2>
+            <p style="margin:0 0 18px; color:#555; font-size:14px;">From Long Term Hire</p>
+            <p style="margin:0 0 6px; font-size:15px; color:#111;"><b>${f.plant_code} ${f.equipment_name}</b></p>
+            <p style="margin:0 0 14px; font-size:14px; color:#333;">${f.title || ""}</p>
+            <ul style="margin:0 0 16px; padding-left:18px; font-size:14px; color:#333;">${lines}</ul>
+            <p style="margin:0 0 4px; font-size:14px; color:#333;"><b>Site:</b> ${f.company_name || ""}</p>
+            <p style="margin:0 0 4px; font-size:14px; color:#333;"><b>On site:</b> ${reporter}</p>
+            <p style="margin:16px 0 0; font-size:13px; color:#777;">
+              Reply to this email or call us on the number you have. Fault reference ${f.id}.
+            </p>
+          </div>
+        </div>`;
+
+      let sent = false;
+      try {
+        const MailService = require("../../../baas/services/MailService");
+        const config = app.get("configuration");
+        const mailService = new MailService(config);
+        if (s.email) {
+          await mailService.send(
+            config.mail?.from_mail || "admin@longtermhire.com",
+            s.email,
+            `${trade} — ${f.plant_code} ${f.equipment_name}`,
+            html
+          );
+          sent = true;
+        }
+      } catch (mailErr) {
+        console.error("Dispatch email failed:", mailErr);
+      }
+
+      // Everything goes in the thread, so it can be watched without asking.
+      const summary =
+        `Sent to ${s.name}${s.contact_name ? " (" + s.contact_name + ")" : ""}` +
+        `${s.phone ? " · " + s.phone : ""}` +
+        (sent ? "" : " — email did not go, ring them");
+      await addEntry(sdk, req.params.id, req.user_id, reporter, "client", "message", summary, null);
+
+      return res.status(200).json({
+        error: false,
+        data: { supplier: s.name, phone: s.phone, sent },
+      });
+    } catch (e) {
+      console.error("Dispatch error:", e);
+      return res.status(500).json({ error: true, message: e.message });
+    }
+  });
+
   // ---------------- admin ----------------
 
   app.get("/v1/api/longtermhire/super_admin/faults", TokenMiddleware(), RoleMiddleware(["super_admin"]), async (req, res) => {

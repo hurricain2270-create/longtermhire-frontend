@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { equipmentApi } from "../../services/equipmentApi";
+import { BTN } from "../../styles/buttons";
 
 const API = "https://api.longtermhire.com";
 
@@ -51,6 +52,20 @@ const stamp = (d) => {
 const EVENT_LABEL = {
   reported: "Reported", acknowledged: "Seen", classified: "Assessed",
   actioned: "Actioned", attended: "On site", resolved: "Back in service",
+};
+
+
+// What a supplier needs before they will turn up. Kept short on purpose — a man
+// standing next to a broken machine will answer three questions, not ten.
+const PLAYBOOK = {
+  Tyres: ["Which tyre", "Tyre size if you can see it", "Where on site"],
+  Hydraulics: ["Which hose or ram", "Is it leaking under load", "Where on site"],
+  "Auto electrical": ["What is not working", "Does it crank", "Where on site"],
+  "Fitter / mechanic": ["What is it doing", "Any warning lights", "Where on site"],
+  "Towing / float": ["Can it be driven", "Where does it need to go", "Where on site"],
+  Glass: ["Which window", "Where on site"],
+  Welding: ["What has broken", "Where on site"],
+  Other: ["What is needed", "Where on site"],
 };
 
 const ClientFaults = () => {
@@ -166,6 +181,49 @@ const ClientFaults = () => {
     setUploading(false);
   };
 
+  // After a fault is raised on a machine set up for it, offer the trades that
+  // machine is actually covered for. Coverage decides — no cover, no offer, and
+  // it goes back to us the old way.
+  const [dispatch, setDispatch] = useState(null); // { faultId, trades, trade, answers }
+  const [dispatching, setDispatching] = useState(false);
+
+  const offerDispatch = async (faultId) => {
+    try {
+      const res = await fetch(
+        API + "/v1/api/longtermhire/client/faults/" + faultId + "/dispatch-options",
+        { headers: { Authorization: "Bearer " + token() } }
+      );
+      const j = await res.json();
+      if (!j.error && j.data?.trades?.length) {
+        setDispatch({ faultId, trades: j.data.trades, trade: null, answers: {} });
+      }
+    } catch (e) {
+      // Nothing to offer is a perfectly normal outcome.
+    }
+  };
+
+  const sendDispatch = async () => {
+    if (!dispatch?.trade) return;
+    setDispatching(true);
+    try {
+      const res = await fetch(
+        API + "/v1/api/longtermhire/client/faults/" + dispatch.faultId + "/dispatch",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: "Bearer " + token() },
+          body: JSON.stringify({ trade: dispatch.trade, answers: dispatch.answers }),
+        }
+      );
+      const j = await res.json();
+      if (j.error) { toast.error(j.message || "Could not send that"); return; }
+      toast.success(j.data?.sent ? j.data.supplier + " has been sent the job" : "Logged — give them a ring");
+      setDispatch(null);
+      load();
+    } catch (e) {
+      toast.error("Could not send that");
+    } finally { setDispatching(false); }
+  };
+
   const submit = async () => {
     if (!form.equipment_id) { toast.error("Which machine?"); return; }
     if (!form.reported_severity) { toast.error("Pick what's happened"); return; }
@@ -180,6 +238,7 @@ const ClientFaults = () => {
       const j = await res.json();
       if (j.error) { toast.error(j.message || "Could not report that"); return; }
       toast.success("Reported — we're on it");
+      if (j.data?.id) offerDispatch(j.data.id);
       setReporting(false);
       setForm({ equipment_id: "", reported_severity: "", title: "" });
       setPhotos([]);
@@ -294,6 +353,68 @@ const ClientFaults = () => {
           Report a Fault
         </button>
       </div>
+
+      {dispatch && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          role="dialog" aria-label="Send this job to a supplier">
+          <div className="bg-[#1F1F20] border border-[#333] rounded-xl p-5 w-full max-w-[420px]">
+            {!dispatch.trade ? (
+              <>
+                <h3 className="text-[#E5E5E5] font-[Inter] text-[19px] font-semibold mb-1">
+                  What is it?
+                </h3>
+                <p className="text-[#9CA3AF] font-[Inter] text-[13px] mb-4">
+                  Pick one and we will get someone out to it.
+                </p>
+                <div className="flex flex-col gap-2 mb-4">
+                  {dispatch.trades.map((t) => (
+                    <button key={t}
+                      onClick={() => setDispatch({ ...dispatch, trade: t })}
+                      className="w-full text-left px-4 py-3 rounded-lg bg-[#292A2B] border border-[#333] text-[#E5E5E5] text-[16px] hover:border-[#FDCE06] transition-colors">
+                      {t}
+                    </button>
+                  ))}
+                </div>
+                {/* Deliberately quieter than the buttons. It should be there when
+                    it is genuinely something else, not the easy way out. */}
+                <button onClick={() => setDispatch(null)}
+                  className="text-[#6B7280] font-[Inter] text-[13px] hover:text-[#9CA3AF]">
+                  It is something else — leave it with Long Term Hire
+                </button>
+              </>
+            ) : (
+              <>
+                <h3 className="text-[#E5E5E5] font-[Inter] text-[19px] font-semibold mb-1">
+                  {dispatch.trade}
+                </h3>
+                <p className="text-[#9CA3AF] font-[Inter] text-[13px] mb-4">
+                  Two or three things so they turn up with the right gear.
+                </p>
+                {(PLAYBOOK[dispatch.trade] || PLAYBOOK.Other).map((q) => (
+                  <div key={q} className="mb-3">
+                    <label className="block text-[#9CA3AF] font-[Inter] text-[13px] mb-1.5">{q}</label>
+                    <input
+                      value={dispatch.answers[q] || ""}
+                      onChange={(e) =>
+                        setDispatch({ ...dispatch, answers: { ...dispatch.answers, [q]: e.target.value } })
+                      }
+                      className="w-full bg-[#292A2B] border border-[#333] rounded-lg text-[#E5E5E5] text-[16px] px-3.5 py-3 outline-none focus:border-[#FDCE06]"
+                    />
+                  </div>
+                ))}
+                <div className="flex gap-2.5 mt-5">
+                  <button onClick={sendDispatch} disabled={dispatching} className={BTN.success + " flex-1"}>
+                    {dispatching ? "Sending…" : "Send it"}
+                  </button>
+                  <button onClick={() => setDispatch({ ...dispatch, trade: null })} className={BTN.secondary}>
+                    Back
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {faults.length > 0 && (
         <div className="space-y-3 mt-5">
