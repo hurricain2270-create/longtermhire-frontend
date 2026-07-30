@@ -1432,11 +1432,14 @@ module.exports = function (app) {
       const sdk = app.get('sdk');
       sdk.setProjectId('longtermhire');
 
+      // Trade comes from supplier_coverage (supplier x trade x region), which
+      // is the designed model — a supplier can cover more than one trade.
       const suppliers = await sdk.rawQuery(
-        'SELECT s.id, s.trade_id, t.name AS trade, s.name AS business_name, s.contact_name, ' +
-        's.phone AS mobile, s.after_hours_phone, s.email, s.notes ' +
+        'SELECT s.id, s.name AS business_name, s.contact_name, s.phone AS mobile, ' +
+        's.after_hours_phone, s.email, s.notes, sc.trade_id, t.name AS trade ' +
         'FROM longtermhire_supplier s ' +
-        'LEFT JOIN longtermhire_trade t ON t.id = s.trade_id ' +
+        'LEFT JOIN longtermhire_supplier_coverage sc ON sc.supplier_id = s.id AND sc.active = 1 ' +
+        'LEFT JOIN longtermhire_trade t ON t.id = sc.trade_id ' +
         'WHERE s.active = 1 ORDER BY t.name, s.name', []
       );
       // The real trade list, rather than anything hardcoded in the app.
@@ -1479,10 +1482,20 @@ module.exports = function (app) {
       }
       const result = await sdk.rawQuery(
         'INSERT INTO longtermhire_supplier ' +
-        '(trade_id, name, contact_name, phone, after_hours_phone, email, notes, active) ' +
-        'VALUES (?, ?, ?, ?, ?, ?, ?, 1)',
-        [trade_id, business_name, contact_name || null, mobile || null,
+        '(name, contact_name, phone, after_hours_phone, email, notes, active) ' +
+        'VALUES (?, ?, ?, ?, ?, ?, 1)',
+        [business_name, contact_name || null, mobile || null,
          after_hours_phone || null, email || null, notes || null]
+      );
+      // Against the default region for now — regions exist but nothing is
+      // assigned to them, so everyone covers "All areas".
+      const region = await sdk.rawQuery(
+        'SELECT id FROM longtermhire_region WHERE is_default = 1 AND active = 1 LIMIT 1', []
+      );
+      await sdk.rawQuery(
+        'INSERT INTO longtermhire_supplier_coverage (supplier_id, trade_id, region_id, priority, active) ' +
+        'VALUES (?, ?, ?, 1, 1)',
+        [result.insertId, trade_id, region && region.length ? region[0].id : 1]
       );
       return res.status(200).json({ error: false, data: { id: result.insertId } });
     } catch (error) {
@@ -1498,12 +1511,24 @@ module.exports = function (app) {
       const { trade_id, business_name, contact_name, mobile, after_hours_phone,
               email, notes } = req.body;
       await sdk.rawQuery(
-        'UPDATE longtermhire_supplier SET trade_id = COALESCE(?, trade_id), ' +
-        'name = COALESCE(?, name), contact_name = ?, phone = ?, after_hours_phone = ?, ' +
-        'email = ?, notes = ? WHERE id = ?',
-        [trade_id || null, business_name || null, contact_name || null, mobile || null,
+        'UPDATE longtermhire_supplier SET name = COALESCE(?, name), contact_name = ?, ' +
+        'phone = ?, after_hours_phone = ?, email = ?, notes = ? WHERE id = ?',
+        [business_name || null, contact_name || null, mobile || null,
          after_hours_phone || null, email || null, notes || null, req.params.id]
       );
+      if (trade_id) {
+        const region = await sdk.rawQuery(
+          'SELECT id FROM longtermhire_region WHERE is_default = 1 AND active = 1 LIMIT 1', []
+        );
+        await sdk.rawQuery(
+          'DELETE FROM longtermhire_supplier_coverage WHERE supplier_id = ?', [req.params.id]
+        );
+        await sdk.rawQuery(
+          'INSERT INTO longtermhire_supplier_coverage (supplier_id, trade_id, region_id, priority, active) ' +
+          'VALUES (?, ?, ?, 1, 1)',
+          [req.params.id, trade_id, region && region.length ? region[0].id : 1]
+        );
+      }
       return res.status(200).json({ error: false, message: 'Saved' });
     } catch (error) {
       return res.status(500).json({ error: true, message: error.message });
@@ -1515,6 +1540,7 @@ module.exports = function (app) {
       const sdk = app.get('sdk');
       sdk.setProjectId('longtermhire');
       await sdk.rawQuery('DELETE FROM longtermhire_equipment_supplier WHERE supplier_id = ?', [req.params.id]);
+      await sdk.rawQuery('DELETE FROM longtermhire_supplier_coverage WHERE supplier_id = ?', [req.params.id]);
       await sdk.rawQuery('DELETE FROM longtermhire_supplier WHERE id = ?', [req.params.id]);
       return res.status(200).json({ error: false, message: 'Removed' });
     } catch (error) {

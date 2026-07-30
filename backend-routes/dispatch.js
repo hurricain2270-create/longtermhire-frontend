@@ -263,7 +263,8 @@ module.exports = function (app) {
         "s.id AS supplier_id, s.name AS supplier_name " +
         "FROM longtermhire_equipment_supplier es " +
         "JOIN longtermhire_supplier s ON s.id = es.supplier_id AND s.active = 1 " +
-        "JOIN longtermhire_trade t ON t.id = s.trade_id AND t.active = 1 " +
+        "JOIN longtermhire_supplier_coverage sc ON sc.supplier_id = s.id AND sc.active = 1 " +
+        "JOIN longtermhire_trade t ON t.id = sc.trade_id AND t.active = 1 " +
         "JOIN longtermhire_fault_playbook p ON p.trade_id = t.id AND p.active = 1 " +
         "WHERE es.equipment_id = ? ORDER BY p.fault_type",
         [rows[0].equipment_id]
