@@ -365,36 +365,37 @@ module.exports = function (app) {
 <title>Long Term Hire</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#f2f1ec;font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#1e1e1c;padding:16px}
-.card{max-width:480px;margin:0 auto;background:#fff;border-radius:14px;padding:20px 18px 24px}
-h1{font-size:20px;font-weight:600;margin:0}
-.tag{font-size:12px;color:#8a887f;margin:0 0 4px}
-.sub{font-size:15px;color:#5f5e5a;margin:4px 0 0}
-.banner{background:#fcebeb;color:#8f2727;font-size:14px;padding:10px 12px;border-radius:8px;margin:14px 0 0}
-.brief{background:#f5f4ef;border-radius:8px;padding:10px 12px;font:13px/1.6 ui-monospace,Menlo,monospace;color:#4a4945;white-space:pre-wrap;margin:12px 0 0;overflow-wrap:anywhere}
+body{margin:0;background:#292A2B;font:16px/1.5 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#E5E5E5;padding:16px}
+.card{max-width:480px;margin:0 auto;background:#1F1F20;border:1px solid #333333;border-radius:14px;padding:20px 18px 24px}
+h1{font-size:20px;font-weight:600;margin:0;color:#E5E5E5}
+.tag{font-size:12px;color:#6B7280;margin:0 0 4px;text-transform:uppercase;letter-spacing:.05em}
+.sub{font-size:15px;color:#9CA3AF;margin:4px 0 0}
+.banner{background:#3d1a1a;color:#ef4444;font-size:14px;padding:10px 12px;border-radius:8px;margin:14px 0 0}
+.brief{background:#292A2B;border:1px solid #333333;border-radius:8px;padding:10px 12px;font:13px/1.6 ui-monospace,Menlo,monospace;color:#9CA3AF;white-space:pre-wrap;margin:12px 0 0;overflow-wrap:anywhere}
 .section{margin:18px 0 0}
-.label{font-size:14px;font-weight:600;margin:0 0 8px}
+.label{font-size:14px;font-weight:600;margin:0 0 8px;color:#E5E5E5}
 .row{display:flex;gap:10px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-button{font:inherit;cursor:pointer;border-radius:10px;border:1px solid #d3d1c7;background:#fff;color:#1e1e1c;padding:14px 10px;-webkit-tap-highlight-color:transparent}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid #333333;background:#292A2B;color:#E5E5E5;padding:14px 10px;-webkit-tap-highlight-color:transparent}
 button:active{transform:scale(.99)}
 .big{flex:1;font-size:16px;font-weight:600;padding:16px 0}
-.yes.on{background:#1d9e75;border-color:#1d9e75;color:#fff}
-.big.on{background:#1e1e1c;border-color:#1e1e1c;color:#fff}
+.yes.on{background:#4CAF50;border-color:#4CAF50;color:#1F1F20}
+.big.on{background:#FDCE06;border-color:#FDCE06;color:#1F1F20}
 .opt{font-size:15px;padding:14px 6px}
-.opt.on{border-color:#185fa5;color:#185fa5;border-width:2px;font-weight:600}
-.primary{width:100%;margin-top:22px;background:#185fa5;border-color:#185fa5;color:#fff;font-size:16px;font-weight:600;padding:16px 0}
-.primary[disabled]{opacity:.5}
-input,textarea{width:100%;font:inherit;padding:12px;border:1px solid #d3d1c7;border-radius:10px;background:#fff;color:#1e1e1c}
+.opt.on{border-color:#FDCE06;color:#FDCE06;border-width:2px;font-weight:600}
+.primary{width:100%;margin-top:22px;background:#FDCE06;border-color:#FDCE06;color:#1F1F20;font-size:16px;font-weight:700;padding:16px 0}
+.primary[disabled]{opacity:.4}
+input,textarea{width:100%;font:inherit;padding:12px;border:1px solid #333333;border-radius:8px;background:#292A2B;color:#E5E5E5}
+input:focus,textarea:focus{outline:none;border-color:#FDCE06}
 textarea{resize:vertical}
-.check{display:flex;align-items:center;gap:8px;font-size:15px;margin-top:10px}
-.check input{width:20px;height:20px}
-.hint{font-size:13px;color:#8a887f;margin:8px 0 0}
-.muted{color:#5f5e5a}
+.check{display:flex;align-items:center;gap:8px;font-size:15px;margin-top:10px;color:#E5E5E5}
+.check input{width:20px;height:20px;accent-color:#FDCE06}
+.hint{font-size:13px;color:#6B7280;margin:8px 0 0}
+.muted{color:#9CA3AF}
 .hidden{display:none}
-.err{color:#a32d2d;font-size:14px;margin:12px 0 0;min-height:1px}
-.done{background:#e1f5ee;color:#0f6e56;font-size:14px;padding:10px 12px;border-radius:8px;margin:14px 0 0}
+.err{color:#ef4444;font-size:14px;margin:12px 0 0;min-height:1px}
+.done{background:#14352a;color:#4CAF50;font-size:14px;padding:10px 12px;border-radius:8px;margin:14px 0 0}
 </style></head><body>
 ${inner}
 <script>
