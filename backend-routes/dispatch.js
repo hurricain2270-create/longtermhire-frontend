@@ -560,7 +560,8 @@ module.exports = function (app) {
     const acceptedBlock = `
     <div class="done">You're booked in${d.eta_band ? " &middot; " + esc(ETA_LABEL[d.eta_band] || d.eta_band) : ""}</div>
     <p class="sub" style="margin-top:12px">${esc(d.attending_name || "The site")} has been told you're coming.</p>
-    <button class="primary" id="btn-open-complete" onclick="openComplete()">I've finished — close it off</button>
+    <p class="hint" style="margin-top:16px">Once the work is done, come back to this link and close it off.</p>
+    <button class="primary" id="btn-open-complete" onclick="openComplete()">Close the job off</button>
     <div id="complete-wrap" class="hidden">${completeForm}</div>`;
 
   const body = `<div class="card">${header}${stage === "respond" ? respondForm : acceptedBlock}</div>`;
