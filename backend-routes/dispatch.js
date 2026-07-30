@@ -523,7 +523,6 @@ module.exports = function (app) {
     `;
 
     const completeForm = `
-      <div class="done">Accepted${d.eta_band ? " &middot; " + esc(ETA_LABEL[d.eta_band] || d.eta_band) : ""}${d.attending_name ? " &middot; " + esc(d.attending_name) : ""}</div>
       <div class="section">
         <p class="label">What did you find?</p>
         <textarea id="findings" rows="3"></textarea>
@@ -558,7 +557,13 @@ module.exports = function (app) {
       <p class="err" id="err"></p>
     `;
 
-    const body = `<div class="card">${header}${stage === "respond" ? respondForm : completeForm}</div>`;
+    const acceptedBlock = `
+    <div class="done">You're booked in${d.eta_band ? " &middot; " + esc(ETA_LABEL[d.eta_band] || d.eta_band) : ""}</div>
+    <p class="sub" style="margin-top:12px">${esc(d.attending_name || "The site")} has been told you're coming.</p>
+    <button class="primary" id="btn-open-complete" onclick="openComplete()">I've finished — close it off</button>
+    <div id="complete-wrap" class="hidden">${completeForm}</div>`;
+
+  const body = `<div class="card">${header}${stage === "respond" ? respondForm : acceptedBlock}</div>`;
     res.send(page(body, req.params.token, stage));
   });
 
@@ -618,6 +623,12 @@ function setEta(v){eta=v;document.querySelectorAll('[data-eta]').forEach(functio
 function setMs(v){ms=v;document.querySelectorAll('[data-ms]').forEach(function(b){b.className='opt'+(b.dataset.ms===v?' on':'')});
   q('ms-hint').textContent=v==='going'?'This will close the job.':'Limited or down keeps the job open.'}
 function fail(m){q('err').textContent=m}
+function openComplete(){
+  var w=q('complete-wrap'); if(!w) return;
+  w.className='';
+  var b=q('btn-open-complete'); if(b) b.className='hidden';
+  w.scrollIntoView({behavior:'smooth',block:'start'});
+}
 function post(path,payload,btn){
   btn.disabled=true;fail('');
   return fetch('/v1/api/longtermhire/dispatch/'+TOKEN+path,{
