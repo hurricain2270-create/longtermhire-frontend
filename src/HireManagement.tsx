@@ -18,6 +18,12 @@ const HireManagement = () => {
   const [confirmAction, setConfirmAction] = useState(null);
   const [activeCompany, setActiveCompany] = useState(null);
   const [dateForm, setDateForm] = useState({ start: "", end: "" });
+  // Where the machine is actually going. One machine, one contract, one site —
+  // so it is recorded when the hire starts and everything downstream reads it.
+  const [siteFor, setSiteFor] = useState(null);
+  const [site, setSite] = useState({
+    name: "", address: "", access: "", contact_name: "", contact_phone: "",
+  });
 
   useEffect(() => {
     loadData();
@@ -45,8 +51,13 @@ const HireManagement = () => {
     try {
       setStartingId(assignmentId);
       const chosen = startDate || new Date().toISOString().slice(0, 10);
-      await api.post("/v1/api/longtermhire/super_admin/start-hire/" + assignmentId, { start_date: chosen });
+      await api.post("/v1/api/longtermhire/super_admin/start-hire/" + assignmentId, {
+        start_date: chosen,
+        site,
+      });
       toast.success("Hire started");
+      setSiteFor(null);
+      setSite({ name: "", address: "", access: "", contact_name: "", contact_phone: "" });
       loadData();
     } catch (e) {
       toast.error("Failed to start hire");
@@ -621,6 +632,51 @@ const HireManagement = () => {
                         className="w-full bg-[#292A2B] border border-[#333] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-sm outline-none focus:border-[#FDCE06]"
                       />
                     </div>
+                    {confirmAction.type === "start" && (
+                      <div className="pt-3 mt-1 border-t border-[#2a2a2a] space-y-3">
+                        <p className="text-[#9CA3AF] font-[Inter] text-xs">
+                          Where is it going? This travels with the hire — the contract
+                          and anyone we send out both read it from here.
+                        </p>
+                        <div>
+                          <label className="text-[#9CA3AF] font-[Inter] text-xs mb-1 block">Site name</label>
+                          <input value={site.name}
+                            onChange={(e) => setSite({ ...site, name: e.target.value })}
+                            placeholder="Riverview stage 2"
+                            className="w-full bg-[#292A2B] border border-[#333] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-sm outline-none focus:border-[#FDCE06]" />
+                        </div>
+                        <div>
+                          <label className="text-[#9CA3AF] font-[Inter] text-xs mb-1 block">Address</label>
+                          <input value={site.address}
+                            onChange={(e) => setSite({ ...site, address: e.target.value })}
+                            placeholder="148 Ipswich Road, Riverview QLD 4303"
+                            className="w-full bg-[#292A2B] border border-[#333] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-sm outline-none focus:border-[#FDCE06]" />
+                        </div>
+                        <div>
+                          <label className="text-[#9CA3AF] font-[Inter] text-xs mb-1 block">
+                            Getting in <span className="text-[#666]">gate, access, anything worth knowing</span>
+                          </label>
+                          <input value={site.access}
+                            onChange={(e) => setSite({ ...site, access: e.target.value })}
+                            placeholder="north gate, keys with the site office"
+                            className="w-full bg-[#292A2B] border border-[#333] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-sm outline-none focus:border-[#FDCE06]" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[#9CA3AF] font-[Inter] text-xs mb-1 block">Site contact</label>
+                            <input value={site.contact_name}
+                              onChange={(e) => setSite({ ...site, contact_name: e.target.value })}
+                              className="w-full bg-[#292A2B] border border-[#333] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-sm outline-none focus:border-[#FDCE06]" />
+                          </div>
+                          <div>
+                            <label className="text-[#9CA3AF] font-[Inter] text-xs mb-1 block">Mobile</label>
+                            <input value={site.contact_phone} inputMode="tel"
+                              onChange={(e) => setSite({ ...site, contact_phone: e.target.value })}
+                              className="w-full bg-[#292A2B] border border-[#333] rounded px-3 py-2 text-[#E5E5E5] font-[Inter] text-sm outline-none focus:border-[#FDCE06]" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     {cfg.fields === "both" && (
                       <div>
                         <label className="text-[#9CA3AF] font-[Inter] text-xs mb-1 block">

@@ -1319,6 +1319,17 @@ module.exports = function (app) {
         [startDate, 'active', currentTime, assignmentId]
       );
 
+      // Where the machine is actually standing. One machine, one contract, one
+      // site — so it lives on the hire rather than in a separate table, and
+      // everything downstream reads it from here.
+      const site = req.body.site || {};
+      await sdk.rawQuery(
+        'UPDATE longtermhire_client_equipment SET site_name = ?, site_address = ?, ' +
+        'site_access = ?, site_contact_name = ?, site_contact_phone = ? WHERE id = ?',
+        [site.name || null, site.address || null, site.access || null,
+         site.contact_name || null, site.contact_phone || null, assignmentId]
+      );
+
       // The machine is physically gone, so mark it unavailable. Doing it here
       // rather than by hand means it can't be forgotten.
       await sdk.rawQuery(
@@ -1377,6 +1388,17 @@ module.exports = function (app) {
       await sdk.rawQuery(
         'UPDATE longtermhire_client_equipment SET hire_start_date = ?, hire_status = ?, updated_at = ? WHERE id = ?',
         [startDate, 'active', currentTime, assignmentId]
+      );
+
+      // Where the machine is actually standing. One machine, one contract, one
+      // site — so it lives on the hire rather than in a separate table, and
+      // everything downstream reads it from here.
+      const site = req.body.site || {};
+      await sdk.rawQuery(
+        'UPDATE longtermhire_client_equipment SET site_name = ?, site_address = ?, ' +
+        'site_access = ?, site_contact_name = ?, site_contact_phone = ? WHERE id = ?',
+        [site.name || null, site.address || null, site.access || null,
+         site.contact_name || null, site.contact_phone || null, assignmentId]
       );
 
       // The machine is physically gone, so mark it unavailable. Doing it here

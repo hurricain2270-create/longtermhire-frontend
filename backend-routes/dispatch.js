@@ -310,10 +310,14 @@ module.exports = function (app) {
       }
 
       const rows = await sdk.rawQuery(
-        "SELECT f.*, e.equipment_id AS plant_code, e.equipment_name, c.company_name " +
+        "SELECT f.*, e.equipment_id AS plant_code, e.equipment_name, c.company_name, " +
+        "ce.site_name, ce.site_address, ce.site_access, " +
+        "ce.site_contact_name AS site_person, ce.site_contact_phone AS site_phone " +
         "FROM longtermhire_fault f " +
         "LEFT JOIN longtermhire_equipment_item e ON e.id = f.equipment_id " +
         "LEFT JOIN longtermhire_client c ON c.user_id = f.client_user_id " +
+        "LEFT JOIN longtermhire_client_equipment ce ON ce.equipment_id = f.equipment_id " +
+        "AND ce.client_user_id = f.client_user_id AND ce.hire_status = 'active' " +
         "WHERE f.id = ? LIMIT 1",
         [req.params.id]
       );
@@ -350,14 +354,21 @@ module.exports = function (app) {
         console.error("Could not read the first fault entry:", e);
       }
 
+      // Whoever Larry nominated, or the site contact recorded when the machine
+      // went out, or nobody.
+      const contactName = site_contact_name || f.site_person || "";
+      const contactPhone = site_contact_phone || f.site_phone || "";
+
       const answerLines = Object.keys(answers || {})
         .map((k) => k.replace(/_/g, " ") + ": " + (answers[k] || "not given"))
         .join("\n");
       const messageBody =
         `${f.plant_code || ""} ${f.equipment_name || ""}\n${f.title || ""}\n` +
         `${firstMessage}\n\n${answerLines}\n\n` +
-        `Site: ${f.company_name || ""}\n` +
-        `Meet: ${site_contact_name || ""}${site_contact_phone ? " " + site_contact_phone : ""}`;
+        `Site: ${f.site_name || f.company_name || ""}\n` +
+        `${f.site_address ? f.site_address + "\n" : ""}` +
+        `${f.site_access ? f.site_access + "\n" : ""}` +
+        `Meet: ${contactName}${contactPhone ? " " + contactPhone : ""}`;
 
       const token = crypto.randomBytes(16).toString("hex");
       await sdk.rawQuery(
@@ -392,9 +403,11 @@ module.exports = function (app) {
             <ul style="margin:0 0 16px; padding-left:18px; font-size:14px; color:#333; line-height:1.7;">${details}</ul>
             <div style="background:#f9f9f9; border-radius:6px; padding:14px; margin-bottom:18px;">
               ${label("Where")}
-              <p style="margin:0 0 10px; font-size:15px; color:#111;">${f.company_name || ""}</p>
+              <p style="margin:0 0 4px; font-size:15px; color:#111;"><b>${f.site_name || f.company_name || ""}</b></p>
+              ${f.site_address ? `<p style="margin:0 0 8px; font-size:14px; color:#444;">${f.site_address}</p>` : ""}
+              ${f.site_access ? `<p style="margin:0 0 10px; font-size:13px; color:#666;">${f.site_access}</p>` : ""}
               ${label("Meet")}
-              <p style="margin:0; font-size:15px; color:#111;">${site_contact_name || ""}${site_contact_phone ? ' · <a href="tel:' + site_contact_phone + '" style="color:#111;">' + site_contact_phone + "</a>" : ""}</p>
+              <p style="margin:0; font-size:15px; color:#111;">${contactName}${contactPhone ? ' · <a href="tel:' + contactPhone + '" style="color:#111;">' + contactPhone + "</a>" : ""}</p>
             </div>
             <a href="${link}" style="display:block; text-align:center; background:#1b8a3a; color:#fff; padding:16px; border-radius:6px; font-size:17px; font-weight:600; text-decoration:none;">Can you take this one?</a>
             <p style="margin:12px 0 0; font-size:12px; color:#888;">One tap. Nothing to log into.</p>
