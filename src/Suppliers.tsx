@@ -22,6 +22,7 @@ const EMPTY = {
   business_name: "",
   contact_name: "",
   mobile: "",
+  after_hours_phone: "",
   email: "",
   area: "",
   notes: "",
@@ -79,7 +80,8 @@ const Suppliers = () => {
   const startEdit = (s) => {
     setForm({
       trade: s.trade, business_name: s.business_name, contact_name: s.contact_name || "",
-      mobile: s.mobile || "", email: s.email || "", area: s.area || "", notes: s.notes || "",
+      mobile: s.mobile || "", after_hours_phone: s.after_hours_phone || "",
+      email: s.email || "", area: s.area || "", notes: s.notes || "",
     });
     setEditing(s.id); setAdding(true);
   };
@@ -197,6 +199,12 @@ const Suppliers = () => {
                 className="w-full bg-[#292A2B] border border-[#333333] rounded-lg text-[#E5E5E5] text-[16px] px-3.5 py-3 outline-none focus:border-[#FDCE06]" />
             </div>
             <div>
+              <label className="block text-[#9CA3AF] font-[Inter] text-[13px] mb-1.5">After hours</label>
+              <input value={form.after_hours_phone} onChange={(e) => setForm({ ...form, after_hours_phone: e.target.value })}
+                inputMode="tel" placeholder="if different"
+                className="w-full bg-[#292A2B] border border-[#333333] rounded-lg text-[#E5E5E5] text-[16px] px-3.5 py-3 outline-none focus:border-[#FDCE06]" />
+            </div>
+            <div>
               <label className="block text-[#9CA3AF] font-[Inter] text-[13px] mb-1.5">Email</label>
               <input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
                 inputMode="email" placeholder="dave@example.com.au"
@@ -251,7 +259,9 @@ const Suppliers = () => {
                           {s.business_name}
                         </h3>
                         <p className="text-[#9CA3AF] font-[Inter] text-[13px] mt-0.5">
-                          {[s.contact_name, s.mobile, s.area].filter(Boolean).join(" · ")}
+                          {[s.contact_name, s.mobile,
+                            s.after_hours_phone ? "a/h " + s.after_hours_phone : null,
+                            s.area].filter(Boolean).join(" · ")}
                         </p>
                         {s.email ? (
                           <p className="text-[#6B7280] font-[Inter] text-[13px]">{s.email}</p>

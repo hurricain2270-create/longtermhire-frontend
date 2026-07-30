@@ -1433,7 +1433,9 @@ module.exports = function (app) {
       sdk.setProjectId('longtermhire');
 
       const suppliers = await sdk.rawQuery(
-        'SELECT * FROM longtermhire_supplier ORDER BY trade, business_name', []
+        'SELECT id, trade, name AS business_name, contact_name, phone AS mobile, ' +
+        'after_hours_phone, email, area, notes FROM longtermhire_supplier ' +
+        "WHERE active = 1 ORDER BY trade, name", []
       );
       const links = await sdk.rawQuery(
         'SELECT es.supplier_id, es.equipment_id, e.equipment_id AS plant_code, e.equipment_name ' +
@@ -1461,17 +1463,20 @@ module.exports = function (app) {
     try {
       const sdk = app.get('sdk');
       sdk.setProjectId('longtermhire');
-      const { trade, business_name, contact_name, mobile, email, area, notes } = req.body;
+      // This table came with the original build. Using its columns rather than
+      // inventing parallel ones: name, phone, after_hours_phone, abn are all
+      // already there and worth having.
+      const { trade, business_name, contact_name, mobile, after_hours_phone,
+              email, area, notes } = req.body;
       if (!trade || !business_name) {
         return res.status(400).json({ error: true, message: 'A trade and a business name are needed' });
       }
-      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
       const result = await sdk.rawQuery(
         'INSERT INTO longtermhire_supplier ' +
-        '(trade, business_name, contact_name, mobile, email, area, notes, created_at, updated_at) ' +
-        'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-        [trade, business_name, contact_name || null, mobile || null, email || null,
-         area || null, notes || null, now, now]
+        '(trade, name, contact_name, phone, after_hours_phone, email, area, notes, active) ' +
+        'VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)',
+        [trade, business_name, contact_name || null, mobile || null,
+         after_hours_phone || null, email || null, area || null, notes || null]
       );
       return res.status(200).json({ error: false, data: { id: result.insertId } });
     } catch (error) {
@@ -1484,14 +1489,14 @@ module.exports = function (app) {
     try {
       const sdk = app.get('sdk');
       sdk.setProjectId('longtermhire');
-      const { trade, business_name, contact_name, mobile, email, area, notes } = req.body;
-      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      const { trade, business_name, contact_name, mobile, after_hours_phone,
+              email, area, notes } = req.body;
       await sdk.rawQuery(
         'UPDATE longtermhire_supplier SET trade = COALESCE(?, trade), ' +
-        'business_name = COALESCE(?, business_name), contact_name = ?, mobile = ?, ' +
-        'email = ?, area = ?, notes = ?, updated_at = ? WHERE id = ?',
+        'name = COALESCE(?, name), contact_name = ?, phone = ?, after_hours_phone = ?, ' +
+        'email = ?, area = ?, notes = ? WHERE id = ?',
         [trade || null, business_name || null, contact_name || null, mobile || null,
-         email || null, area || null, notes || null, now, req.params.id]
+         after_hours_phone || null, email || null, area || null, notes || null, req.params.id]
       );
       return res.status(200).json({ error: false, message: 'Saved' });
     } catch (error) {
