@@ -364,7 +364,8 @@ module.exports = function (app) {
         .join("\n");
       const messageBody =
         `${f.plant_code || ""} ${f.equipment_name || ""}\n${f.title || ""}\n` +
-        `${firstMessage}\n\n${answerLines}\n\n` +
+        `${firstMessage && firstMessage.trim() !== (f.title || "").trim() ? firstMessage + "\n" : ""}` +
+        `\n${answerLines}\n\n` +
         `Site: ${f.site_name || f.company_name || ""}\n` +
         `${f.site_address ? f.site_address + "\n" : ""}` +
         `${f.site_access ? f.site_access + "\n" : ""}` +
@@ -397,7 +398,9 @@ module.exports = function (app) {
             <p style="margin:0 0 16px; font-size:15px; color:#111;"><b>${f.plant_code || ""} — ${f.equipment_name || ""}</b></p>
             ${label("What's happened")}
             <p style="margin:0 0 3px; font-size:15px; color:#111;">${f.title || ""}</p>
-            <p style="margin:0 0 16px; font-size:14px; color:#444;">${firstMessage}</p>
+            ${firstMessage && firstMessage.trim() !== (f.title || "").trim()
+              ? `<p style="margin:0 0 16px; font-size:14px; color:#444;">${firstMessage}</p>`
+              : '<div style="height:16px"></div>'}
             ${photos}
             ${details ? label("Details") : ""}
             <ul style="margin:0 0 16px; padding-left:18px; font-size:14px; color:#333; line-height:1.7;">${details}</ul>
@@ -573,8 +576,8 @@ module.exports = function (app) {
     const acceptedBlock = `
     <div class="done">You're booked in${d.eta_band ? " &middot; " + esc(ETA_LABEL[d.eta_band] || d.eta_band) : ""}</div>
     <p class="sub" style="margin-top:12px">${esc(d.attending_name || "The site")} has been told you're coming.</p>
-    <p class="hint" style="margin-top:16px">Once the work is done, come back to this link and close it off.</p>
-    <button class="primary" id="btn-open-complete" onclick="openComplete()">Close the job off</button>
+    <p class="hint" style="margin-top:16px">Nothing else to do for now.</p>
+    <button class="primary" id="btn-open-complete" onclick="openComplete()">Come back here to close the job off</button>
     <div id="complete-wrap" class="hidden">${completeForm}</div>`;
 
   const body = `<div class="card">${header}${stage === "respond" ? respondForm : acceptedBlock}</div>`;
