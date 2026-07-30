@@ -145,6 +145,85 @@ always on.
 - [ ] Permissions are read at login, so changes need a log out and back in
       before they take effect.
 
+## Found by looking at the live screens
+
+Nothing here came from reading code — all of it came from screenshots of the
+running system. Roughly in order of how much it matters.
+
+### Wrong or misleading
+
+- [ ] **Machine editor shows the wrong category.** E001 is an Excavator; the
+      editor's dropdown displays Vehicles. It is landing on the wrong option
+      rather than matching the record, and saving from that screen would write
+      the wrong category.
+- [ ] **"Actioned" thread entries render empty.** Fault 2026-F-011 shows a
+      "You · Actioned" row with no text, on both the admin and the client view.
+      The tyre fault recorded "Sent to Logan Tyres · 0412111808" in the same
+      slot, so something differs between the two paths. Decide also whether the
+      client should see the supplier's name and number at all — "a fitter has
+      been called" may be all they need.
+- [ ] **Quote template preview shows "Invalid Date"** for both Date Issued and
+      Expiry. Real hire agreements render dates correctly, so it is specific to
+      the template preview path.
+- [ ] **Contract says 2% per month, the machines say 1%.** The hire schedule
+      confirms 1% compounding ($2,700 to $2,673 to $2,646.27), so the contract
+      figure is the odd one out.
+- [ ] **Two different fleet percentages.** Dashboard says 33% (6 of 18, whole
+      list); Reporting says 60% utilisation (6 of 10 owned). Both defensible,
+      but one needs relabelling.
+- [ ] **Turnover months disagree.** The dial says $24,012 for July; Reporting
+      says July $6,678 and August $24,012.
+- [ ] **Contract already has a Delivery address** ("2 Jones Street, North
+      Melbourne") separate from the new site fields on the hire. Reconcile
+      before building further, or there will be two addresses disagreeing.
+
+### Reads badly
+
+- [ ] **Hazard button text is unreadable at real size.** White on the stripes
+      works in a mockup at scale; on the actual client page the words disappear
+      into the pattern. Stripes as a border with a solid centre would keep the
+      signal and the legibility.
+- [ ] **Chat panel opens by default** on the client portal despite being set
+      closed. Either it did not deploy or something reopens it.
+- [ ] **Ticker text is clipped at both ends** rather than flowing through the
+      container.
+- [ ] **Client reply box is white** while every other input is dark.
+- [ ] **"1 of 10" shows 0%** on current hires. Month one should read 10%, or
+      the bar should start filling.
+- [ ] **"Invoiced to date $0.00" is green.** Green means good elsewhere. Grey
+      would be more honest.
+- [ ] **"0% of the estimated fault repair timeline"** is a mouthful on a phone.
+- [ ] **Calculator headline still says "the less you pay"** — should match the
+      film's "the more you save".
+- [ ] **Calculator defaults to 3 months**, showing $80 rather than the $1,724
+      that twelve months gives. Twelve would lead with the better number.
+- [ ] **Resolved faults still draw a stub of a progress bar.** Once resolved,
+      showing only "took 4m" would read better.
+- [ ] **Maintenance: a full red bar sits under DUE SOON.** E005 at "due in 3
+      hrs/km" is not yet overdue but looks it.
+- [ ] **Price History: "$7,600 to $7,600"** on a single entry. Drop the range
+      until there are two.
+- [ ] **Price History: Miscellaneous appears in the "nothing learnt" prompt.**
+      It is an inbox, not a category.
+- [ ] **Price History source chips wrap**, orphaning "client said".
+- [ ] **Supplier auto-dispatch checkboxes are yellow even when unticked**, so
+      empty boxes read as active.
+- [ ] **"Owner Name*" has a stray asterisk** in the Client Management header.
+- [ ] **Client and supplier are both amber in the fault thread**, so at a glance
+      they look like the same party.
+- [ ] **Four thumbnail slots are not holding their space** on client cards with
+      one photo — cards are different heights again.
+
+### Data rather than code
+
+- [ ] Twelve of eighteen machines have no service schedule set.
+- [ ] Every machine has zero information sheets.
+- [ ] Big Boy is priced at $1.00, which makes the calculator look broken.
+- [ ] Machine photos are shot on different backgrounds and aspect ratios.
+- [ ] Test Hydraulics covers no machines, so only one trade can ever be offered.
+- [ ] Neither supplier has an after-hours number — the most useful field on a
+      breakdown card.
+
 ## Dashboard
 
 - [ ] **The turnover dial pegs above 120%.** Seen live reading "252% past your
