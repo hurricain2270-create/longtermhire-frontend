@@ -35,6 +35,7 @@ import VerifyOTP from "./client/VerifyOTP";
 import ResetPassword from "./client/ResetPassword";
 import PriceHistory from "./PriceHistory";
 import Suppliers from "./Suppliers";
+import JobPage from "./JobPage";
 
 // Without this, a single error anywhere unmounts the whole app and every page
 // goes blank with nothing on screen to explain it. Now the page that broke says
@@ -244,6 +245,13 @@ function App() {
           }
         />
         <Route path="/incoming" element={<Incoming />} />
+
+        {/* Supplier job pages. Deliberately public — a tyre fitter will not
+            create an account, so the token in the address is the credential. */}
+        <Route path="/job/:token" element={
+          <PageErrorBoundary><JobPage /></PageErrorBoundary>} />
+        <Route path="/job/:token/:choice" element={
+          <PageErrorBoundary><JobPage /></PageErrorBoundary>} />
 
         {/* Client Portal Routes. Each is wrapped so a crash shows the client
             what went wrong instead of a blank screen — the boundary in

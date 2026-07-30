@@ -185,6 +185,11 @@ const ClientFaults = () => {
   // machine is actually covered for. Coverage decides — no cover, no offer, and
   // it goes back to us the old way.
   const [dispatch, setDispatch] = useState(null); // { faultId, trades, trade, answers }
+  // For the Me button — whoever is logged in on this phone.
+  const me = {
+    name: localStorage.getItem("clientName") || localStorage.getItem("clientEmail") || "",
+    phone: localStorage.getItem("clientPhone") || "",
+  };
   const [dispatching, setDispatching] = useState(false);
 
   const offerDispatch = async (faultId) => {
@@ -211,7 +216,12 @@ const ClientFaults = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: "Bearer " + token() },
-          body: JSON.stringify({ trade: dispatch.trade, answers: dispatch.answers }),
+          body: JSON.stringify({
+            trade: dispatch.trade,
+            answers: dispatch.answers,
+            site_contact_name: dispatch.contact_name,
+            site_contact_phone: dispatch.contact_phone,
+          }),
         }
       );
       const j = await res.json();
@@ -361,10 +371,10 @@ const ClientFaults = () => {
             {!dispatch.trade ? (
               <>
                 <h3 className="text-[#E5E5E5] font-[Inter] text-[19px] font-semibold mb-1">
-                  What is it?
+                  Reported — we're on it
                 </h3>
-                <p className="text-[#9CA3AF] font-[Inter] text-[13px] mb-4">
-                  Pick one and we will get someone out to it.
+                <p className="text-[#9CA3AF] font-[Inter] text-[14px] mb-4 leading-relaxed">
+                  To get you going faster, a couple of quick questions.
                 </p>
                 <div className="flex flex-col gap-2 mb-4">
                   {dispatch.trades.map((t) => (
@@ -402,6 +412,33 @@ const ClientFaults = () => {
                     />
                   </div>
                 ))}
+                <div className="border-t border-[#2a2a2a] pt-4 mt-4 mb-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[#9CA3AF] font-[Inter] text-[13px]">Who's meeting him</span>
+                    <button
+                      onClick={() =>
+                        setDispatch({
+                          ...dispatch,
+                          contact_name: me.name || "",
+                          contact_phone: me.phone || "",
+                        })
+                      }
+                      className="px-3.5 py-1.5 rounded-full bg-[#FDCE06] text-[#1F1F20] font-[Inter] text-[13px] font-bold">
+                      Me
+                    </button>
+                  </div>
+                  <input
+                    value={dispatch.contact_name || ""}
+                    onChange={(e) => setDispatch({ ...dispatch, contact_name: e.target.value })}
+                    placeholder="Name"
+                    className="w-full bg-[#292A2B] border border-[#333] rounded-lg text-[#E5E5E5] text-[16px] px-3.5 py-3 outline-none focus:border-[#FDCE06] mb-2.5" />
+                  <input
+                    value={dispatch.contact_phone || ""}
+                    onChange={(e) => setDispatch({ ...dispatch, contact_phone: e.target.value })}
+                    inputMode="tel" placeholder="Mobile"
+                    className="w-full bg-[#292A2B] border border-[#333] rounded-lg text-[#E5E5E5] text-[16px] px-3.5 py-3 outline-none focus:border-[#FDCE06]" />
+                </div>
+
                 <div className="flex gap-2.5 mt-5">
                   <button onClick={sendDispatch} disabled={dispatching} className={BTN.success + " flex-1"}>
                     {dispatching ? "Sending…" : "Send it"}
