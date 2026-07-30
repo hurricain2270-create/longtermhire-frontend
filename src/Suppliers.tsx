@@ -4,21 +4,8 @@ import { toast } from "react-toastify";
 import api from "./services/api";
 import { BTN } from "./styles/buttons";
 
-// The trades that actually turn up to a breakdown. Add to this as needed —
-// nothing depends on the list beyond the dropdown.
-const TRADES = [
-  "Tyres",
-  "Hydraulics",
-  "Auto electrical",
-  "Fitter / mechanic",
-  "Towing / float",
-  "Glass",
-  "Welding",
-  "Other",
-];
-
 const EMPTY = {
-  trade: "Tyres",
+  trade_id: "",
   business_name: "",
   contact_name: "",
   mobile: "",
@@ -29,7 +16,7 @@ const EMPTY = {
 };
 
 const Suppliers = () => {
-  const [data, setData] = useState({ suppliers: [], links: [], machines: [] });
+  const [data, setData] = useState({ suppliers: [], links: [], machines: [], trades: [] });
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(EMPTY);
   const [editing, setEditing] = useState(null);
@@ -51,6 +38,7 @@ const Suppliers = () => {
   useEffect(() => { load(); }, []);
 
   const save = async () => {
+    if (!form.trade_id) { toast.error("Pick a trade"); return; }
     if (!form.business_name) { toast.error("Put in a business name"); return; }
     setSaving(true);
     try {
@@ -79,9 +67,9 @@ const Suppliers = () => {
 
   const startEdit = (s) => {
     setForm({
-      trade: s.trade, business_name: s.business_name, contact_name: s.contact_name || "",
+      trade_id: s.trade_id || "", business_name: s.business_name, contact_name: s.contact_name || "",
       mobile: s.mobile || "", after_hours_phone: s.after_hours_phone || "",
-      email: s.email || "", area: s.area || "", notes: s.notes || "",
+      email: s.email || "", notes: s.notes || "",
     });
     setEditing(s.id); setAdding(true);
   };
@@ -139,8 +127,9 @@ const Suppliers = () => {
   const byTrade = useMemo(() => {
     const g = {};
     (data.suppliers || []).forEach((s) => {
-      if (!g[s.trade]) g[s.trade] = [];
-      g[s.trade].push(s);
+      const key = s.trade || "No trade set";
+      if (!g[key]) g[key] = [];
+      g[key].push(s);
     });
     return Object.keys(g).sort().map((t) => ({ trade: t, rows: g[t] }));
   }, [data]);
@@ -175,9 +164,10 @@ const Suppliers = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             <div>
               <label className="block text-[#9CA3AF] font-[Inter] text-[13px] mb-1.5">Trade</label>
-              <select value={form.trade} onChange={(e) => setForm({ ...form, trade: e.target.value })}
+              <select value={form.trade_id} onChange={(e) => setForm({ ...form, trade_id: e.target.value })}
                 className="w-full bg-[#292A2B] border border-[#333333] rounded-lg text-[#E5E5E5] text-[16px] px-3.5 py-3 outline-none focus:border-[#FDCE06]">
-                {TRADES.map((t) => <option key={t} value={t}>{t}</option>)}
+                <option value="">Pick a trade</option>
+                {(data.trades || []).map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
               </select>
             </div>
             <div>
@@ -208,12 +198,6 @@ const Suppliers = () => {
               <label className="block text-[#9CA3AF] font-[Inter] text-[13px] mb-1.5">Email</label>
               <input value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
                 inputMode="email" placeholder="dave@example.com.au"
-                className="w-full bg-[#292A2B] border border-[#333333] rounded-lg text-[#E5E5E5] text-[16px] px-3.5 py-3 outline-none focus:border-[#FDCE06]" />
-            </div>
-            <div>
-              <label className="block text-[#9CA3AF] font-[Inter] text-[13px] mb-1.5">Area</label>
-              <input value={form.area} onChange={(e) => setForm({ ...form, area: e.target.value })}
-                placeholder="Ipswich, Toowoomba"
                 className="w-full bg-[#292A2B] border border-[#333333] rounded-lg text-[#E5E5E5] text-[16px] px-3.5 py-3 outline-none focus:border-[#FDCE06]" />
             </div>
           </div>
@@ -261,7 +245,7 @@ const Suppliers = () => {
                         <p className="text-[#9CA3AF] font-[Inter] text-[13px] mt-0.5">
                           {[s.contact_name, s.mobile,
                             s.after_hours_phone ? "a/h " + s.after_hours_phone : null,
-                            s.area].filter(Boolean).join(" · ")}
+                          ].filter(Boolean).join(" · ")}
                         </p>
                         {s.email ? (
                           <p className="text-[#6B7280] font-[Inter] text-[13px]">{s.email}</p>

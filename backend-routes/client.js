@@ -1433,9 +1433,15 @@ module.exports = function (app) {
       sdk.setProjectId('longtermhire');
 
       const suppliers = await sdk.rawQuery(
-        'SELECT id, trade, name AS business_name, contact_name, phone AS mobile, ' +
-        'after_hours_phone, email, area, notes FROM longtermhire_supplier ' +
-        "WHERE active = 1 ORDER BY trade, name", []
+        'SELECT s.id, s.trade_id, t.name AS trade, s.name AS business_name, s.contact_name, ' +
+        's.phone AS mobile, s.after_hours_phone, s.email, s.notes ' +
+        'FROM longtermhire_supplier s ' +
+        'LEFT JOIN longtermhire_trade t ON t.id = s.trade_id ' +
+        'WHERE s.active = 1 ORDER BY t.name, s.name', []
+      );
+      // The real trade list, rather than anything hardcoded in the app.
+      const trades = await sdk.rawQuery(
+        'SELECT id, name FROM longtermhire_trade WHERE active = 1 ORDER BY name', []
       );
       const links = await sdk.rawQuery(
         'SELECT es.supplier_id, es.equipment_id, e.equipment_id AS plant_code, e.equipment_name ' +
@@ -1451,7 +1457,7 @@ module.exports = function (app) {
 
       return res.status(200).json({
         error: false,
-        data: { suppliers: suppliers || [], links: links || [], machines: machines || [] },
+        data: { suppliers: suppliers || [], links: links || [], machines: machines || [], trades: trades || [] },
       });
     } catch (error) {
       console.error('Suppliers error:', error);
@@ -1466,17 +1472,17 @@ module.exports = function (app) {
       // This table came with the original build. Using its columns rather than
       // inventing parallel ones: name, phone, after_hours_phone, abn are all
       // already there and worth having.
-      const { trade, business_name, contact_name, mobile, after_hours_phone,
-              email, area, notes } = req.body;
-      if (!trade || !business_name) {
+      const { trade_id, business_name, contact_name, mobile, after_hours_phone,
+              email, notes } = req.body;
+      if (!trade_id || !business_name) {
         return res.status(400).json({ error: true, message: 'A trade and a business name are needed' });
       }
       const result = await sdk.rawQuery(
         'INSERT INTO longtermhire_supplier ' +
-        '(trade, name, contact_name, phone, after_hours_phone, email, area, notes, active) ' +
-        'VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)',
-        [trade, business_name, contact_name || null, mobile || null,
-         after_hours_phone || null, email || null, area || null, notes || null]
+        '(trade_id, name, contact_name, phone, after_hours_phone, email, notes, active) ' +
+        'VALUES (?, ?, ?, ?, ?, ?, ?, 1)',
+        [trade_id, business_name, contact_name || null, mobile || null,
+         after_hours_phone || null, email || null, notes || null]
       );
       return res.status(200).json({ error: false, data: { id: result.insertId } });
     } catch (error) {
@@ -1489,14 +1495,14 @@ module.exports = function (app) {
     try {
       const sdk = app.get('sdk');
       sdk.setProjectId('longtermhire');
-      const { trade, business_name, contact_name, mobile, after_hours_phone,
-              email, area, notes } = req.body;
+      const { trade_id, business_name, contact_name, mobile, after_hours_phone,
+              email, notes } = req.body;
       await sdk.rawQuery(
-        'UPDATE longtermhire_supplier SET trade = COALESCE(?, trade), ' +
+        'UPDATE longtermhire_supplier SET trade_id = COALESCE(?, trade_id), ' +
         'name = COALESCE(?, name), contact_name = ?, phone = ?, after_hours_phone = ?, ' +
-        'email = ?, area = ?, notes = ? WHERE id = ?',
-        [trade || null, business_name || null, contact_name || null, mobile || null,
-         after_hours_phone || null, email || null, area || null, notes || null, req.params.id]
+        'email = ?, notes = ? WHERE id = ?',
+        [trade_id || null, business_name || null, contact_name || null, mobile || null,
+         after_hours_phone || null, email || null, notes || null, req.params.id]
       );
       return res.status(200).json({ error: false, message: 'Saved' });
     } catch (error) {
