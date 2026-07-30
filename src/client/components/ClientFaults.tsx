@@ -55,18 +55,23 @@ const EVENT_LABEL = {
 };
 
 
-// What a supplier needs before they will turn up. Kept short on purpose — a man
-// standing next to a broken machine will answer three questions, not ten.
-const PLAYBOOK = {
-  Tyres: ["Which tyre", "Tyre size if you can see it", "Where on site"],
-  Hydraulics: ["Which hose or ram", "Is it leaking under load", "Where on site"],
-  "Auto electrical": ["What is not working", "Does it crank", "Where on site"],
-  "Fitter / mechanic": ["What is it doing", "Any warning lights", "Where on site"],
-  "Towing / float": ["Can it be driven", "Where does it need to go", "Where on site"],
-  Glass: ["Which window", "Where on site"],
-  Welding: ["What has broken", "Where on site"],
-  Other: ["What is needed", "Where on site"],
+// The playbook stores field keys; turn them into something a man reads.
+const ASK = {
+  fault_code: "Any fault code on the dash",
+  engine_hours: "Engine hours",
+  symptoms: "What is it doing",
+  location: "Where on site",
+  what_is_dead: "What is not working",
+  cylinder: "Which ram or cylinder",
+  leak_present: "Is it leaking",
+  wheel_position: "Which wheel",
+  tyre_size: "Tyre size if you can see it",
+  roadside_or_yard: "On the road or in the yard",
+  rolling_or_not: "Can it be rolled",
+  gvm: "Weight if you know it",
+  access_notes: "Anything about getting in",
 };
+const asked = (k) => ASK[k] || k.replace(/_/g, " ");
 
 const ClientFaults = () => {
   const [equipment, setEquipment] = useState([]);
@@ -199,8 +204,8 @@ const ClientFaults = () => {
         { headers: { Authorization: "Bearer " + token() } }
       );
       const j = await res.json();
-      if (!j.error && j.data?.trades?.length) {
-        setDispatch({ faultId, trades: j.data.trades, trade: null, answers: {} });
+      if (!j.error && j.data?.options?.length) {
+        setDispatch({ faultId, options: j.data.options, picked: null, answers: {} });
       }
     } catch (e) {
       // Nothing to offer is a perfectly normal outcome.
@@ -208,7 +213,7 @@ const ClientFaults = () => {
   };
 
   const sendDispatch = async () => {
-    if (!dispatch?.trade) return;
+    if (!dispatch?.picked) return;
     setDispatching(true);
     try {
       const res = await fetch(
@@ -217,7 +222,9 @@ const ClientFaults = () => {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: "Bearer " + token() },
           body: JSON.stringify({
-            trade: dispatch.trade,
+            playbook_id: dispatch.picked.playbook_id,
+            supplier_id: dispatch.picked.supplier_id,
+            trade_id: dispatch.picked.trade_id,
             answers: dispatch.answers,
             site_contact_name: dispatch.contact_name,
             site_contact_phone: dispatch.contact_phone,
@@ -368,7 +375,7 @@ const ClientFaults = () => {
         <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
           role="dialog" aria-label="Send this job to a supplier">
           <div className="bg-[#1F1F20] border border-[#333] rounded-xl p-5 w-full max-w-[420px]">
-            {!dispatch.trade ? (
+            {!dispatch.picked ? (
               <>
                 <h3 className="text-[#E5E5E5] font-[Inter] text-[19px] font-semibold mb-1">
                   Reported — we're on it
@@ -377,11 +384,11 @@ const ClientFaults = () => {
                   To get you going faster, a couple of quick questions.
                 </p>
                 <div className="flex flex-col gap-2 mb-4">
-                  {dispatch.trades.map((t) => (
-                    <button key={t}
-                      onClick={() => setDispatch({ ...dispatch, trade: t })}
+                  {dispatch.options.map((o) => (
+                    <button key={o.playbook_id}
+                      onClick={() => setDispatch({ ...dispatch, picked: o })}
                       className="w-full text-left px-4 py-3 rounded-lg bg-[#292A2B] border border-[#333] text-[#E5E5E5] text-[16px] hover:border-[#FDCE06] transition-colors">
-                      {t}
+                      {o.fault_type}
                     </button>
                   ))}
                 </div>
@@ -395,18 +402,18 @@ const ClientFaults = () => {
             ) : (
               <>
                 <h3 className="text-[#E5E5E5] font-[Inter] text-[19px] font-semibold mb-1">
-                  {dispatch.trade}
+                  {dispatch.picked.fault_type}
                 </h3>
                 <p className="text-[#9CA3AF] font-[Inter] text-[13px] mb-4">
-                  Two or three things so they turn up with the right gear.
+                  A few things so they turn up with the right gear.
                 </p>
-                {(PLAYBOOK[dispatch.trade] || PLAYBOOK.Other).map((q) => (
-                  <div key={q} className="mb-3">
-                    <label className="block text-[#9CA3AF] font-[Inter] text-[13px] mb-1.5">{q}</label>
+                {(dispatch.picked.fields || []).map((k) => (
+                  <div key={k} className="mb-3">
+                    <label className="block text-[#9CA3AF] font-[Inter] text-[13px] mb-1.5">{asked(k)}</label>
                     <input
-                      value={dispatch.answers[q] || ""}
+                      value={dispatch.answers[k] || ""}
                       onChange={(e) =>
-                        setDispatch({ ...dispatch, answers: { ...dispatch.answers, [q]: e.target.value } })
+                        setDispatch({ ...dispatch, answers: { ...dispatch.answers, [k]: e.target.value } })
                       }
                       className="w-full bg-[#292A2B] border border-[#333] rounded-lg text-[#E5E5E5] text-[16px] px-3.5 py-3 outline-none focus:border-[#FDCE06]"
                     />
@@ -443,7 +450,7 @@ const ClientFaults = () => {
                   <button onClick={sendDispatch} disabled={dispatching} className={BTN.success + " flex-1"}>
                     {dispatching ? "Sending…" : "Send it"}
                   </button>
-                  <button onClick={() => setDispatch({ ...dispatch, trade: null })} className={BTN.secondary}>
+                  <button onClick={() => setDispatch({ ...dispatch, picked: null })} className={BTN.secondary}>
                     Back
                   </button>
                 </div>

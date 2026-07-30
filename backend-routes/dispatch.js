@@ -1,4 +1,7 @@
 const crypto = require("crypto");
+// The client-facing send endpoints below need a logged-in supervisor; the
+// supplier-facing ones above stay public, with the token as the credential.
+const TokenMiddleware = require("../../../baas/middleware/TokenMiddleware");
 
 const ETA_BANDS = ["within_1h", "1_to_3h", "today", "tomorrow", "scheduled"];
 const MACHINE_STATUS = ["going", "limited", "down"];
@@ -226,6 +229,207 @@ module.exports = function (app) {
     } catch (err) {
       console.error("dispatch complete error", err);
       res.status(500).json({ error: "server_error" });
+    }
+  });
+
+  /**
+   * What can be dispatched for this fault, and what to ask before sending.
+   * Driven by longtermhire_fault_playbook — the fault type decides the trade
+   * and the questions, rather than anything hardcoded in the app.
+   *
+   * Routing note: supplier_coverage (supplier x trade x region) is the proper
+   * model, but region is empty, so for now we resolve through the machine's
+   * linked suppliers. Swapping to coverage later is a change to one query.
+   */
+  app.get("/v1/api/longtermhire/client/faults/:id/dispatch-options", TokenMiddleware(), async (req, res) => {
+    try {
+      const sdk = getSdk();
+      const rows = await sdk.rawQuery(
+        "SELECT f.id, f.equipment_id, COALESCE(e.auto_dispatch,0) AS auto_dispatch " +
+        "FROM longtermhire_fault f " +
+        "JOIN longtermhire_equipment_item e ON e.id = f.equipment_id " +
+        "WHERE f.id = ? LIMIT 1",
+        [req.params.id]
+      );
+      if (!rows || !rows.length) return res.status(404).json({ error: true, message: "Not found" });
+      if (Number(rows[0].auto_dispatch) !== 1) {
+        return res.status(200).json({ error: false, data: { options: [] } });
+      }
+
+      // Only offer what somebody actually covers on this machine. No cover, no
+      // offer — it goes back to us the old way, which is fine.
+      const options = await sdk.rawQuery(
+        "SELECT p.id AS playbook_id, p.fault_type, p.send_fields, t.id AS trade_id, t.name AS trade_name, " +
+        "s.id AS supplier_id, s.name AS supplier_name " +
+        "FROM longtermhire_equipment_supplier es " +
+        "JOIN longtermhire_supplier s ON s.id = es.supplier_id AND s.active = 1 " +
+        "JOIN longtermhire_trade t ON t.id = s.trade_id AND t.active = 1 " +
+        "JOIN longtermhire_fault_playbook p ON p.trade_id = t.id AND p.active = 1 " +
+        "WHERE es.equipment_id = ? ORDER BY p.fault_type",
+        [rows[0].equipment_id]
+      );
+
+      return res.status(200).json({
+        error: false,
+        data: {
+          options: (options || []).map((o) => ({
+            playbook_id: o.playbook_id,
+            fault_type: o.fault_type,
+            trade_id: o.trade_id,
+            trade_name: o.trade_name,
+            supplier_id: o.supplier_id,
+            supplier_name: o.supplier_name,
+            fields: (() => {
+              try {
+                return Array.isArray(o.send_fields) ? o.send_fields : JSON.parse(o.send_fields || "[]");
+              } catch (e) {
+                return [];
+              }
+            })(),
+          })),
+        },
+      });
+    } catch (err) {
+      console.error("dispatch options error", err);
+      res.status(500).json({ error: true, message: "server_error" });
+    }
+  });
+
+  /**
+   * Send it. Creates the dispatch the way the rest of this file expects, then
+   * emails the supplier a link to the job page.
+   */
+  app.post("/v1/api/longtermhire/client/faults/:id/dispatch", TokenMiddleware(), async (req, res) => {
+    try {
+      const sdk = getSdk();
+      const { playbook_id, supplier_id, trade_id, answers,
+              site_contact_name, site_contact_phone } = req.body;
+      if (!playbook_id || !supplier_id || !trade_id) {
+        return res.status(400).json({ error: true, message: "Pick what it is" });
+      }
+
+      const rows = await sdk.rawQuery(
+        "SELECT f.*, e.equipment_id AS plant_code, e.equipment_name, c.company_name " +
+        "FROM longtermhire_fault f " +
+        "LEFT JOIN longtermhire_equipment_item e ON e.id = f.equipment_id " +
+        "LEFT JOIN longtermhire_client c ON c.user_id = f.client_user_id " +
+        "WHERE f.id = ? LIMIT 1",
+        [req.params.id]
+      );
+      if (!rows || !rows.length) return res.status(404).json({ error: true, message: "Not found" });
+      const f = rows[0];
+
+      const sup = await sdk.rawQuery(
+        "SELECT * FROM longtermhire_supplier WHERE id = ? AND active = 1 LIMIT 1", [supplier_id]
+      );
+      if (!sup || !sup.length) return res.status(400).json({ error: true, message: "Supplier not found" });
+      const s = sup[0];
+
+      const pb = await sdk.rawQuery(
+        "SELECT fault_type FROM longtermhire_fault_playbook WHERE id = ? LIMIT 1", [playbook_id]
+      );
+      const faultType = pb && pb.length ? pb[0].fault_type : "";
+
+      // What Larry first wrote, and any photo, so the subby sees the evidence
+      // rather than a tidy summary of it.
+      let firstMessage = f.title || "";
+      let photoUrls = [];
+      try {
+        const first = await sdk.rawQuery(
+          "SELECT message, attachments FROM longtermhire_fault_update " +
+          "WHERE fault_id = ? ORDER BY id LIMIT 1", [f.id]
+        );
+        if (first && first.length) {
+          if (first[0].message) firstMessage = first[0].message;
+          const raw = first[0].attachments;
+          const list = Array.isArray(raw) ? raw : raw ? JSON.parse(raw) : [];
+          photoUrls = (list || []).map((p) => (typeof p === "string" ? p : p.url)).filter(Boolean);
+        }
+      } catch (e) {
+        console.error("Could not read the first fault entry:", e);
+      }
+
+      const answerLines = Object.keys(answers || {})
+        .map((k) => k.replace(/_/g, " ") + ": " + (answers[k] || "not given"))
+        .join("\n");
+      const messageBody =
+        `${f.plant_code || ""} ${f.equipment_name || ""}\n${f.title || ""}\n` +
+        `${firstMessage}\n\n${answerLines}\n\n` +
+        `Site: ${f.company_name || ""}\n` +
+        `Meet: ${site_contact_name || ""}${site_contact_phone ? " " + site_contact_phone : ""}`;
+
+      const token = crypto.randomBytes(16).toString("hex");
+      await sdk.rawQuery(
+        "INSERT INTO longtermhire_dispatch " +
+        "(fault_id, supplier_id, trade_id, token, token_expires_at, status, message_body, sent_at, attending_name) " +
+        "VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 14 DAY), 'sent', ?, NOW(), ?)",
+        [f.id, supplier_id, trade_id, token, messageBody, site_contact_name || null]
+      );
+
+      const link = "https://api.longtermhire.com/dispatch/" + token;
+      const label = (t) =>
+        `<p style="margin:0 0 3px; font-size:12px; color:#888; text-transform:uppercase; letter-spacing:.05em;">${t}</p>`;
+      const photos = photoUrls
+        .map((u) => `<img src="${u}" alt="" style="width:100%; max-width:460px; border-radius:6px; margin-bottom:10px;" />`)
+        .join("");
+      const details = Object.keys(answers || {})
+        .map((k) => `<li><b>${k.replace(/_/g, " ")}:</b> ${answers[k] || "not given"}</li>`)
+        .join("");
+
+      const html = `
+        <div style="font-family: Inter, Arial, sans-serif; max-width:600px; background:#f6f6f6; padding:16px;">
+          <div style="background:#fff; border:1px solid #ddd; border-radius:8px; padding:22px;">
+            <h2 style="margin:0 0 2px; font-size:20px; color:#111;">${faultType} — job on site</h2>
+            <p style="margin:0 0 18px; color:#666; font-size:13px;">From Long Term Hire · reference ${f.id}</p>
+            ${label("Machine")}
+            <p style="margin:0 0 16px; font-size:15px; color:#111;"><b>${f.plant_code || ""} — ${f.equipment_name || ""}</b></p>
+            ${label("What's happened")}
+            <p style="margin:0 0 3px; font-size:15px; color:#111;">${f.title || ""}</p>
+            <p style="margin:0 0 16px; font-size:14px; color:#444;">${firstMessage}</p>
+            ${photos}
+            ${details ? label("Details") : ""}
+            <ul style="margin:0 0 16px; padding-left:18px; font-size:14px; color:#333; line-height:1.7;">${details}</ul>
+            <div style="background:#f9f9f9; border-radius:6px; padding:14px; margin-bottom:18px;">
+              ${label("Where")}
+              <p style="margin:0 0 10px; font-size:15px; color:#111;">${f.company_name || ""}</p>
+              ${label("Meet")}
+              <p style="margin:0; font-size:15px; color:#111;">${site_contact_name || ""}${site_contact_phone ? ' · <a href="tel:' + site_contact_phone + '" style="color:#111;">' + site_contact_phone + "</a>" : ""}</p>
+            </div>
+            <a href="${link}" style="display:block; text-align:center; background:#1b8a3a; color:#fff; padding:16px; border-radius:6px; font-size:17px; font-weight:600; text-decoration:none;">Can you take this one?</a>
+            <p style="margin:12px 0 0; font-size:12px; color:#888;">One tap. Nothing to log into.</p>
+          </div>
+        </div>`;
+
+      let sent = false;
+      try {
+        const MailService = require("../../../baas/services/MailService");
+        const config = app.get("configuration");
+        const mailService = new MailService(config);
+        if (s.email) {
+          await mailService.send(
+            config.mail?.from_mail || "admin@longtermhire.com",
+            s.email,
+            `${faultType} — ${f.plant_code || ""} ${f.equipment_name || ""}, ${f.company_name || ""}`,
+            html
+          );
+          sent = true;
+        }
+      } catch (mailErr) {
+        console.error("Dispatch email failed:", mailErr);
+      }
+
+      await postToThread(
+        sdk, f.id, s.name, "message",
+        `Sent to ${s.name}${s.phone ? " · " + s.phone : ""}` + (sent ? "" : " — email did not go, ring them")
+      );
+
+      return res.status(200).json({
+        error: false,
+        data: { supplier: s.name, phone: s.phone, sent },
+      });
+    } catch (err) {
+      console.error("dispatch send error", err);
+      res.status(500).json({ error: true, message: "server_error" });
     }
   });
 
