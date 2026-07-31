@@ -1806,8 +1806,8 @@ function send(){
     if (j.error) { throw new Error(j.message || "failed"); }
     document.querySelector(".card").innerHTML =
       '<div class="done"><div class="tick">&#10003;</div>' +
-      '<h1>Thanks, that\'s sent</h1>' +
-      '<p class="lede">We have everything we need. We\'ll be in touch shortly.</p></div>';
+      '<h1>Thanks, that&#39;s sent</h1>' +
+      '<p class="lede">We have everything we need. We&#39;ll be in touch shortly.</p></div>';
   }).catch(function(){
     q("go").disabled = false;
     q("go").textContent = "Send it";
