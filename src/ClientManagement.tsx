@@ -94,16 +94,19 @@ const ClientManagement = () => {
     }
   };
 
-  const createFromSub = async (s) => {
-    if (!window.confirm("Create " + s.business_name + " as a company?")) return;
-    try {
-      const res = await api.post("/v1/api/longtermhire/super_admin/onboarding/" + s.id + "/create", {});
-      if (res?.data?.error) throw new Error(res.data.message);
-      toast.success(res.data.message || "Company created");
-      loadSubs();
-      loadInitialData();
-    } catch (e) {
-      toast.error("Could not create that");
+  // Opening the list is what marks them read. The chip is an indicator; the
+  // company still gets created by hand from the details, on this same page.
+  const openSubs = async () => {
+    const opening = !showSubs;
+    setShowSubs(opening);
+    if (opening && waiting.length > 0) {
+      try {
+        await api.post("/v1/api/longtermhire/super_admin/onboarding/seen", {});
+        setSubs((rows) => rows.map((r) =>
+          r.status === "submitted" ? { ...r, status: "seen" } : r));
+      } catch (e) {
+        console.error("Could not mark those as seen:", e);
+      }
     }
   };
   const [companyMembers, setCompanyMembers] = useState([]);
@@ -519,7 +522,7 @@ const ClientManagement = () => {
         </div>
 
         <div className="mt-4 pt-3 border-t border-[#2A2A2A] flex flex-wrap items-center gap-2">
-          <button onClick={() => setShowSubs(!showSubs)}
+          <button onClick={openSubs}
             className={
               "px-3.5 py-1.5 rounded-full font-[Inter] text-[13px] transition-colors " +
               (waiting.length > 0
@@ -568,17 +571,16 @@ const ClientManagement = () => {
                     </p>
                     <p className="text-[#6B7280] font-[Inter] text-[12px] mt-0.5">
                       {s.status === "sent" ? "Form sent, nothing back yet"
-                        : s.abn ? "ABN " + s.abn : "No ABN given"}
+                        : s.abn ? "ABN " + s.abn : "No ABN given — look it up"}
                     </p>
                   </div>
                   <span className={
                     "px-2.5 py-1 rounded-full font-[Inter] text-[12px] " +
-                    (s.status === "created" ? "bg-[#14352a] text-[#4CAF50]"
-                      : s.status === "submitted" ? "bg-[#3a2f14] text-[#F59E0B]"
+                    (s.status === "submitted" ? "bg-[#3a2f14] text-[#F59E0B]"
                       : "bg-[#292A2B] text-[#6B7280]")
                   }>
-                    {s.status === "created" ? "Created"
-                      : s.status === "submitted" ? "Needs review" : "Waiting"}
+                    {s.status === "submitted" ? "New"
+                      : s.status === "sent" ? "Waiting on them" : "Seen"}
                   </span>
                 </div>
 
@@ -605,11 +607,6 @@ const ClientManagement = () => {
                   </>
                 )}
 
-                {s.status === "submitted" && (
-                  <button onClick={() => createFromSub(s)} className={BTN.success + " mt-3"}>
-                    Create the company
-                  </button>
-                )}
               </div>
             ))}
           </div>
