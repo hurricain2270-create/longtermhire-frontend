@@ -60,6 +60,52 @@ const ClientManagement = () => {
   const [clients, setClients] = useState([]);
   const [inviteFilter, setInviteFilter] = useState("all");
   const [kitFilter, setKitFilter] = useState("all");
+
+  // Onboarding submissions. A client who has sent their details but does not
+  // exist as a company yet — same page, earlier stage.
+  const [subs, setSubs] = useState([]);
+  const [showSubs, setShowSubs] = useState(false);
+  const [inviting, setInviting] = useState(false);
+  const [invite, setInvite] = useState({ contact_name: "", email: "" });
+
+  const loadSubs = async () => {
+    try {
+      const res = await api.get("/v1/api/longtermhire/super_admin/onboarding");
+      if (res?.data && !res.data.error) setSubs(res.data.data || []);
+    } catch (e) {
+      console.error("Could not load submissions:", e);
+    }
+  };
+  useEffect(() => { loadSubs(); }, []);
+
+  const waiting = subs.filter((s) => s.status === "submitted");
+
+  const sendInvite = async () => {
+    if (!invite.email) { toast.error("Put in an email"); return; }
+    try {
+      const res = await api.post("/v1/api/longtermhire/super_admin/onboarding/invite", invite);
+      if (res?.data?.error) throw new Error();
+      toast.success(res.data.data.sent ? "Form sent" : "Created, but the email did not go");
+      setInvite({ contact_name: "", email: "" });
+      setInviting(false);
+      loadSubs();
+    } catch (e) {
+      toast.error("Could not send that");
+    }
+  };
+
+  const createFromSub = async (s) => {
+    if (!window.confirm("Create " + s.business_name + " as a company?")) return;
+    try {
+      const res = await api.post("/v1/api/longtermhire/super_admin/onboarding/" + s.id + "/create", {});
+      if (res?.data?.error) throw new Error(res.data.message);
+      toast.success(res.data.message || "Company created");
+      loadSubs();
+      loadInitialData();
+    } catch (e) {
+      toast.error("Could not create that");
+    }
+  };
   const [companyMembers, setCompanyMembers] = useState([]);
   const [inviteTarget, setInviteTarget] = useState(null);
   const [equipment, setEquipment] = useState([]);
@@ -471,6 +517,103 @@ const ClientManagement = () => {
             ))}
           </div>
         </div>
+
+        <div className="mt-4 pt-3 border-t border-[#2A2A2A] flex flex-wrap items-center gap-2">
+          <button onClick={() => setShowSubs(!showSubs)}
+            className={
+              "px-3.5 py-1.5 rounded-full font-[Inter] text-[13px] transition-colors " +
+              (waiting.length > 0
+                ? "bg-[#3a2f14] text-[#F59E0B] border border-[#F59E0B55]"
+                : "bg-[#292A2B] text-[#9CA3AF] border border-[#333]")
+            }>
+            Submissions <span className="opacity-70">{waiting.length}</span>
+          </button>
+          <button onClick={() => setInviting(true)} className={BTN.secondarySm}>
+            + Send an onboarding form
+          </button>
+        </div>
+
+        {inviting && (
+          <div className="mt-3 bg-[#1F1F20] border border-[#333] rounded-lg p-4 max-w-[420px]">
+            <p className="text-[#E5E5E5] font-[Inter] text-[15px] font-semibold mb-3">
+              Send an onboarding form
+            </p>
+            <input value={invite.contact_name}
+              onChange={(e) => setInvite({ ...invite, contact_name: e.target.value })}
+              placeholder="Their name"
+              className="w-full bg-[#292A2B] border border-[#333] rounded-lg text-[#E5E5E5] text-[15px] px-3 py-2.5 outline-none focus:border-[#FDCE06] mb-2.5" />
+            <input value={invite.email} inputMode="email"
+              onChange={(e) => setInvite({ ...invite, email: e.target.value })}
+              placeholder="Their email"
+              className="w-full bg-[#292A2B] border border-[#333] rounded-lg text-[#E5E5E5] text-[15px] px-3 py-2.5 outline-none focus:border-[#FDCE06] mb-3" />
+            <div className="flex gap-2">
+              <button onClick={sendInvite} className={BTN.success}>Send it</button>
+              <button onClick={() => setInviting(false)} className={BTN.secondary}>Cancel</button>
+            </div>
+          </div>
+        )}
+
+        {showSubs && (
+          <div className="mt-3 space-y-2.5">
+            {subs.length === 0 ? (
+              <p className="text-[#9CA3AF] font-[Inter] text-[14px]">
+                Nothing yet. Send a form and it will land here.
+              </p>
+            ) : subs.map((s) => (
+              <div key={s.id} className="bg-[#1F1F20] border border-[#333] rounded-lg p-4">
+                <div className="flex justify-between items-start gap-3 mb-2">
+                  <div>
+                    <p className="text-[#E5E5E5] font-[Inter] text-[16px] font-semibold">
+                      {s.business_name || s.invited_name || s.invited_email}
+                    </p>
+                    <p className="text-[#6B7280] font-[Inter] text-[12px] mt-0.5">
+                      {s.status === "sent" ? "Form sent, nothing back yet"
+                        : s.abn ? "ABN " + s.abn : "No ABN given"}
+                    </p>
+                  </div>
+                  <span className={
+                    "px-2.5 py-1 rounded-full font-[Inter] text-[12px] " +
+                    (s.status === "created" ? "bg-[#14352a] text-[#4CAF50]"
+                      : s.status === "submitted" ? "bg-[#3a2f14] text-[#F59E0B]"
+                      : "bg-[#292A2B] text-[#6B7280]")
+                  }>
+                    {s.status === "created" ? "Created"
+                      : s.status === "submitted" ? "Needs review" : "Waiting"}
+                  </span>
+                </div>
+
+                {s.status !== "sent" && (
+                  <>
+                    <p className="text-[#9CA3AF] font-[Inter] text-[13px]">
+                      {[s.contact_name, s.contact_role, s.contact_mobile].filter(Boolean).join(" · ")}
+                    </p>
+                    {s.postal_address ? (
+                      <p className="text-[#9CA3AF] font-[Inter] text-[13px]">{s.postal_address}</p>
+                    ) : null}
+                    {s.people && s.people.length > 0 && (
+                      <div className="mt-2.5">
+                        <p className="text-[#6B7280] font-[Inter] text-[11px] uppercase tracking-[0.05em] mb-1">
+                          Wants logins for
+                        </p>
+                        {s.people.map((p, i) => (
+                          <p key={i} className="text-[#9CA3AF] font-[Inter] text-[13px]">
+                            {p.name} · {p.role}{p.email ? " · " + p.email : ""}
+                          </p>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {s.status === "submitted" && (
+                  <button onClick={() => createFromSub(s)} className={BTN.success + " mt-3"}>
+                    Create the company
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="flex items-center justify-between mt-4 pt-3 border-t border-[#2A2A2A]">
           <div className="text-[#9CA3AF] font-[Inter] text-[14px]">

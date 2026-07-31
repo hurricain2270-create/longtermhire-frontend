@@ -1442,6 +1442,382 @@ module.exports = function (app) {
 
 
   /**
+   * Onboarding. We send a link, the client fills one page on their phone, and
+   * it lands here for review. No login on their side — the token in the address
+   * is the credential, same as the supplier job pages.
+   *
+   * POST /super_admin/onboarding/invite   create a link to send
+   * GET  /super_admin/onboarding          what has come in
+   * POST /super_admin/onboarding/:id/create   turn a submission into a company
+   * GET  /onboarding/:token               the form's own data (public)
+   * POST /onboarding/:token               they send it (public)
+   */
+  app.post('/v1/api/longtermhire/super_admin/onboarding/invite', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const { contact_name, email } = req.body;
+      if (!email) return res.status(400).json({ error: true, message: 'An email is needed' });
+
+      const token = require('crypto').randomBytes(16).toString('hex');
+      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      const result = await sdk.rawQuery(
+        'INSERT INTO longtermhire_onboarding (token, invited_name, invited_email, status, created_at) ' +
+        "VALUES (?, ?, ?, 'sent', ?)",
+        [token, contact_name || null, email, now]
+      );
+
+      const link = 'https://api.longtermhire.com/onboarding/' + token;
+      let sent = false;
+      try {
+        const MailService = require('../../../baas/services/MailService');
+        const config = app.get('configuration');
+        const mailService = new MailService(config);
+        await mailService.send(
+          config.mail?.from_mail || 'admin@longtermhire.com',
+          email,
+          'Setting up your account',
+          `<div style="font-family: Inter, Arial, sans-serif; max-width:560px; background:#f6f6f6; padding:16px;">
+             <div style="background:#fff; border:1px solid #ddd; border-radius:8px; padding:22px;">
+               <h2 style="margin:0 0 3px; font-size:19px; color:#111;">Setting up your account</h2>
+               <p style="margin:0 0 16px; color:#666; font-size:13px;">Long Term Hire</p>
+               <p style="margin:0 0 14px; font-size:14px; color:#333; line-height:1.6;">Hello ${contact_name || 'there'},</p>
+               <p style="margin:0 0 16px; font-size:14px; color:#333; line-height:1.6;">
+                 Everything we need is on one page. It takes about two minutes and you can do it on your phone.</p>
+               <a href="${link}" style="display:block; text-align:center; background:#1b8a3a; color:#fff; padding:15px; border-radius:6px; font-size:16px; font-weight:600; text-decoration:none;">Open the form</a>
+               <p style="margin:12px 0 0; font-size:12px; color:#888;">Nothing to log into. The link is yours and stays live for 30 days.</p>
+             </div>
+           </div>`
+        );
+        sent = true;
+      } catch (mailErr) {
+        console.error('Onboarding invite email failed:', mailErr);
+      }
+
+      return res.status(200).json({ error: false, data: { id: result.insertId, link, sent } });
+    } catch (error) {
+      console.error('Onboarding invite error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  app.get('/v1/api/longtermhire/super_admin/onboarding', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const rows = await sdk.rawQuery(
+        'SELECT id, token, invited_name, invited_email, status, business_name, abn, ' +
+        'postal_address, contact_name, contact_role, contact_mobile, people, ' +
+        'created_at, submitted_at FROM longtermhire_onboarding ORDER BY id DESC', []
+      );
+      return res.status(200).json({
+        error: false,
+        data: (rows || []).map((r) => {
+          let people = [];
+          try {
+            people = Array.isArray(r.people) ? r.people : JSON.parse(r.people || '[]');
+          } catch (e) { people = []; }
+          return Object.assign({}, r, { people });
+        }),
+      });
+    } catch (error) {
+      console.error('Onboarding list error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  // The form itself. Public — the token is the credential.
+  app.get('/v1/api/longtermhire/onboarding/:token', async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const rows = await sdk.rawQuery(
+        'SELECT invited_name, status FROM longtermhire_onboarding WHERE token = ? LIMIT 1',
+        [req.params.token]
+      );
+      if (!rows || !rows.length) return res.status(404).json({ error: true, message: 'not_found' });
+      return res.status(200).json({ error: false, data: rows[0] });
+    } catch (error) {
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  app.post('/v1/api/longtermhire/onboarding/:token', async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const { business_name, abn, postal_address, contact_name, contact_role,
+              contact_mobile, people } = req.body;
+      if (!business_name || !contact_name) {
+        return res.status(400).json({ error: true, message: 'A business name and your name are needed' });
+      }
+
+      const rows = await sdk.rawQuery(
+        "SELECT id, status FROM longtermhire_onboarding WHERE token = ? LIMIT 1", [req.params.token]
+      );
+      if (!rows || !rows.length) return res.status(404).json({ error: true, message: 'not_found' });
+      if (rows[0].status === 'created') {
+        return res.status(400).json({ error: true, message: 'already_done' });
+      }
+
+      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      await sdk.rawQuery(
+        "UPDATE longtermhire_onboarding SET business_name = ?, abn = ?, postal_address = ?, " +
+        "contact_name = ?, contact_role = ?, contact_mobile = ?, people = ?, " +
+        "status = 'submitted', submitted_at = ? WHERE token = ?",
+        [business_name, abn || null, postal_address || null, contact_name,
+         contact_role || null, contact_mobile || null,
+         JSON.stringify(Array.isArray(people) ? people : []), now, req.params.token]
+      );
+
+      // Tell whoever reads our mail that something has come in.
+      try {
+        const MailService = require('../../../baas/services/MailService');
+        const config = app.get('configuration');
+        const mailService = new MailService(config);
+        const to = process.env.ADMIN_NOTIFY_EMAIL || config.mail?.from_mail;
+        if (to) {
+          await mailService.send(
+            config.mail?.from_mail || 'admin@longtermhire.com', to,
+            'Account details received — ' + business_name,
+            `<div style="font-family:Inter,Arial,sans-serif;font-size:15px;color:#111;">
+               <p><b>${business_name}</b> has sent their details.</p>
+               <p>${contact_name}${contact_role ? ' · ' + contact_role : ''}${contact_mobile ? ' · ' + contact_mobile : ''}</p>
+               <p style="color:#666;font-size:13px;">Review it under Client Management, Submissions.</p>
+             </div>`
+          );
+        }
+      } catch (mailErr) {
+        console.error('Onboarding notification failed:', mailErr);
+      }
+
+      return res.status(200).json({ error: false, message: 'Thanks' });
+    } catch (error) {
+      console.error('Onboarding submit error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  app.post('/v1/api/longtermhire/super_admin/onboarding/:id/create', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const rows = await sdk.rawQuery(
+        'SELECT * FROM longtermhire_onboarding WHERE id = ? LIMIT 1', [req.params.id]
+      );
+      if (!rows || !rows.length) return res.status(404).json({ error: true, message: 'Not found' });
+      const s = rows[0];
+      if (s.status === 'created') {
+        return res.status(400).json({ error: true, message: 'Already created' });
+      }
+
+      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      const company = await sdk.rawQuery(
+        'INSERT INTO longtermhire_company (company_name, created_at, updated_at) VALUES (?, ?, ?)',
+        [s.business_name, now, now]
+      );
+
+      await sdk.rawQuery(
+        "UPDATE longtermhire_onboarding SET status = 'created', company_id = ? WHERE id = ?",
+        [company.insertId, s.id]
+      );
+
+      return res.status(200).json({
+        error: false,
+        data: { company_id: company.insertId, company_name: s.business_name },
+        message: 'Company created — invite them from Client Management',
+      });
+    } catch (error) {
+      console.error('Onboarding create error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  // The onboarding form itself, served as plain HTML. No bundle to download on
+  // a phone at the back of a site, and nothing to log into.
+  app.get('/onboarding/:token', async (req, res) => {
+    const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (ch) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+    let row = null;
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const rows = await sdk.rawQuery(
+        'SELECT invited_name, status FROM longtermhire_onboarding WHERE token = ? LIMIT 1',
+        [req.params.token]
+      );
+      row = rows && rows.length ? rows[0] : null;
+    } catch (e) {
+      console.error('onboarding page error', e);
+    }
+
+    const shell = (inner) => `<!doctype html><html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Setting up your account — Long Term Hire</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#292A2B;font:16px/1.5 Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;color:#E5E5E5;padding:16px}
+.card{max-width:480px;margin:0 auto;background:#1F1F20;border:1px solid #333333;border-radius:14px;padding:22px 18px 26px}
+.brand{font-size:12px;color:#6B7280;text-transform:uppercase;letter-spacing:.05em;margin:0 0 2px}
+h1{font-size:21px;font-weight:600;margin:0 0 4px;color:#E5E5E5}
+.lede{color:#9CA3AF;font-size:14px;margin:0 0 22px}
+.band{color:#FDCE06;font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:22px 0 10px}
+label{display:block;color:#9CA3AF;font-size:13px;margin:0 0 5px}
+.hint{color:#6B7280;font-size:13px;margin:-4px 0 12px}
+input{width:100%;font:inherit;padding:12px 13px;border:1px solid #333333;border-radius:8px;background:#292A2B;color:#E5E5E5;margin-bottom:12px}
+input:focus{outline:none;border-color:#FDCE06}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.person{background:#292A2B;border:1px solid #333;border-radius:8px;padding:12px;margin-bottom:8px}
+.person input{background:#1F1F20;margin-bottom:8px}
+.roles{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px}
+.role{background:#292A2B;border:1px solid #333;color:#9CA3AF;padding:6px 12px;border-radius:999px;font-size:13px;cursor:pointer}
+.role.on{background:#FDCE06;border-color:#FDCE06;color:#1F1F20;font-weight:600}
+.person .role{background:#1F1F20}
+.person .role.on{background:#FDCE06}
+.add{display:block;width:100%;text-align:center;border:1px dashed #444;background:none;color:#9CA3AF;padding:12px;border-radius:8px;font:inherit;cursor:pointer;margin-bottom:20px}
+.go{display:block;width:100%;background:#FDCE06;border:none;color:#1F1F20;padding:16px;border-radius:8px;font:inherit;font-weight:700;font-size:16px;cursor:pointer}
+.go[disabled]{opacity:.4}
+.warn{color:#F59E0B;font-size:12px;margin:8px 0 0}
+.err{color:#ef4444;font-size:14px;margin:12px 0 0;min-height:1px}
+.done{text-align:center;padding:20px 0}
+.tick{width:48px;height:48px;border-radius:50%;background:#14352a;color:#4CAF50;font-size:24px;line-height:48px;margin:0 auto 14px}
+.rm{float:right;color:#6B7280;background:none;border:none;font-size:18px;cursor:pointer;padding:0 2px}
+</style></head><body>${inner}</body></html>`;
+
+    res.set('Content-Type', 'text/html; charset=utf-8');
+
+    if (!row) {
+      return res.send(shell(`<div class="card"><p class="brand">Long Term Hire</p>
+        <h1>This link isn't valid</h1>
+        <p class="lede">Give us a ring and we'll send you another one.</p></div>`));
+    }
+    if (row.status === 'submitted' || row.status === 'created') {
+      return res.send(shell(`<div class="card"><div class="done">
+        <div class="tick">&#10003;</div>
+        <h1>Already received</h1>
+        <p class="lede">Thanks — we have your details. We'll be in touch shortly.</p>
+      </div></div>`));
+    }
+
+    const ROLES = ['Owner', 'Engineer', 'Supervisor'];
+    const roleChips = (idx) => ROLES.map((r) =>
+      `<button type="button" class="role" data-p="${idx}" data-role="${r}" onclick="pickRole(this)">${r}</button>`
+    ).join('');
+
+    return res.send(shell(`<div class="card">
+      <p class="brand">Long Term Hire</p>
+      <h1>Setting up your account</h1>
+      <p class="lede">Three short bits. Two minutes.</p>
+
+      <p class="band">Your business</p>
+      <label for="business">Business name</label>
+      <input id="business" autocomplete="organization" />
+      <label for="abn">ABN <span style="color:#6B7280">if handy</span></label>
+      <input id="abn" inputmode="numeric" />
+      <label for="postal">Postal address</label>
+      <input id="postal" autocomplete="street-address" />
+
+      <p class="band">You</p>
+      <div class="two">
+        <div><label for="cname">Name</label><input id="cname" autocomplete="name" /></div>
+        <div><label for="cmobile">Mobile</label><input id="cmobile" inputmode="tel" autocomplete="tel" /></div>
+      </div>
+      <label>Your role</label>
+      <div class="roles" id="myrole">${roleChips('me')}</div>
+      <div style="height:14px"></div>
+
+      <p class="band">Who else needs a login</p>
+      <p class="hint">We need a role for each one — it decides what they see.</p>
+      <div id="people"></div>
+      <button type="button" class="add" onclick="addPerson()">+ Add someone</button>
+
+      <button type="button" class="go" id="go" onclick="send()">Send it</button>
+      <p class="err" id="err"></p>
+    </div>
+
+<script>
+var TOKEN = ${JSON.stringify(req.params.token)};
+var API = "https://api.longtermhire.com";
+var n = 0;
+function q(id){ return document.getElementById(id); }
+function pickRole(btn){
+  var p = btn.getAttribute("data-p");
+  var all = document.querySelectorAll('[data-p="' + p + '"]');
+  for (var i=0;i<all.length;i++) all[i].classList.remove("on");
+  btn.classList.add("on");
+  var w = q("warn-" + p); if (w) w.textContent = "";
+}
+function roleOf(p){
+  var on = document.querySelector('[data-p="' + p + '"].on');
+  return on ? on.getAttribute("data-role") : "";
+}
+function addPerson(){
+  n++;
+  var d = document.createElement("div");
+  d.className = "person";
+  d.id = "p-" + n;
+  d.innerHTML =
+    '<button type="button" class="rm" onclick="this.parentNode.remove()">&times;</button>' +
+    '<input placeholder="Name" id="pn-' + n + '" />' +
+    '<input placeholder="Email" inputmode="email" id="pe-' + n + '" />' +
+    '<div class="roles">' +
+      ${JSON.stringify(ROLES)}.map(function(r){
+        return '<button type="button" class="role" data-p="' + n + '" data-role="' + r + '" onclick="pickRole(this)">' + r + '</button>';
+      }).join("") +
+    '</div><p class="warn" id="warn-' + n + '"></p>';
+  q("people").appendChild(d);
+}
+function send(){
+  q("err").textContent = "";
+  var business = q("business").value.trim();
+  var cname = q("cname").value.trim();
+  if (!business) { q("err").textContent = "We need the business name."; return; }
+  if (!cname) { q("err").textContent = "We need your name."; return; }
+  if (!roleOf("me")) { q("err").textContent = "Pick your role."; return; }
+
+  var people = [], missing = null;
+  var rows = document.querySelectorAll(".person");
+  for (var i=0;i<rows.length;i++){
+    var id = rows[i].id.split("-")[1];
+    var nm = q("pn-" + id).value.trim();
+    var em = q("pe-" + id).value.trim();
+    if (!nm && !em) continue;
+    var rl = roleOf(id);
+    if (!rl) { q("warn-" + id).textContent = "Pick a role for " + (nm || "this person"); missing = id; continue; }
+    people.push({ name: nm, email: em, role: rl });
+  }
+  if (missing) { q("err").textContent = "Everyone needs a role."; return; }
+
+  q("go").disabled = true;
+  q("go").textContent = "Sending...";
+  fetch(API + "/v1/api/longtermhire/onboarding/" + TOKEN, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      business_name: business,
+      abn: q("abn").value.trim(),
+      postal_address: q("postal").value.trim(),
+      contact_name: cname,
+      contact_role: roleOf("me"),
+      contact_mobile: q("cmobile").value.trim(),
+      people: people
+    })
+  }).then(function(r){ return r.json(); }).then(function(j){
+    if (j.error) { throw new Error(j.message || "failed"); }
+    document.querySelector(".card").innerHTML =
+      '<div class="done"><div class="tick">&#10003;</div>' +
+      '<h1>Thanks, that\'s sent</h1>' +
+      '<p class="lede">We have everything we need. We\'ll be in touch shortly.</p></div>';
+  }).catch(function(){
+    q("go").disabled = false;
+    q("go").textContent = "Send it";
+    q("err").textContent = "That didn't send. Give it another go, or ring us.";
+  });
+}
+</script>`));
+  });
+
+  /**
    * Suppliers who fix things, and which machines they cover.
    * GET    /v1/api/longtermhire/super_admin/suppliers
    * POST   /v1/api/longtermhire/super_admin/suppliers
