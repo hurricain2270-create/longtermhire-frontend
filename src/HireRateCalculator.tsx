@@ -242,7 +242,7 @@ const HireRateCalculator = () => {
       : "border-[#3A3A3C] bg-[#2C2C2E] text-[#9A9A96]");
 
   return (
-    <div className="p-4 sm:p-8 bg-[#1A1A1B] min-h-screen">
+    <div className="px-4 sm:px-8 pb-8 bg-[#1A1A1B]">
       <header className="max-w-[1100px] mx-auto mb-8 pb-5 border-b border-[#3A3A3C] flex flex-wrap items-baseline justify-between gap-2">
         <h1 className="text-[#F2F0EA] font-[Inter] font-semibold text-[28px] sm:text-[32px]">
           Minimum <span className="text-[#FDCE06] italic font-normal">hire rate</span>

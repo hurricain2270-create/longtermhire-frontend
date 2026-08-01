@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
 import api from "./services/api";
 import { BTN } from "./styles/buttons";
+import HireRateCalculator from "./HireRateCalculator";
 
 const PERIODS = [
   "now",
@@ -27,6 +28,7 @@ const median = (nums) => {
 const yearOf = (d) => (d ? String(d).slice(0, 4) : "");
 
 const PriceHistory = () => {
+  const [tab, setTab] = useState("market");
   const [data, setData] = useState({ prices: [], categories: [], asking: [] });
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
@@ -133,8 +135,41 @@ const PriceHistory = () => {
     return (data.categories || []).filter((c) => !known[c] || known[c] < yearAgo);
   }, [data]);
 
+  // Two sides of the same question - what the market charges, and what a
+  // machine has to earn. They belong on one page.
+  const Tabs = ({ active }) => (
+    <div className="flex gap-2 mb-6">
+      <button onClick={() => setTab("market")}
+        className={"px-4 py-2 rounded-lg font-[Inter] text-[14px] transition-colors " +
+          (active === "market"
+            ? "bg-[#FDCE06] text-[#1F1F20] font-semibold"
+            : "bg-[#1F1F20] border border-[#333] text-[#9CA3AF] hover:border-[#FDCE06]")}>
+        What the market charges
+      </button>
+      <button onClick={() => setTab("rate")}
+        className={"px-4 py-2 rounded-lg font-[Inter] text-[14px] transition-colors " +
+          (active === "rate"
+            ? "bg-[#FDCE06] text-[#1F1F20] font-semibold"
+            : "bg-[#1F1F20] border border-[#333] text-[#9CA3AF] hover:border-[#FDCE06]")}>
+        What you need to charge
+      </button>
+    </div>
+  );
+
+  if (tab === "rate") {
+    return (
+      <div className="bg-[#1A1A1B] min-h-screen">
+        <div className="px-4 sm:px-8 pt-4 sm:pt-8">
+          <Tabs active="rate" />
+        </div>
+        <HireRateCalculator />
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 sm:p-8 bg-[#292A2B] min-h-screen">
+      <Tabs active="market" />
       <header className="mb-6">
         <h1 className="text-[#E5E5E5] font-[Inter] font-bold text-[28px] sm:text-[36px] leading-tight">
           Price History
