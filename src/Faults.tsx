@@ -88,7 +88,12 @@ const Card = ({
   const updates = isOpen && detail ? detail.updates : [];
 
   return (
-    <div className="bg-[#1F1F20] border border-[#333] rounded-xl p-4 sm:p-5 mb-3">
+    <div className={
+      "rounded-xl p-4 sm:p-5 mb-3 border " +
+      (f.resolved_at
+        ? "bg-[#1C1C1D] border-[#282829]"
+        : "bg-[#1F1F20] border-[#333]")
+    }>
       <div className="flex flex-wrap items-start justify-between gap-3 mb-3">
         <div>
           <div className="text-[#E5E5E5] font-[Inter] text-[15px] font-semibold">{f.title}</div>
@@ -169,9 +174,14 @@ const Card = ({
       )}
 
       <div className="flex items-center gap-2">
+        {f.resolved_at && (
+          <span className="px-2.5 py-1 rounded-full bg-[#14352a] text-[#4CAF50] font-[Inter] text-[12px] font-medium">
+            Resolved
+          </span>
+        )}
         <button onClick={() => openFault(f)}
           className="text-[#FDCE06] font-[Inter] text-[14px] font-medium hover:underline">
-          {isOpen ? "Close" : "Open"}
+          {isOpen ? "Hide" : "View"}
         </button>
         {/* Same badge the chat list uses for unread messages */}
         {f.unanswered > 0 && (
@@ -514,6 +524,11 @@ const Faults = () => {
         </div>
       ) : (
         <>
+          {openRows.length > 0 && (
+            <p className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2.5">
+              Still open
+            </p>
+          )}
           {openRows.map((f) => <Card key={f.id} f={f} open={open} detail={detail} busy={busy} reply={reply} setReply={setReply} replyPhotos={replyPhotos} setReplyPhotos={setReplyPhotos} uploading={uploading} addReplyPhotos={addReplyPhotos} resolveHours={resolveHours} setResolveHours={setResolveHours} pendingBand={pendingBand} setPendingBand={setPendingBand} customDays={customDays} setCustomDays={setCustomDays} openFault={openFault} classify={classify} stage={stage} send={send} />)}
           {doneRows.length > 0 && (
             <div className="text-white font-[Inter] text-[12px] uppercase tracking-[0.06em] mt-7 mb-3">Resolved</div>
