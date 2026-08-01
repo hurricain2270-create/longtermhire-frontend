@@ -589,8 +589,10 @@ const ClientManagement = () => {
                     <p className="text-[#9CA3AF] font-[Inter] text-[13px]">
                       {[s.contact_name, s.contact_role, s.contact_mobile].filter(Boolean).join(" · ")}
                     </p>
-                    {s.postal_address ? (
-                      <p className="text-[#9CA3AF] font-[Inter] text-[13px]">{s.postal_address}</p>
+                    {(s.street || s.suburb) ? (
+                      <p className="text-[#9CA3AF] font-[Inter] text-[13px]">
+                        {[s.street, s.suburb, s.state, s.postcode].filter(Boolean).join(", ")}
+                      </p>
                     ) : null}
                     {s.people && s.people.length > 0 && (
                       <div className="mt-2.5">

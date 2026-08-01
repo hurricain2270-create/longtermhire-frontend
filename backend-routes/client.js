@@ -1507,7 +1507,7 @@ module.exports = function (app) {
       sdk.setProjectId('longtermhire');
       const rows = await sdk.rawQuery(
         'SELECT id, token, invited_name, invited_email, status, business_name, abn, ' +
-        'postal_address, contact_name, contact_role, contact_mobile, people, ' +
+        'street, suburb, state, postcode, contact_name, contact_role, contact_mobile, people, ' +
         'created_at, submitted_at FROM longtermhire_onboarding ORDER BY id DESC', []
       );
       return res.status(200).json({
@@ -1546,8 +1546,8 @@ module.exports = function (app) {
     try {
       const sdk = app.get('sdk');
       sdk.setProjectId('longtermhire');
-      const { business_name, abn, postal_address, contact_name, contact_role,
-              contact_mobile, people } = req.body;
+      const { business_name, abn, street, suburb, state, postcode,
+              contact_name, contact_role, contact_mobile, people } = req.body;
       if (!business_name || !contact_name) {
         return res.status(400).json({ error: true, message: 'A business name and your name are needed' });
       }
@@ -1562,11 +1562,11 @@ module.exports = function (app) {
 
       const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
       await sdk.rawQuery(
-        "UPDATE longtermhire_onboarding SET business_name = ?, abn = ?, postal_address = ?, " +
-        "contact_name = ?, contact_role = ?, contact_mobile = ?, people = ?, " +
-        "status = 'submitted', submitted_at = ? WHERE token = ?",
-        [business_name, abn || null, postal_address || null, contact_name,
-         contact_role || null, contact_mobile || null,
+        "UPDATE longtermhire_onboarding SET business_name = ?, abn = ?, street = ?, " +
+        "suburb = ?, state = ?, postcode = ?, contact_name = ?, contact_role = ?, " +
+        "contact_mobile = ?, people = ?, status = 'submitted', submitted_at = ? WHERE token = ?",
+        [business_name, abn || null, street || null, suburb || null, state || null,
+         postcode || null, contact_name, contact_role || null, contact_mobile || null,
          JSON.stringify(Array.isArray(people) ? people : []), now, req.params.token]
       );
 
@@ -1695,8 +1695,14 @@ input:focus{outline:none;border-color:#FDCE06}
       <input id="business" autocomplete="organization" />
       <label for="abn">ABN <span style="color:#6B7280">if handy</span></label>
       <input id="abn" inputmode="numeric" />
-      <label for="postal">Postal address</label>
-      <input id="postal" autocomplete="street-address" />
+      <label for="street">Number and street</label>
+      <input id="street" autocomplete="address-line1" />
+      <div class="two">
+        <div><label for="suburb">Suburb or town</label><input id="suburb" autocomplete="address-level2" /></div>
+        <div><label for="postcode">Postcode</label><input id="postcode" inputmode="numeric" autocomplete="postal-code" /></div>
+      </div>
+      <label for="state">State</label>
+      <input id="state" autocomplete="address-level1" placeholder="QLD" />
 
       <p class="band">You</p>
       <div class="two">
@@ -1777,7 +1783,10 @@ function send(){
     body: JSON.stringify({
       business_name: business,
       abn: q("abn").value.trim(),
-      postal_address: q("postal").value.trim(),
+      street: q("street").value.trim(),
+      suburb: q("suburb").value.trim(),
+      state: q("state").value.trim(),
+      postcode: q("postcode").value.trim(),
       contact_name: cname,
       contact_role: roleOf("me"),
       contact_mobile: q("cmobile").value.trim(),
