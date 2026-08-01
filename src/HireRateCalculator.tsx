@@ -242,7 +242,7 @@ const HireRateCalculator = ({ compact = false }) => {
       : "border-[#3A3A3C] bg-[#2C2C2E] text-[#9A9A96]");
 
   return (
-    <div className={compact ? "" : "px-4 sm:px-8 pb-8 bg-[#1A1A1B]"}>
+    <div>
       {!compact && (
         <header className="max-w-[1100px] mx-auto mb-8 pb-5 border-b border-[#3A3A3C] flex flex-wrap items-baseline justify-between gap-2">
           <h1 className="text-[#F2F0EA] font-[Inter] font-semibold text-[28px] sm:text-[32px]">
@@ -255,9 +255,7 @@ const HireRateCalculator = ({ compact = false }) => {
         </header>
       )}
 
-      <div className={compact
-        ? "grid grid-cols-1 gap-5"
-        : "max-w-[1100px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.15fr] gap-7"}>
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.1fr] gap-5">
         {/* INPUTS */}
         <section className="bg-[#232324] border border-[#3A3A3C] rounded-xl p-6">
           <Band>The machine</Band>

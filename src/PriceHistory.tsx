@@ -147,7 +147,7 @@ const PriceHistory = () => {
         </p>
       </header>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6 items-start">
+      <div className="grid grid-cols-1 xl:grid-cols-[380px_1fr] gap-6 items-start">
         <div>
       {!adding && (
         <button onClick={() => setAdding(true)} className={BTN.primaryLg + " mb-6"}>
@@ -252,7 +252,7 @@ const PriceHistory = () => {
           Nothing recorded yet. Add the first price above.
         </p>
       ) : (
-        <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4">
           {groups.map((g) => (
             <section key={g.cat} className="bg-[#1F1F20] border border-[#333333] rounded-xl p-5">
               <div className="flex justify-between items-start mb-4 gap-3">
@@ -319,7 +319,7 @@ const PriceHistory = () => {
         </div>
 
         {/* What a machine has to earn, beside what the market pays for it. */}
-        <aside className="bg-[#1A1A1B] border border-[#3A3A3C] rounded-xl p-5 xl:sticky xl:top-6">
+        <aside className="bg-[#1A1A1B] border border-[#3A3A3C] rounded-xl p-5">
           <p className="text-[#F2F0EA] font-[Inter] text-[18px] font-semibold">
             Minimum <span className="text-[#FDCE06] italic font-normal">hire rate</span>
           </p>
@@ -327,7 +327,7 @@ const PriceHistory = () => {
             What a machine has to earn to be worth owning, before deciding what the
             market will pay for it.
           </p>
-          <HireRateCalculator compact />
+          <HireRateCalculator />
         </aside>
       </div>
     </div>
