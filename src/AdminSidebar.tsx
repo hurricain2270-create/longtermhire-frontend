@@ -234,6 +234,18 @@ const AdminSidebar = ({ isOpen, onClose }) => {
       ),
     },
     {
+      path: "/hire-rate",
+      name: "Hire Rate",
+      icon: (
+        <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1.5 11.5 L5 7.5 L8 9.5 L12.5 3.5" stroke="currentColor" strokeWidth="1.4"
+            strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M9.5 3.5h3v3" stroke="currentColor" strokeWidth="1.4"
+            strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ),
+    },
+    {
       path: "/suppliers",
       name: "Suppliers",
       icon: (

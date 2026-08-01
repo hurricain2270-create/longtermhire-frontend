@@ -35,6 +35,7 @@ import VerifyOTP from "./client/VerifyOTP";
 import ResetPassword from "./client/ResetPassword";
 import PriceHistory from "./PriceHistory";
 import Suppliers from "./Suppliers";
+import HireRateCalculator from "./HireRateCalculator";
 
 // Without this, a single error anywhere unmounts the whole app and every page
 // goes blank with nothing on screen to explain it. Now the page that broke says
@@ -221,6 +222,7 @@ function App() {
         <Route path="/contract-setup" element={<PrivateRoute allowedRoles={["super_admin"]}><DashboardLayout><ContractSetup /></DashboardLayout></PrivateRoute>} />
         <Route path="/maintenance" element={<PrivateRoute allowedRoles={["super_admin"]}><DashboardLayout><Maintenance /></DashboardLayout></PrivateRoute>} />
         <Route path="/price-history" element={<PrivateRoute allowedRoles={["super_admin"]}><DashboardLayout><PriceHistory /></DashboardLayout></PrivateRoute>} />
+        <Route path="/hire-rate" element={<PrivateRoute allowedRoles={["super_admin"]}><DashboardLayout><HireRateCalculator /></DashboardLayout></PrivateRoute>} />
         <Route path="/suppliers" element={<PrivateRoute allowedRoles={["super_admin"]}><DashboardLayout><Suppliers /></DashboardLayout></PrivateRoute>} />
         <Route path="/faults" element={<PrivateRoute allowedRoles={["super_admin"]}><DashboardLayout><Faults /></DashboardLayout></PrivateRoute>} />
         <Route
