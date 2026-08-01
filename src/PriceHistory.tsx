@@ -135,41 +135,8 @@ const PriceHistory = () => {
     return (data.categories || []).filter((c) => !known[c] || known[c] < yearAgo);
   }, [data]);
 
-  // Two sides of the same question - what the market charges, and what a
-  // machine has to earn. They belong on one page.
-  const Tabs = ({ active }) => (
-    <div className="flex gap-2 mb-6">
-      <button onClick={() => setTab("market")}
-        className={"px-4 py-2 rounded-lg font-[Inter] text-[14px] transition-colors " +
-          (active === "market"
-            ? "bg-[#FDCE06] text-[#1F1F20] font-semibold"
-            : "bg-[#1F1F20] border border-[#333] text-[#9CA3AF] hover:border-[#FDCE06]")}>
-        What the market charges
-      </button>
-      <button onClick={() => setTab("rate")}
-        className={"px-4 py-2 rounded-lg font-[Inter] text-[14px] transition-colors " +
-          (active === "rate"
-            ? "bg-[#FDCE06] text-[#1F1F20] font-semibold"
-            : "bg-[#1F1F20] border border-[#333] text-[#9CA3AF] hover:border-[#FDCE06]")}>
-        What you need to charge
-      </button>
-    </div>
-  );
-
-  if (tab === "rate") {
-    return (
-      <div className="bg-[#1A1A1B] min-h-screen">
-        <div className="px-4 sm:px-8 pt-4 sm:pt-8">
-          <Tabs active="rate" />
-        </div>
-        <HireRateCalculator />
-      </div>
-    );
-  }
-
   return (
     <div className="p-4 sm:p-8 bg-[#292A2B] min-h-screen">
-      <Tabs active="market" />
       <header className="mb-6">
         <h1 className="text-[#E5E5E5] font-[Inter] font-bold text-[28px] sm:text-[36px] leading-tight">
           Price History
@@ -180,6 +147,8 @@ const PriceHistory = () => {
         </p>
       </header>
 
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_420px] gap-6 items-start">
+        <div>
       {!adding && (
         <button onClick={() => setAdding(true)} className={BTN.primaryLg + " mb-6"}>
           + Add a price
@@ -283,7 +252,7 @@ const PriceHistory = () => {
           Nothing recorded yet. Add the first price above.
         </p>
       ) : (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 2xl:grid-cols-2 gap-4">
           {groups.map((g) => (
             <section key={g.cat} className="bg-[#1F1F20] border border-[#333333] rounded-xl p-5">
               <div className="flex justify-between items-start mb-4 gap-3">
@@ -347,6 +316,20 @@ const PriceHistory = () => {
           ))}
         </div>
       )}
+        </div>
+
+        {/* What a machine has to earn, beside what the market pays for it. */}
+        <aside className="bg-[#1A1A1B] border border-[#3A3A3C] rounded-xl p-5 xl:sticky xl:top-6">
+          <p className="text-[#F2F0EA] font-[Inter] text-[18px] font-semibold">
+            Minimum <span className="text-[#FDCE06] italic font-normal">hire rate</span>
+          </p>
+          <p className="text-[#9A9A96] font-[Inter] text-[12.5px] mt-1 mb-5 leading-relaxed">
+            What a machine has to earn to be worth owning, before deciding what the
+            market will pay for it.
+          </p>
+          <HireRateCalculator compact />
+        </aside>
+      </div>
     </div>
   );
 };

@@ -82,7 +82,7 @@ const Band = ({ children }) => (
   </p>
 );
 
-const HireRateCalculator = () => {
+const HireRateCalculator = ({ compact = false }) => {
   const [v, setV] = useState({
     price: 100000, resale: 50, hold: 3,
     financed: false, deposit: 20, interest: 8.5, loanyrs: 3, balloon: 0,
@@ -242,18 +242,22 @@ const HireRateCalculator = () => {
       : "border-[#3A3A3C] bg-[#2C2C2E] text-[#9A9A96]");
 
   return (
-    <div className="px-4 sm:px-8 pb-8 bg-[#1A1A1B]">
-      <header className="max-w-[1100px] mx-auto mb-8 pb-5 border-b border-[#3A3A3C] flex flex-wrap items-baseline justify-between gap-2">
-        <h1 className="text-[#F2F0EA] font-[Inter] font-semibold text-[28px] sm:text-[32px]">
-          Minimum <span className="text-[#FDCE06] italic font-normal">hire rate</span>
-        </h1>
-        <p className="text-[#9A9A96] text-[13px] max-w-[340px] sm:text-right leading-relaxed">
-          What a machine has to earn to be worth owning — before deciding what the
-          market will pay for it.
-        </p>
-      </header>
+    <div className={compact ? "" : "px-4 sm:px-8 pb-8 bg-[#1A1A1B]"}>
+      {!compact && (
+        <header className="max-w-[1100px] mx-auto mb-8 pb-5 border-b border-[#3A3A3C] flex flex-wrap items-baseline justify-between gap-2">
+          <h1 className="text-[#F2F0EA] font-[Inter] font-semibold text-[28px] sm:text-[32px]">
+            Minimum <span className="text-[#FDCE06] italic font-normal">hire rate</span>
+          </h1>
+          <p className="text-[#9A9A96] text-[13px] max-w-[340px] sm:text-right leading-relaxed">
+            What a machine has to earn to be worth owning — before deciding what the
+            market will pay for it.
+          </p>
+        </header>
+      )}
 
-      <div className="max-w-[1100px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.15fr] gap-7">
+      <div className={compact
+        ? "grid grid-cols-1 gap-5"
+        : "max-w-[1100px] mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.15fr] gap-7"}>
         {/* INPUTS */}
         <section className="bg-[#232324] border border-[#3A3A3C] rounded-xl p-6">
           <Band>The machine</Band>
@@ -343,7 +347,7 @@ const HireRateCalculator = () => {
         <section className="bg-[#232324] border border-[#3A3A3C] rounded-xl p-6">
           <Band>What you have to charge</Band>
           <div className="flex items-end gap-4 flex-wrap mb-1">
-            <p className="text-[#FDCE06] font-[Inter] font-semibold text-[56px] leading-none">
+            <p className={"text-[#FDCE06] font-[Inter] font-semibold leading-none " + (compact ? "text-[42px]" : "text-[56px]")}>
               {money(m.firstMonthRate)}
             </p>
             <p className="text-[#9A9A96] text-[13px] pb-2.5">
