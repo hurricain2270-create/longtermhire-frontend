@@ -450,30 +450,9 @@ module.exports = function (app) {
     }
   });
 
-  app.post("/v1/api/longtermhire/dispatch/_test/mint", async (req, res) => {
-    try {
-      const sdk = getSdk();
-      const faultId = req.body.fault_id;
-      const supplierId = req.body.supplier_id;
-      const tradeId = req.body.trade_id;
-      if (!faultId || !supplierId || !tradeId) {
-        return res.status(400).json({ error: "need fault_id, supplier_id, trade_id" });
-      }
-      const token = crypto.randomBytes(16).toString("hex");
-      await sdk.rawQuery(
-        `INSERT INTO longtermhire_dispatch
-           (fault_id, supplier_id, trade_id, token, token_expires_at, status,
-            message_body, sent_at)
-         VALUES (?, ?, ?, ?, DATE_ADD(NOW(), INTERVAL 14 DAY), 'sent', ?, NOW())`,
-        [faultId, supplierId, tradeId, token, req.body.message_body || "Test dispatch"]
-      );
-      res.json({ ok: true, token, url: "/dispatch/" + token });
-    } catch (err) {
-      console.error("mint error", err);
-      res.status(500).json({ error: "server_error", detail: String(err.message || err) });
-    }
-  });
-
+  // The _test/mint route is gone. It minted a working job link from any
+  // three ids, with no login - fine on a laptop, not on a live server.
+  
   app.get("/dispatch/:token", async (req, res) => {
     let d = null;
     try {

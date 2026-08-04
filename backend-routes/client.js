@@ -14,18 +14,8 @@ module.exports = function (app) {
   });
 
   // Test invite client route without middleware
-  app.post(
-    "/v1/api/longtermhire/super_admin/invite-client-test",
-    async (req, res) => {
-      console.log("TEST ROUTE: invite-client-test called");
-      console.log("Request body:", JSON.stringify(req.body, null, 2));
-      res.json({
-        message: "Test route working!",
-        body: req.body,
-      });
-    }
-  );
-
+  // invite-client-test removed - it was an unauthenticated test route
+  
   // Client invitation API
   app.post(
     "/v1/api/longtermhire/super_admin/invite-client",
@@ -131,7 +121,6 @@ module.exports = function (app) {
         const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
         console.log("Using username:", username);
-        console.log("Using password:", plainPassword);
         console.log("Password hashed for database storage");
 
         // Create user account in database using raw SQL
@@ -796,6 +785,8 @@ module.exports = function (app) {
   // Get client equipment assignments
   app.get(
     "/v1/api/longtermhire/super_admin/client-equipment/:clientUserId",
+    TokenMiddleware(),
+    RoleMiddleware(['super_admin']),
     async (req, res) => {
       try {
         console.log(
@@ -837,6 +828,8 @@ module.exports = function (app) {
   // Get client pricing assignment
   app.get(
     "/v1/api/longtermhire/super_admin/client-pricing/:clientUserId",
+    TokenMiddleware(),
+    RoleMiddleware(['super_admin']),
     async (req, res) => {
       try {
         console.log(
@@ -882,6 +875,8 @@ module.exports = function (app) {
   // Assign equipment to client
   app.post(
     "/v1/api/longtermhire/super_admin/assign-equipment",
+    TokenMiddleware(),
+    RoleMiddleware(['super_admin']),
     async (req, res) => {
       try {
         console.log(
@@ -942,6 +937,8 @@ module.exports = function (app) {
   // Assign pricing to client
   app.post(
     "/v1/api/longtermhire/super_admin/assign-pricing",
+    TokenMiddleware(),
+    RoleMiddleware(['super_admin']),
     async (req, res) => {
       try {
         console.log(
