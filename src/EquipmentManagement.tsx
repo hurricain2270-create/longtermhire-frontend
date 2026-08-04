@@ -514,9 +514,15 @@ const EquipmentManagement = () => {
                 const pc = photosOf(item).length;
                 const sc = specCount(item);
                 const written = descOf(item).length > 0;
+                const partner = !!item.owner_partner_id;
                 return (
                   <div key={item.id}
-                    className="bg-[#292A2B] border border-[#333333] rounded-xl overflow-hidden">
+                    className={
+                      "bg-[#292A2B] rounded-xl overflow-hidden border " +
+                      (partner
+                        ? "border-[#7F77DD] border-l-[4px] shadow-[0_0_0_1px_rgba(127,119,221,0.35)]"
+                        : "border-[#333333]")
+                    }>
                     <div className="relative">
                       {photo ? (
                         <div className="w-full aspect-[4/3] bg-[#1F1F20] border-b border-[#333333] flex items-center justify-center">
@@ -540,9 +546,22 @@ const EquipmentManagement = () => {
                         {item.equipment_name || "Unnamed"}
                       </div>
                       <div className="text-[#9CA3AF] font-[Inter] text-[22px] mt-1 mb-3.5">
-                        {item.equipment_id || "—"}
+                        <span className={partner ? "text-[#7F77DD] font-semibold" : ""}>
+                          {item.equipment_id || "—"}
+                        </span>
                         {item.category_name ? " · " + item.category_name : ""}
                       </div>
+                      {partner && (
+                        <div className="flex items-center gap-2 -mt-2 mb-3.5">
+                          <span className="px-2.5 py-1 rounded-full bg-[#2A2740] border border-[#7F77DD]
+                                           text-[#B9B2F5] font-[Inter] text-[13px] font-semibold">
+                            Not ours
+                          </span>
+                          <span className="text-[#9CA3AF] font-[Inter] text-[15px]">
+                            {item.owner_name || item.partner_name || "Partner machine"}
+                          </span>
+                        </div>
+                      )}
 
                       <div className="flex flex-wrap gap-x-6 gap-y-2 font-[Inter] text-[22px] mb-4">
                         <span className={written ? "text-[#9CA3AF]" : "text-[#F59E0B]"}>

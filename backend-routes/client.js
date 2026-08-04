@@ -1454,6 +1454,115 @@ module.exports = function (app) {
 
 
   /**
+   * Partners. People with plant sitting idle in their yard who are not in the
+   * hire business themselves. They list a machine, we approve it, and from that
+   * point it behaves like one of ours to a client — same tiles, same hires,
+   * same faults. To us it is marked clearly, because getting that wrong would
+   * mean quoting a machine we cannot deliver.
+   */
+  app.get('/v1/api/longtermhire/super_admin/partners', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const partners = await sdk.rawQuery(
+        'SELECT p.*, ' +
+        '(SELECT COUNT(*) FROM longtermhire_equipment_item e WHERE e.owner_partner_id = p.id) AS machines, ' +
+        "(SELECT COUNT(*) FROM longtermhire_equipment_item e WHERE e.owner_partner_id = p.id AND e.partner_status = 'pending') AS pending " +
+        'FROM longtermhire_partner p ORDER BY p.business_name', []
+      );
+      const machines = await sdk.rawQuery(
+        'SELECT e.id, e.equipment_id AS plant_code, e.equipment_name, e.category_name, ' +
+        'e.base_price, e.owner_partner_id, e.partner_status, p.business_name AS owner ' +
+        'FROM longtermhire_equipment_item e ' +
+        'JOIN longtermhire_partner p ON p.id = e.owner_partner_id ' +
+        'ORDER BY e.partner_status, e.equipment_name', []
+      );
+      return res.status(200).json({
+        error: false,
+        data: { partners: partners || [], machines: machines || [] },
+      });
+    } catch (error) {
+      console.error('Partners error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  app.post('/v1/api/longtermhire/super_admin/partners', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const { business_name, contact_name, email, phone, abn,
+              street, suburb, state, postcode, notes } = req.body;
+      if (!business_name || !email) {
+        return res.status(400).json({ error: true, message: 'A business name and an email are needed' });
+      }
+      const token = require('crypto').randomBytes(16).toString('hex');
+      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      const result = await sdk.rawQuery(
+        'INSERT INTO longtermhire_partner ' +
+        '(business_name, contact_name, email, phone, abn, street, suburb, state, postcode, ' +
+        "notes, token, active, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)",
+        [business_name, contact_name || null, email, phone || null, abn || null,
+         street || null, suburb || null, state || null, postcode || null,
+         notes || null, token, now]
+      );
+
+      const link = 'https://www.longtermhire.com/partner/' + token;
+      let sent = false;
+      try {
+        const MailService = require('../../../baas/services/MailService');
+        const config = app.get('configuration');
+        const mailService = new MailService(config);
+        await mailService.send(
+          config.mail?.from_mail || 'admin@longtermhire.com',
+          email,
+          'Put your idle plant to work',
+          `<div style="font-family: Inter, Arial, sans-serif; max-width:560px; background:#f6f6f6; padding:16px;">
+             <div style="background:#fff; border:1px solid #ddd; border-radius:8px; padding:22px;">
+               <h2 style="margin:0 0 3px; font-size:19px; color:#111;">Your machine, earning</h2>
+               <p style="margin:0 0 16px; color:#666; font-size:13px;">Long Term Hire</p>
+               <p style="margin:0 0 14px; font-size:14px; color:#333; line-height:1.6;">Hello ${contact_name || 'there'},</p>
+               <p style="margin:0 0 16px; font-size:14px; color:#333; line-height:1.6;">
+                 List what is sitting in your yard and we will find it a long term home.
+                 We handle the client, the contract and the invoicing. You get paid monthly.</p>
+               <a href="${link}" style="display:block; text-align:center; background:#1b8a3a; color:#fff; padding:15px; border-radius:6px; font-size:16px; font-weight:600; text-decoration:none;">Open your portal</a>
+               <p style="margin:12px 0 0; font-size:12px; color:#888;">Nothing to install. The link is yours.</p>
+             </div>
+           </div>`
+        );
+        sent = true;
+      } catch (mailErr) {
+        console.error('Partner invite failed:', mailErr);
+      }
+      return res.status(200).json({ error: false, data: { id: result.insertId, link, sent } });
+    } catch (error) {
+      console.error('Add partner error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  // Approving a machine is what puts it in front of clients. Until then it is
+  // in the fleet but marked pending and hidden from them.
+  app.put('/v1/api/longtermhire/super_admin/partner-machine/:id', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const status = req.body.partner_status;
+      if (!['pending', 'approved', 'declined'].includes(status)) {
+        return res.status(400).json({ error: true, message: 'Unknown status' });
+      }
+      await sdk.rawQuery(
+        'UPDATE longtermhire_equipment_item SET partner_status = ?, ' +
+        'availability = ? WHERE id = ?',
+        [status, status === 'approved' ? 1 : 0, req.params.id]
+      );
+      return res.status(200).json({ error: false, message: 'Saved' });
+    } catch (error) {
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  /**
    * Onboarding. We send a link, the client fills one page on their phone, and
    * it lands here for review. No login on their side — the token in the address
    * is the credential, same as the supplier job pages.

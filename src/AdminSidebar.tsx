@@ -246,6 +246,18 @@ const AdminSidebar = ({ isOpen, onClose }) => {
       ),
     },
     {
+      path: "/partners",
+      name: "Partners",
+      icon: (
+        <svg width="14" height="15" viewBox="0 0 14 15" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4.75 6.25a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM10.5 7.5a1.75 1.75 0 1 0 0-3.5 1.75 1.75 0 0 0 0 3.5Z"
+            stroke="currentColor" strokeWidth="1.3" />
+          <path d="M1 12.75c0-1.8 1.68-3.25 3.75-3.25s3.75 1.45 3.75 3.25M9.25 9.9c1.6.25 2.75 1.4 2.75 2.85"
+            stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+        </svg>
+      ),
+    },
+    {
       path: "/chat",
       name: "Chat",
       badge: "chat",
