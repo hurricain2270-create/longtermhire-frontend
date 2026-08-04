@@ -84,7 +84,7 @@ const TermCalculator = ({ equipment = [], userRole = "member" }) => {
 
         <h2 className="text-[#E5E5E5] font-semibold text-[24px] sm:text-[30px] leading-[1.15] tracking-[-0.01em] mb-2">
           The longer you keep it,
-          <span className="text-[#FDCE06]"> the less you pay.</span>
+          <span className="text-[#FDCE06]"> the more you save.</span>
         </h2>
         <p className="text-[#9CA3AF] text-[14px] leading-relaxed mb-8 max-w-2xl">
           Your rate falls {calc.comp}{calc.cType === "$" ? "" : "%"} every month a machine stays on

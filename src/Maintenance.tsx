@@ -85,8 +85,8 @@ const BANDS = [
 // Green to 65%, orange to 90%, red beyond
 const barColour = (band, pct) => {
   if (band === "none" || band === "waiting") return null;
-  if (band === "overdue" || pct >= 90) return "#ef4444";
-  if (pct >= 65) return "#F59E0B";
+  if (band === "overdue") return "#ef4444";
+  if (pct >= 85) return "#F59E0B";
   return "#4CAF50";
 };
 

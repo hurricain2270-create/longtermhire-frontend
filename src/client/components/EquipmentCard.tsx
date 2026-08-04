@@ -30,7 +30,7 @@ const EquipmentCard: React.FC<EquipmentCardProps> = ({
   userRole = "member", // Default to member if not provided
 }) => {
   // Local state for duration slider
-  const [selectedDuration, setSelectedDuration] = useState(3);
+  const [selectedDuration, setSelectedDuration] = useState(12);
   const [calculatedPrice, setCalculatedPrice] = useState(0);
   const [totalDiscount, setTotalDiscount] = useState(0);
   const [savingsPerMonth, setSavingsPerMonth] = useState(0);
