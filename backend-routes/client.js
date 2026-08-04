@@ -1502,33 +1502,36 @@ module.exports = function (app) {
 
   // Photos, keyed on the partner token rather than a login. Same S3 path
   // everything else uses.
-  app.post("/v1/api/longtermhire/partner/:token/photo", async function (req, res) {
-    try {
-      const sdk = app.get('sdk');
-      sdk.setProjectId('longtermhire');
-      const rows = await sdk.rawQuery(
-        'SELECT id FROM longtermhire_partner WHERE token = ? AND active = 1 LIMIT 1',
-        [req.params.token]
-      );
-      if (!rows || !rows.length) {
-        return res.status(404).json({ error: true, message: "not_found" });
-      }
-    } catch (e) {
-      return res.status(500).json({ error: true, message: e.message });
-    }
-
+  //
+  // The token is checked AFTER the upload, not before. Multer reads the request
+  // as it streams in, and awaiting a database query first lets that stream
+  // drain - the file arrives, then there is nothing left to parse.
+  app.post("/v1/api/longtermhire/partner/:token/photo", function (req, res) {
     const cfg = app.get("configuration");
     const uploadMiddleware = cfg.upload_type === "s3"
       ? UploadService.s3_upload().single("file")
       : UploadService.local_upload().single("file");
 
-    uploadMiddleware(req, res, function (err) {
+    uploadMiddleware(req, res, async function (err) {
       if (err) {
         console.error("Partner photo upload error:", err);
         return res.status(500).json({ error: true, message: "Upload failed: " + err.message });
       }
       if (!req.file) {
         return res.status(400).json({ error: true, message: "No file uploaded" });
+      }
+      try {
+        const sdk = app.get("sdk");
+        sdk.setProjectId("longtermhire");
+        const rows = await sdk.rawQuery(
+          "SELECT id FROM longtermhire_partner WHERE token = ? AND active = 1 LIMIT 1",
+          [req.params.token]
+        );
+        if (!rows || !rows.length) {
+          return res.status(404).json({ error: true, message: "not_found" });
+        }
+      } catch (e) {
+        return res.status(500).json({ error: true, message: e.message });
       }
       const fileUrl = cfg.upload_type === "s3" ? req.file.location : getLocalPath(req.file.path);
       return res.status(200).json({
