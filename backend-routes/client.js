@@ -417,7 +417,7 @@ module.exports = function (app) {
           let emailResult = { error: false, skipped: true };
           if (shouldInvite) {
             emailResult = await mailService.send(
-              config.mail?.from_mail || "noreply@longtermhire.com",
+              config.mail?.from_mail || "admin@longtermhire.com",
               email,
               `Welcome to Long Term Hire — your account is ready`,
               htmlContent
@@ -1218,8 +1218,23 @@ module.exports = function (app) {
       const hashedPassword = await bcrypt.hash(newPassword, 10);
       const currentTime = new Date().toISOString().slice(0,19).replace('T',' ');
       await sdk.rawQuery('UPDATE longtermhire_user SET password = ?, updated_at = ? WHERE id = ?', [hashedPassword, currentTime, userId]);
-      const html = '<div><h2>Long Term Hire</h2><p>Hello ' + client_name + '</p><p>Email: ' + email + '</p><p>Password: ' + newPassword + '</p><a href="https://longtermhire.com/client/login">Login Now</a></div>';
-      await mailService.send(config.mail && config.mail.from_mail ? config.mail.from_mail : 'noreply@longtermhire.com', email, 'Long Term Hire - Your Login Credentials', html);
+      const html =
+        '<div style="font-family: Inter, Arial, sans-serif; max-width:600px; background:#292A2B; padding:20px;">' +
+        '<div style="background:#1F1F20; padding:26px; border-radius:8px; border:1px solid #333333;">' +
+        '<p style="margin:0 0 4px; color:#E5E5E5; font-size:22px;">Your login details</p>' +
+        '<p style="margin:0 0 20px; color:#ADAEBC; font-size:14px;">Long Term Hire</p>' +
+        '<p style="margin:0 0 16px; color:#E5E5E5; font-size:16px;">Hello ' + client_name + '</p>' +
+        '<div style="background:#1C1C1C; padding:18px; border-radius:6px; border:1px solid #444; margin-bottom:20px;">' +
+        '<p style="margin:0 0 8px; color:#ADAEBC; font-size:13px;">Email: <span style="color:#E5E5E5; font-family:monospace;">' + email + '</span></p>' +
+        '<p style="margin:0; color:#ADAEBC; font-size:13px;">Password: <span style="color:#E5E5E5; font-family:monospace;">' + newPassword + '</span></p>' +
+        '</div>' +
+        '<div style="text-align:center; margin:24px 0;">' +
+        '<a href="https://longtermhire.com/client/login" style="background:#FDCE06; color:#1F1F20; padding:13px 28px; border-radius:6px; font-size:14px; font-weight:600; text-decoration:none; display:inline-block;">Log in</a>' +
+        '</div>' +
+        '<div style="border-top:1px solid #333; padding-top:16px; text-align:center;">' +
+        '<p style="margin:0; color:#ADAEBC; font-size:13px;">Any questions, contact us at <b style="color:#E5E5E5;">admin@longtermhire.com</b>.</p>' +
+        '</div></div></div>';
+      await mailService.send(config.mail && config.mail.from_mail ? config.mail.from_mail : 'admin@longtermhire.com', email, 'Your login details for Long Term Hire', html);
       try { await sdk.rawQuery('UPDATE longtermhire_client SET invited_at = ? WHERE user_id = ?', [currentTime, userId]); } catch (e) { console.error('invited_at not recorded:', e.message); }
       return res.status(200).json({ error: false, message: 'Invitation resent to ' + email, data: { email: email, password: newPassword } });
     } catch (error) {

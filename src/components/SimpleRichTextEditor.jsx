@@ -110,7 +110,7 @@ const SimpleRichTextEditor = ({ value, onChange, height = 100 }) => {
 
           {showColorPicker && (
             <div className="absolute left-0 top-10 z-50 rounded border border-[#333333] bg-[#1F1F20] p-3 shadow-lg">
-              <div className="mb-2 text-xs font-medium text-[#E5E5E5]">Text Color</div>
+              <div className="mb-2 text-xs font-medium text-[#E5E5E5]">Text Colour</div>
               <div className="grid grid-cols-5 gap-1">
                 {textColors.map((color) => (
                   <button
