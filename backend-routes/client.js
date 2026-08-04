@@ -2,6 +2,8 @@ const TokenMiddleware = require("../../../baas/middleware/TokenMiddleware");
 const RoleMiddleware = require("../middleware/RoleMiddleware");
 const MailService = require("../../../baas/services/MailService");
 const bcrypt = require("bcryptjs");
+const UploadService = require("../../../baas/services/UploadService");
+const { getLocalPath } = require("../../../baas/services/UtilService");
 
 module.exports = function (app) {
   console.log("Loading client routes...");
@@ -1496,6 +1498,44 @@ module.exports = function (app) {
       console.error('Partner portal error:', error);
       return res.status(500).json({ error: true, message: error.message });
     }
+  });
+
+  // Photos, keyed on the partner token rather than a login. Same S3 path
+  // everything else uses.
+  app.post("/v1/api/longtermhire/partner/:token/photo", async function (req, res) {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const rows = await sdk.rawQuery(
+        'SELECT id FROM longtermhire_partner WHERE token = ? AND active = 1 LIMIT 1',
+        [req.params.token]
+      );
+      if (!rows || !rows.length) {
+        return res.status(404).json({ error: true, message: "not_found" });
+      }
+    } catch (e) {
+      return res.status(500).json({ error: true, message: e.message });
+    }
+
+    const cfg = app.get("configuration");
+    const uploadMiddleware = cfg.upload_type === "s3"
+      ? UploadService.s3_upload().single("file")
+      : UploadService.local_upload().single("file");
+
+    uploadMiddleware(req, res, function (err) {
+      if (err) {
+        console.error("Partner photo upload error:", err);
+        return res.status(500).json({ error: true, message: "Upload failed: " + err.message });
+      }
+      if (!req.file) {
+        return res.status(400).json({ error: true, message: "No file uploaded" });
+      }
+      const fileUrl = cfg.upload_type === "s3" ? req.file.location : getLocalPath(req.file.path);
+      return res.status(200).json({
+        error: false,
+        data: { url: fileUrl, name: req.file.originalname, type: req.file.mimetype },
+      });
+    });
   });
 
   // A machine they are listing. It goes straight into the fleet marked pending,

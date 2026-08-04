@@ -58,6 +58,8 @@ const PartnerPortal = () => {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState(BLANK);
   const [sending, setSending] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
 
   const load = async () => {
@@ -83,6 +85,38 @@ const PartnerPortal = () => {
       localStorage.setItem("partnerDraft:" + token, JSON.stringify(form));
     }
   }, [form, token]);
+
+  // Straight to S3 through our own endpoint - a partner has a token, not a
+  // login, so this cannot go through the usual authenticated path.
+  const addPhotos = async (files) => {
+    const list = Array.from(files || []).filter((f) => f.type.startsWith("image/"));
+    if (!list.length) return;
+    if (form.photos.length + list.length > 6) {
+      toast.error("Six photos is plenty");
+      return;
+    }
+    setUploading(true);
+    for (const file of list) {
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(file.name + " is over 10MB");
+        continue;
+      }
+      try {
+        const body = new FormData();
+        body.append("file", file);
+        const res = await fetch(API + "/v1/api/longtermhire/partner/" + token + "/photo", {
+          method: "POST",
+          body,
+        });
+        const j = await res.json();
+        if (j.error) throw new Error(j.message);
+        setForm((f) => ({ ...f, photos: [...f.photos, j.data.url] }));
+      } catch (e) {
+        toast.error("That photo would not upload");
+      }
+    }
+    setUploading(false);
+  };
 
   const submit = async () => {
     if (!form.equipment_name) { toast.error("We need to know what it is"); return; }
@@ -316,15 +350,54 @@ const PartnerPortal = () => {
                 Four is plenty. Front, back, in the cab, and the hour meter — that
                 last one saves an argument later.
               </p>
-              <div className="bg-[#292A2B] border border-dashed border-[#444] rounded-lg
-                              p-6 text-center mb-4">
-                <p className="text-[#9CA3AF] font-[Inter] text-[14px]">
-                  Photo upload coming shortly
-                </p>
-                <p className="text-[#6B7280] font-[Inter] text-[12px] mt-1">
-                  For now, email them through and we will attach them.
+              <div
+                onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDragging(false);
+                  addPhotos(e.dataTransfer.files);
+                }}
+                className={
+                  "rounded-lg p-6 text-center mb-4 border border-dashed transition-colors " +
+                  (dragging ? "border-[#FDCE06] bg-[#2E2A18]" : "border-[#444] bg-[#292A2B]")
+                }>
+                <input id="partner-photos" type="file" accept="image/*" multiple
+                  className="hidden" disabled={uploading}
+                  onChange={(e) => { addPhotos(e.target.files); e.target.value = ""; }} />
+                <label htmlFor="partner-photos"
+                  className="inline-block bg-[#FDCE06] text-[#1A1A1B] font-[Inter] font-bold
+                             text-[15px] px-5 py-3 rounded-lg cursor-pointer">
+                  {uploading ? "Uploading…" : "+ Add photos"}
+                </label>
+                <p className="text-[#6B7280] font-[Inter] text-[13px] mt-3">
+                  Or drag them in from a folder. Straight off a phone is fine.
                 </p>
               </div>
+
+              {form.photos.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-4">
+                  {form.photos.map((url, i) => (
+                    <div key={i} className="relative rounded-lg overflow-hidden bg-[#292A2B]
+                                            border border-[#333] aspect-[4/3]">
+                      <img src={url} alt={"Photo " + (i + 1)}
+                        className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => setForm((f) => ({
+                          ...f, photos: f.photos.filter((_, k) => k !== i),
+                        }))}
+                        aria-label="Remove this photo"
+                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/70
+                                   text-[#E5E5E5] text-[16px] leading-none">
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <p className="text-[#6B7280] font-[Inter] text-[12px] mb-1">
+                {form.photos.length} of 6
+              </p>
             </>
           )}
 
