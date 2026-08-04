@@ -48,7 +48,7 @@ this version**, then ask for the commit to be reverted.
 
 ## Medium risk — do in batches with a build between each
 
-- [ ] **B3 — prune `package.json`.** 102 dependencies declared, 12 imported.
+- [x] **B3 — prune `package.json`.** 102 dependencies declared, 12 imported.
       Remove in batches of ~15. Write `docs/removed-dependencies.md` listing
       every package and exact version so anything can be restored with one line.
       Biggest single win: builds get fast enough to trust.
@@ -57,7 +57,7 @@ this version**, then ask for the commit to be reverted.
       (deprecated by its own maintainers), `@hotjar/browser` (script already
       removed).
 
-- [ ] **B4 — drop `renderChunks` from `vite.config.ts`.** Currently emits one
+- [x] **B4 — drop `renderChunks` from `vite.config.ts`.** Currently emits one
       chunk per dependency; combined with `vite-plugin-pwa` that's the ~113
       precached files behind the stale-bundle problem. Do straight after B3.
 
@@ -144,6 +144,24 @@ always on.
       boxes on their own.
 - [ ] Permissions are read at login, so changes need a log out and back in
       before they take effect.
+
+## Security — found in the audit, mostly fixed
+
+- [x] **Four admin endpoints had no login check.** assign-equipment,
+      assign-pricing, client-equipment/:id and client-pricing/:id sat under
+      /super_admin/ without TokenMiddleware. Anyone with the address could read
+      a client's pricing or reassign machines. Fixed.
+- [x] **A public endpoint minted dispatch tokens.** /dispatch/_test/mint took
+      three ids and returned a working supplier job link, no login. Removed.
+- [x] **Passwords were logged in plain text.** Every client's temporary
+      password went into the PM2 logs on disk. Removed.
+- [x] **Three public test mail endpoints**, one taking any address, sending as
+      admin@longtermhire.com. File stubbed.
+- [ ] **Passwords still go out in emails as plain text**, in two places. The
+      fix is a set-password link rather than sending the password itself.
+- [ ] **Permissions are browser-side only.** A logged-in supervisor could call
+      the fault API directly. Lower risk than the above since it needs a real
+      login, but it should not stay this way.
 
 ## Found by looking at the live screens
 
