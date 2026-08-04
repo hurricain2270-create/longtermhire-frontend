@@ -1470,7 +1470,7 @@ module.exports = function (app) {
 
       const machines = await sdk.rawQuery(
         'SELECT e.id, e.equipment_id AS plant_code, e.equipment_name, e.category_name, ' +
-        'e.model, e.year_made, e.base_price, e.partner_status, e.description, ' +
+        'e.model, e.year_made, e.base_price, e.partner_status, ' +
         'e.current_hours, e.last_service_date, ' +
         "(SELECT COUNT(*) FROM longtermhire_client_equipment ce " +
         " WHERE ce.equipment_id = e.id AND ce.hire_status = 'active') AS on_hire " +
@@ -1537,14 +1537,28 @@ module.exports = function (app) {
 
       const result = await sdk.rawQuery(
         'INSERT INTO longtermhire_equipment_item ' +
-        '(equipment_id, equipment_name, category_name, model, year_made, description, ' +
+        '(equipment_id, equipment_name, category_name, model, year_made, ' +
         'current_hours, last_service_date, owner_partner_id, partner_status, ' +
         "ownership_status, availability, created_at, updated_at) " +
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'partner', 0, ?, ?)",
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'partner', 0, ?, ?)",
         [plantCode, equipment_name, category_name || null, model || null,
-         year_made || null, notes || null, current_hours || null,
+         year_made || null, current_hours || null,
          last_service_date || null, p.id, now, now]
       );
+
+      // The description lives in the content table, same as our own machines.
+      if (notes) {
+        try {
+          await sdk.rawQuery(
+            'INSERT INTO longtermhire_content ' +
+            '(equipment_id, equipment_name, description, created_at, updated_at) ' +
+            'VALUES (?, ?, ?, ?, ?)',
+            [result.insertId, equipment_name, notes, now, now]
+          );
+        } catch (noteErr) {
+          console.error('Partner notes not saved:', noteErr.message);
+        }
+      }
 
       // Photos come through as urls already uploaded.
       if (Array.isArray(photos) && photos.length) {
