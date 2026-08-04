@@ -14,7 +14,7 @@ const money = (n) => "$" + Math.round(Number(n) || 0).toLocaleString("en-AU");
 const BLANK = {
   equipment_name: "", category_name: "", model: "", year_made: "",
   current_hours: "", last_service_date: "", attachments: "",
-  insured_by: "", condition_notes: "", description: "", photos: [],
+  insured_by: "", condition_notes: "", description: "", photos: [], docs: [],
 };
 
 const STEPS = ["What is it", "How it has been treated", "Photos", "Paperwork", "The terms"];
@@ -60,6 +60,7 @@ const PartnerPortal = () => {
   const [sending, setSending] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [draggingDoc, setDraggingDoc] = useState(false);
   const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
 
   const load = async () => {
@@ -88,11 +89,13 @@ const PartnerPortal = () => {
 
   // Straight to S3 through our own endpoint - a partner has a token, not a
   // login, so this cannot go through the usual authenticated path.
-  const addPhotos = async (files) => {
-    const list = Array.from(files || []).filter((f) => f.type.startsWith("image/"));
+  const addFiles = async (files, key = "photos", max = 6, imagesOnly = true) => {
+    const list = Array.from(files || []).filter(
+      (f) => !imagesOnly || f.type.startsWith("image/") || f.type === "application/pdf"
+    );
     if (!list.length) return;
-    if (form.photos.length + list.length > 6) {
-      toast.error("Six photos is plenty");
+    if (form[key].length + list.length > max) {
+      toast.error("That is as many as we need");
       return;
     }
     setUploading(true);
@@ -110,9 +113,9 @@ const PartnerPortal = () => {
         });
         const j = await res.json();
         if (j.error) throw new Error(j.message);
-        setForm((f) => ({ ...f, photos: [...f.photos, j.data.url] }));
+        setForm((f) => ({ ...f, [key]: [...f[key], { url: j.data.url, name: j.data.name, type: j.data.type }] }));
       } catch (e) {
-        toast.error("That photo would not upload");
+        toast.error(file.name + " would not upload");
       }
     }
     setUploading(false);
@@ -356,7 +359,7 @@ const PartnerPortal = () => {
                 onDrop={(e) => {
                   e.preventDefault();
                   setDragging(false);
-                  addPhotos(e.dataTransfer.files);
+                  addFiles(e.dataTransfer.files, "photos", 6);
                 }}
                 className={
                   "rounded-lg p-6 text-center mb-4 border border-dashed transition-colors " +
@@ -364,7 +367,7 @@ const PartnerPortal = () => {
                 }>
                 <input id="partner-photos" type="file" accept="image/*" multiple
                   className="hidden" disabled={uploading}
-                  onChange={(e) => { addPhotos(e.target.files); e.target.value = ""; }} />
+                  onChange={(e) => { addFiles(e.target.files, "photos", 6); e.target.value = ""; }} />
                 <label htmlFor="partner-photos"
                   className="inline-block bg-[#FDCE06] text-[#1A1A1B] font-[Inter] font-bold
                              text-[15px] px-5 py-3 rounded-lg cursor-pointer">
@@ -377,10 +380,10 @@ const PartnerPortal = () => {
 
               {form.photos.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-4">
-                  {form.photos.map((url, i) => (
+                  {form.photos.map((p, i) => (
                     <div key={i} className="relative rounded-lg overflow-hidden bg-[#292A2B]
                                             border border-[#333] aspect-[4/3]">
-                      <img src={url} alt={"Photo " + (i + 1)}
+                      <img src={p.url} alt={"Photo " + (i + 1)}
                         className="w-full h-full object-cover" />
                       <button
                         onClick={() => setForm((f) => ({
@@ -407,6 +410,56 @@ const PartnerPortal = () => {
                 hint="Yours stays in place. We need to know who to talk to."
                 value={form.insured_by} onChange={set("insured_by")}
                 placeholder="CGU, policy through Smith Brokers" />
+
+              <label className="block text-[#9CA3AF] font-[Inter] text-[13px] mb-1.5">
+                Certificate of currency
+              </label>
+              <div
+                onDragOver={(e) => { e.preventDefault(); setDraggingDoc(true); }}
+                onDragLeave={() => setDraggingDoc(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDraggingDoc(false);
+                  addFiles(e.dataTransfer.files, "docs", 4);
+                }}
+                className={
+                  "rounded-lg p-5 text-center mb-3 border border-dashed transition-colors " +
+                  (draggingDoc ? "border-[#FDCE06] bg-[#2E2A18]" : "border-[#444] bg-[#292A2B]")
+                }>
+                <input id="partner-docs" type="file" accept="image/*,application/pdf" multiple
+                  className="hidden" disabled={uploading}
+                  onChange={(e) => { addFiles(e.target.files, "docs", 4); e.target.value = ""; }} />
+                <label htmlFor="partner-docs"
+                  className="inline-block bg-[#292A2B] border border-[#FDCE06] text-[#FDCE06]
+                             font-[Inter] font-semibold text-[14px] px-4 py-2.5 rounded-lg cursor-pointer">
+                  {uploading ? "Uploading…" : "+ Add the certificate"}
+                </label>
+                <p className="text-[#6B7280] font-[Inter] text-[12.5px] mt-2.5">
+                  A PDF or a photo of it. Manuals and service books can go here too.
+                </p>
+              </div>
+
+              {form.docs.length > 0 && (
+                <div className="space-y-1.5 mb-4">
+                  {form.docs.map((d, i) => (
+                    <div key={i} className="flex items-center justify-between gap-3 bg-[#292A2B]
+                                            border border-[#333] rounded-lg px-3 py-2.5">
+                      <a href={d.url} target="_blank" rel="noreferrer"
+                        className="text-[#E5E5E5] font-[Inter] text-[14px] truncate hover:text-[#FDCE06]">
+                        {d.name || "Document"}
+                      </a>
+                      <button
+                        onClick={() => setForm((f) => ({
+                          ...f, docs: f.docs.filter((_, k) => k !== i),
+                        }))}
+                        aria-label="Remove"
+                        className="text-[#6B7280] hover:text-[#ef4444] text-[16px] flex-none">
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
               <Area label="Anything else worth knowing"
                 hint="Manuals, service books, quirks a new operator should know"
                 value={form.description} onChange={set("description")} rows={4} />

@@ -1556,7 +1556,7 @@ module.exports = function (app) {
 
       const { equipment_name, category_name, model, year_made, current_hours,
               last_service_date, description, attachments, insured_by,
-              condition_notes, photos } = req.body;
+              condition_notes, photos, docs } = req.body;
       if (!equipment_name) {
         return res.status(400).json({ error: true, message: 'What is it?' });
       }
@@ -1605,7 +1605,9 @@ module.exports = function (app) {
 
       // Photos come through as urls already uploaded.
       if (Array.isArray(photos) && photos.length) {
-        for (const url of photos.slice(0, 6)) {
+        for (const p of photos.slice(0, 6)) {
+          const url = typeof p === "string" ? p : p && p.url;
+          if (!url) continue;
           try {
             await sdk.rawQuery(
               'INSERT INTO longtermhire_content_images (equipment_id, image_url, created_at) VALUES (?, ?, ?)',
@@ -1614,6 +1616,19 @@ module.exports = function (app) {
           } catch (imgErr) {
             console.error('Partner photo not saved:', imgErr.message);
           }
+        }
+      }
+
+      // Certificate of currency, manuals, whatever else they sent. Same field
+      // our own machines use for their information sheets.
+      if (Array.isArray(docs) && docs.length) {
+        try {
+          await sdk.rawQuery(
+            "UPDATE longtermhire_equipment_item SET specs_files = ? WHERE id = ?",
+            [JSON.stringify(docs.slice(0, 4)), result.insertId]
+          );
+        } catch (docErr) {
+          console.error("Partner documents not saved:", docErr.message);
         }
       }
 
