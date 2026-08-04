@@ -63,7 +63,12 @@ const Gauge = ({
           stroke="#E5E5E5" strokeWidth="3.5" strokeLinecap="round" />
         <circle cx={CX} cy={CY} r="6" fill="#E5E5E5" />
 
-        <text x={CX} y="62" textAnchor="middle" fontSize={valueSize} fontWeight="500" fill="#E5E5E5">
+        <text x={CX} y="62" textAnchor="middle" fontWeight="500" fill="#E5E5E5"
+          fontSize={
+            String(value).length > 9 ? valueSize * 0.72
+            : String(value).length > 7 ? valueSize * 0.85
+            : valueSize
+          }>
           {value}
         </text>
         <text x={CX} y="122" textAnchor="middle" fontSize={captionSize}

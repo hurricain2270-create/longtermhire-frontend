@@ -75,7 +75,7 @@ const DashboardGauges = () => {
   }, []);
 
   const dials = [
-    { key: "fleet", label: "Fleet on hire" },
+    { key: "fleet", label: "Listed and out" },
     { key: "faults", label: "Fault response" },
     { key: "clients", label: "Clients ready" },
   ];

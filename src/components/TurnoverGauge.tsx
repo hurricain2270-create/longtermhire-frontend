@@ -57,7 +57,9 @@ const TurnoverGauge = () => {
             !data
               ? ""
               : over
-              ? pct - 100 + "% past your best"
+              ? pct >= 150
+                ? (pct / 100).toFixed(1) + "x your best month"
+                : pct - 100 + "% past your best"
               : data.best
               ? pct + "% of your best"
               : "no history yet"
