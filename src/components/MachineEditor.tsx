@@ -42,7 +42,7 @@ const MachineEditor = ({
   const [form, setForm] = useState({
     equipmentName: "",
     equipmentId: "",
-    categoryId: "",
+    categoryName: "",
     basePrice: "",
     minimumDuration: "",
     description: "",
@@ -57,7 +57,7 @@ const MachineEditor = ({
     setForm({
       equipmentName: machine.equipment_name || "",
       equipmentId: machine.equipment_id || "",
-      categoryId: machine.category_id || "",
+      categoryName: machine.category_name || "",
       basePrice: machine.base_price ?? "",
       minimumDuration: machine.minimum_duration ?? "",
       description: (content && content.description) || "",
@@ -182,8 +182,8 @@ const MachineEditor = ({
   // Pass through every field we don't edit, or the update wipes them.
   const saveEquipment = async (extra = {}) =>
     equipmentApi.updateEquipment(machine.id, {
-      categoryId: form.categoryId || machine.category_id,
-      category: machine.category_name,
+      categoryId: machine.category_id,
+      category: form.categoryName || machine.category_name,
       equipmentId: form.equipmentId,
       equipmentName: form.equipmentName,
       basePrice: form.basePrice,
@@ -237,9 +237,7 @@ const MachineEditor = ({
   const written = String(form.description || "").trim().length > 0;
   const priced = !!form.basePrice;
   const shownPhoto = photos[shown] || photos[0] || null;
-  const catName =
-    (categories.find((c) => String(c.id) === String(form.categoryId)) || {})
-      .category_name || machine.category_name || "";
+  const catName = form.categoryName || machine.category_name || "";
 
   const mark = (ok, label) => (
     <span className={ok ? "text-[#9CA3AF]" : "text-[#F59E0B]"}>{label}</span>
@@ -300,10 +298,10 @@ const MachineEditor = ({
             </div>
             <div>
               <label className={LBL}>Category</label>
-              <select value={form.categoryId} onChange={set("categoryId")} className={FLD}>
+              <select value={form.categoryName} onChange={set("categoryName")} className={FLD}>
                 <option value="">Uncategorised</option>
                 {categories.map((c) => (
-                  <option key={c.id} value={c.id}>{c.category_name}</option>
+                  <option key={c.id} value={c.category_name}>{c.category_name}</option>
                 ))}
               </select>
             </div>

@@ -133,7 +133,7 @@ const ContractSetup = () => {
     }));
   };
 
-  const pickPlant = (id) => {
+  const pickPlant = async (id) => {
     const e = equipment.find((x) => String(x.id) === String(id));
     setForm((f) => ({
       ...f,
@@ -143,7 +143,34 @@ const ContractSetup = () => {
       fuel_type: e?.fuel_type || "",
       standard_hire_rate: f.standard_hire_rate || e?.base_price || "",
       damage_waiver_excess: f.damage_waiver_excess || e?.waiver_excess || "",
+      minimum_hire_months: f.minimum_hire_months || e?.minimum_duration || "",
     }));
+
+    // The discount is per client, not per machine - the same excavator can
+    // carry one rate for one company and another rate for the next. So it
+    // comes from this client's own assignment rather than the fleet record.
+    if (!form.client_user_id) return;
+    try {
+      const res = await api.get(
+        "/v1/api/longtermhire/super_admin/client-equipment/" + form.client_user_id
+      );
+      const rows = res?.data?.data || [];
+      const mine = rows.find((r) => String(r.equipment_id) === String(id));
+      if (!mine) return;
+      const comp = parseFloat(mine.compounding_discount) || 0;
+      const flat = parseFloat(mine.discount) || 0;
+      if (comp > 0) {
+        setForm((f) => ({ ...f, discount: String(comp), discount_type: "%" }));
+      } else if (flat > 0) {
+        setForm((f) => ({
+          ...f,
+          discount: String(flat),
+          discount_type: mine.discount_type === "$" ? "$" : "%",
+        }));
+      }
+    } catch (err) {
+      console.error("Could not read the client's discount:", err);
+    }
   };
 
   // fields that must still be typed
