@@ -1578,15 +1578,20 @@ module.exports = function (app) {
                      insured_by ? 'Insured by ' + insured_by : '']
         .filter(Boolean).join('\n\n');
 
+      const owner = await sdk.rawQuery(
+        'SELECT user_id FROM longtermhire_equipment_item WHERE user_id IS NOT NULL LIMIT 1', []
+      );
+      const ownerUserId = owner && owner.length ? owner[0].user_id : null;
+
       const result = await sdk.rawQuery(
         'INSERT INTO longtermhire_equipment_item ' +
         '(equipment_id, equipment_name, category_name, model, year_made, ' +
         'current_hours, last_service_date, owner_partner_id, partner_status, ' +
-        "ownership_status, availability, created_at, updated_at) " +
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'partner', 0, ?, ?)",
+        "ownership_status, availability, user_id, created_at, updated_at) " +
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'partner', 0, ?, ?, ?)",
         [plantCode, equipment_name, category_name || null, model || null,
          year_made || null, current_hours || null,
-         last_service_date || null, p.id, now, now]
+         last_service_date || null, p.id, ownerUserId, now, now]
       );
 
       // The description lives in the content table, same as our own machines.
