@@ -203,6 +203,12 @@ const CompanyDetails = () => {
   };
 
   const handleDeleteTeamMember = async (memberId) => {
+    // It removes their login, not just a row on this screen.
+    const who = (teamMembers || []).find((m) => m.id === memberId);
+    if (!window.confirm(
+      "Remove " + (who?.name || "this person") + "?\n\n" +
+      "They will lose access to the portal straight away."
+    )) return;
     try {
       const response = await companyApi.removeTeamMember(id, memberId);
 

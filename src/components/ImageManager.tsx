@@ -83,6 +83,8 @@ const ImageManager = ({
 
   const handleRemoveImage = async (imageId, index) => {
     if (disabled) return;
+    // Not just this form - it goes from the server too.
+    if (imageId && contentId && !window.confirm("Remove this photo?")) return;
 
     try {
       if (imageId && contentId) {

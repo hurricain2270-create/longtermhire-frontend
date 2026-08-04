@@ -441,7 +441,11 @@ module.exports = function (app) {
   );
 
   // Update content
-  app.put("/v1/api/longtermhire/super_admin/content/:id", async (req, res) => {
+  app.put(
+    "/v1/api/longtermhire/super_admin/content/:id",
+    TokenMiddleware(),
+    RoleMiddleware(["super_admin"]),
+    async (req, res) => {
     try {
       console.log("PUT /v1/api/longtermhire/super_admin/content/:id called");
       const sdk = app.get("sdk");
@@ -573,6 +577,8 @@ module.exports = function (app) {
   // Delete content
   app.delete(
     "/v1/api/longtermhire/super_admin/content/:contentId",
+    TokenMiddleware(),
+    RoleMiddleware(["super_admin"]),
     async (req, res) => {
       try {
         console.log(
