@@ -1533,7 +1533,12 @@ module.exports = function (app) {
       } catch (e) {
         return res.status(500).json({ error: true, message: e.message });
       }
-      const fileUrl = cfg.upload_type === "s3" ? req.file.location : getLocalPath(req.file.path);
+      let fileUrl = cfg.upload_type === "s3"
+        ? req.file.location
+        : getLocalPath(req.file.path);
+      if (fileUrl && !/^https?:\/\//i.test(fileUrl)) {
+        fileUrl = "https://api.longtermhire.com" + (fileUrl.startsWith("/") ? "" : "/") + fileUrl;
+      }
       return res.status(200).json({
         error: false,
         data: { url: fileUrl, name: req.file.originalname, type: req.file.mimetype },
