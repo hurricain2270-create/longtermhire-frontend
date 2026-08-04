@@ -41,6 +41,15 @@ const Area = ({ label, hint, value, onChange, rows = 3, ...rest }) => (
   </div>
 );
 
+// Declared out here on purpose. Inside the component it would be a new type on
+// every render, so React would throw away the inputs and you would lose focus
+// after every keystroke.
+const Shell = ({ children }) => (
+  <div className="min-h-screen bg-[#1A1A1B] p-4 sm:p-8">
+    <div className="max-w-[820px] mx-auto">{children}</div>
+  </div>
+);
+
 const PartnerPortal = () => {
   const { token } = useParams();
   const [data, setData] = useState(null);
@@ -98,12 +107,6 @@ const PartnerPortal = () => {
       setSending(false);
     }
   };
-
-  const Shell = ({ children }) => (
-    <div className="min-h-screen bg-[#1A1A1B] p-4 sm:p-8">
-      <div className="max-w-[820px] mx-auto">{children}</div>
-    </div>
-  );
 
   if (error) {
     return (
