@@ -312,7 +312,13 @@ module.exports = function (app) {
       }
       vals.push(req.params.id);
       await sdk.rawQuery("UPDATE longtermhire_fault SET " + sets.join(", ") + " WHERE id = ?", vals);
-      await addEntry(sdk, req.params.id, req.user_id, "Long Term Hire", "admin", stage, req.body.message || null);
+      const STAGE_SAID = {
+        actioned: "We have someone onto it",
+        attended: "Someone is on site with the machine",
+        resolved: "Back in service",
+      };
+      await addEntry(sdk, req.params.id, req.user_id, "Long Term Hire", "admin", stage,
+        req.body.message || STAGE_SAID[stage] || null);
 
       if (stage === "resolved" && req.body.hours) {
         const f = await sdk.rawQuery("SELECT equipment_id FROM longtermhire_fault WHERE id = ? LIMIT 1", [req.params.id]);

@@ -544,7 +544,7 @@ const ClientFaults = () => {
                             }
                           }}
                           placeholder="Add an update…"
-                          className="flex-1 bg-[#D8D8D6] border border-[#BFBFBD] rounded-lg px-3 py-2.5 text-[#1F1F20] text-[14px] outline-none focus:border-[#FDCE06] placeholder:text-[#6B6B69] transition-colors" />
+                          className="flex-1 bg-[#292A2B] border border-[#333333] rounded-lg px-3 py-2.5 text-[#E5E5E5] text-[14px] outline-none focus:border-[#FDCE06] placeholder:text-[#6B7280] transition-colors" />
                         <button onClick={() => sendReply(f.id)} disabled={busy}
                           className="px-4 py-2 rounded-lg bg-[#FDCE06] text-[#1F1F20] font-bold text-sm hover:bg-[#E5B800] disabled:opacity-50 transition-colors whitespace-nowrap">
                           Send

@@ -330,6 +330,11 @@ module.exports = function (app) {
       if (!sup || !sup.length) return res.status(400).json({ error: true, message: "Supplier not found" });
       const s = sup[0];
 
+      const tradeRow = await sdk.rawQuery(
+        "SELECT name FROM longtermhire_trade WHERE id = ? LIMIT 1", [trade_id]
+      );
+      const tradeName = tradeRow && tradeRow.length ? tradeRow[0].name : "Job";
+
       const pb = await sdk.rawQuery(
         "SELECT fault_type FROM longtermhire_fault_playbook WHERE id = ? LIMIT 1", [playbook_id]
       );
@@ -437,7 +442,7 @@ module.exports = function (app) {
 
       await postToThread(
         sdk, f.id, s.name, "message",
-        `Sent to ${s.name}${s.phone ? " · " + s.phone : ""}` + (sent ? "" : " — email did not go, ring them")
+        `${tradeName} sent to ${s.name}` + (sent ? "" : " - email did not go, ring them")
       );
 
       return res.status(200).json({
