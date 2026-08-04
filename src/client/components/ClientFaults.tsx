@@ -357,18 +357,18 @@ const ClientFaults = () => {
             impossible to miss. The label sits on a solid panel so it stays
             readable over the stripes. */}
         <button onClick={() => setReporting(true)}
-          className="px-4 py-2.5 rounded-lg font-bold text-sm hover:brightness-110 transition-all whitespace-nowrap"
-          style={{
-            background:
-              "repeating-linear-gradient(45deg, #FDCE06 0px, #FDCE06 10px, #1F1F20 10px, #1F1F20 20px)",
-            color: "#ffffff",
-            // The label crosses both the yellow and the black, so it needs an
-            // outline to stay readable on either.
-            textShadow:
-              "0 0 3px #000, 0 0 3px #000, 0 0 3px #000, 0 1px 2px #000",
-          }}>
-          Report a Fault
-        </button>
+                  className="rounded-lg p-[3px] hover:brightness-110 transition-all whitespace-nowrap"
+                  style={{
+                    // Hazard stripes as a border rather than behind the words.
+                    // Across the pattern the label was unreadable at real size,
+                    // however much shadow it was given.
+                    background:
+                      "repeating-linear-gradient(45deg, #FDCE06 0px, #FDCE06 9px, #1F1F20 9px, #1F1F20 18px)",
+                  }}>
+                  <span className="block px-4 py-2 rounded-md bg-[#1F1F20] text-[#FDCE06] font-bold text-sm">
+                    Report a Fault
+                  </span>
+                </button>
       </div>
 
       {dispatch && (

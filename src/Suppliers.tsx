@@ -322,7 +322,9 @@ const Suppliers = () => {
             return (
               <label key={m.id} className="flex items-center gap-2.5 cursor-pointer select-none">
                 <input type="checkbox" checked={on} onChange={() => toggleAuto(m)}
-                  className="w-4 h-4 accent-[#4CAF50]" />
+                  className={
+                    "w-4 h-4 " + (on ? "accent-[#4CAF50]" : "accent-[#3A3A3C]")
+                  } />
                 <span className={"font-[Inter] text-[13px] " + (on ? "text-[#E5E5E5]" : "text-[#9CA3AF]")}>
                   {m.plant_code} <span className="text-[#6B7280]">{m.equipment_name}</span>
                 </span>

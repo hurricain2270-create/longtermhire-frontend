@@ -132,7 +132,9 @@ const PriceHistory = () => {
       if (!known[p.category_name] || t > known[p.category_name]) known[p.category_name] = t;
     });
     const yearAgo = Date.now() - 365 * 24 * 3600 * 1000;
-    return (data.categories || []).filter((c) => !known[c] || known[c] < yearAgo);
+    return (data.categories || [])
+      .filter((c) => c !== "Miscellaneous")
+      .filter((c) => !known[c] || known[c] < yearAgo);
   }, [data]);
 
   return (
@@ -194,7 +196,7 @@ const PriceHistory = () => {
           </div>
 
           <label className="block text-[#9CA3AF] font-[Inter] text-[13px] mb-1.5">Where it came from</label>
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="grid grid-cols-2 gap-2 mb-4">
             {SOURCES.map((s) => (
               <button key={s} onClick={() => setForm({ ...form, source: s })}
                 className={
@@ -261,6 +263,8 @@ const PriceHistory = () => {
                   <p className="text-[#6B7280] font-[Inter] text-[12px] mt-0.5">
                     {g.cat === "Miscellaneous"
                       ? g.rows.length + " to file"
+                      : g.rows.length === 1
+                      ? "1 recorded"
                       : g.rows.length + " recorded · " + money(g.low) + " to " + money(g.high)}
                   </p>
                 </div>

@@ -265,7 +265,12 @@ const Card = ({
                   )}
                   <div className="flex gap-3">
                     <span className="w-2.5 h-2.5 rounded-full mt-1.5 flex-none"
-                      style={{ background: u.author_side === "admin" ? "#4CAF50" : "#F59E0B" }} />
+                      style={{
+                        background:
+                          u.author_side === "admin" ? "#4CAF50"
+                          : u.author_side === "supplier" ? "#7F77DD"
+                          : "#F59E0B",
+                      }} />
                     <div className="flex-1">
                       <div className="text-[#6B7280] font-[Inter] text-[13px]">
                         {u.author_side === "admin" ? "You" : u.author_name}

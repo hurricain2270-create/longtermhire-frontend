@@ -654,7 +654,7 @@ const ClientManagement = () => {
                   ID#
                 </th>
                 <th className="text-[#9CA3AF] font-[Inter] font-bold text-[12px] leading-[1.25em] text-left px-4 py-3 min-w-[160px]">
-                  Owner Name*
+                  Owner Name
                 </th>
                 <th className="text-[#9CA3AF] font-[Inter] font-bold text-[12px] leading-[1.25em] text-left px-4 py-3 min-w-[180px]">
                   Email
