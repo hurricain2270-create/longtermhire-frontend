@@ -1142,8 +1142,9 @@ module.exports = function (app) {
           // Clear client login logs (statistics only)
           "DELETE FROM longtermhire_client_login_logs",
 
-          // Clear equipment requests (these are just requests, not actual data)
-          "DELETE FROM longtermhire_equipment_requests",
+          // Equipment requests are NOT logs - they are clients asking for
+          // machines, and they show as Pending Requests on the dashboard.
+          // Deleting them here lost real enquiries.
         ];
 
         // Execute queries one by one with error handling

@@ -84,6 +84,11 @@ function DashboardMain() {
   };
 
   const handleClearLogs = async () => {
+    // It reads like tidying a view. It is not - the rows are gone for good.
+    if (!window.confirm(
+      "Clear the activity log?\n\nThis permanently deletes the chat activity and " +
+      "login history. Equipment requests and messages are not touched."
+    )) return;
     try {
       setClearingLogs(true);
       const response = await dashboardApi.clearLogs();
@@ -228,7 +233,7 @@ function DashboardMain() {
             disabled={clearingLogs}
             className="text-[#9CA3AF] hover:text-[#E5E5E5] text-xs sm:text-sm underline transition-colors disabled:opacity-50"
           >
-            {clearingLogs ? "Clearing..." : "clear all"}
+            {clearingLogs ? "Clearing..." : "Clear activity log"}
           </button>
         </div>
 
