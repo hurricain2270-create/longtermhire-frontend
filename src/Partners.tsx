@@ -29,6 +29,121 @@ const Field = ({ label, value, onChange, placeholder, hint, ...rest }) => (
   </div>
 );
 
+// Out here on purpose. Declared inside, it would be a new component type on
+// every render and React would rebuild it from scratch each time.
+const Review = ({ review, setReview, setStatus }) => {
+  if (!review) return null;
+  if (review.loading) {
+    return (
+      <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4">
+        <p className="text-[#9CA3AF] font-[Inter]">Loading…</p>
+      </div>
+    );
+  }
+  const m = review;
+  return (
+    <div className="fixed inset-0 z-50 bg-black/80 flex items-start justify-center p-4 overflow-y-auto"
+      role="dialog" aria-label="Review this machine">
+      <div className="bg-[#1F1F20] border-l-[3px] border-l-[#7F77DD] border border-[#333]
+                      rounded-xl w-full max-w-[720px] my-8">
+        <div className="flex justify-between items-start gap-3 p-5 border-b border-[#2a2a2a]">
+          <div>
+            <p className="text-[#E5E5E5] font-[Inter] text-[20px] font-semibold">
+              {m.equipment_name}
+            </p>
+            <p className="text-[#9CA3AF] font-[Inter] text-[13px] mt-1">
+              <span className="text-[#7F77DD] font-mono">{m.plant_code}</span>
+              {[m.category_name, m.model, m.year_made].filter(Boolean).map((x) => " · " + x)}
+            </p>
+            <p className="text-[#6B7280] font-[Inter] text-[13px] mt-1">
+              {[m.owner, m.owner_contact, m.owner_phone].filter(Boolean).join(" · ")}
+            </p>
+          </div>
+          <button onClick={() => setReview(null)}
+            className="text-[#6B7280] hover:text-[#E5E5E5] text-[22px] leading-none flex-none">×</button>
+        </div>
+
+        <div className="p-5">
+          {m.photos && m.photos.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-5">
+              {m.photos.map((url, i) => (
+                <a key={i} href={url} target="_blank" rel="noreferrer"
+                  className="block aspect-[4/3] rounded-lg overflow-hidden bg-[#292A2B] border border-[#333]">
+                  <img src={url} alt="" className="w-full h-full object-cover" />
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p className="text-[#F59E0B] font-[Inter] text-[14px] mb-5">
+              No photos sent. Worth asking before this goes in front of anyone.
+            </p>
+          )}
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
+            <div className="bg-[#292A2B] rounded-lg px-3.5 py-3">
+              <p className="text-[#6B7280] font-[Inter] text-[11px] uppercase tracking-[0.05em]">Hours</p>
+              <p className="text-[#E5E5E5] font-mono text-[16px] mt-0.5">{m.current_hours || "—"}</p>
+            </div>
+            <div className="bg-[#292A2B] rounded-lg px-3.5 py-3">
+              <p className="text-[#6B7280] font-[Inter] text-[11px] uppercase tracking-[0.05em]">Last service</p>
+              <p className="text-[#E5E5E5] font-mono text-[16px] mt-0.5">
+                {m.last_service_date
+                  ? new Date(m.last_service_date).toLocaleDateString("en-AU",
+                      { day: "numeric", month: "short", year: "2-digit" })
+                  : "—"}
+              </p>
+            </div>
+            <div className="bg-[#292A2B] rounded-lg px-3.5 py-3">
+              <p className="text-[#6B7280] font-[Inter] text-[11px] uppercase tracking-[0.05em]">Fuel</p>
+              <p className="text-[#E5E5E5] font-mono text-[16px] mt-0.5">{m.fuel_type || "—"}</p>
+            </div>
+          </div>
+
+          {m.notes ? (
+            <div className="mb-5">
+              <p className="text-[#6B7280] font-[Inter] text-[11px] uppercase tracking-[0.05em] mb-1.5">
+                What they told us
+              </p>
+              <p className="text-[#E5E5E5] font-[Inter] text-[14px] leading-relaxed whitespace-pre-line">
+                {m.notes}
+              </p>
+            </div>
+          ) : null}
+
+          <div className="mb-5">
+            <p className="text-[#6B7280] font-[Inter] text-[11px] uppercase tracking-[0.05em] mb-1.5">
+              Paperwork
+            </p>
+            {m.docs && m.docs.length > 0 ? (
+              m.docs.map((d, i) => (
+                <a key={i} href={d.url || d} target="_blank" rel="noreferrer"
+                  className="block text-[#FDCE06] font-[Inter] text-[14px] hover:underline py-0.5">
+                  {d.name || "Document " + (i + 1)}
+                </a>
+              ))
+            ) : (
+              <p className="text-[#F59E0B] font-[Inter] text-[14px]">
+                No certificate of currency. Worth having before it goes out.
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-2.5 p-5 border-t border-[#2a2a2a]">
+          <button
+            onClick={() => { setStatus(m.id, "approved", m.equipment_name); setReview(null); }}
+            className={BTN.success}>Approve it</button>
+          <button
+            onClick={() => { setStatus(m.id, "declined", m.equipment_name); setReview(null); }}
+            className={BTN.secondary}>Not for us</button>
+          <button onClick={() => setReview(null)} className={BTN.secondary}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 const Partners = () => {
   const [data, setData] = useState({ partners: [], machines: [] });
   const [loading, setLoading] = useState(true);
@@ -36,6 +151,20 @@ const Partners = () => {
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(EMPTY);
   const [openPartner, setOpenPartner] = useState(null);
+  // What they actually sent — approving without seeing it is a guess.
+  const [review, setReview] = useState(null);
+
+  const openReview = async (machineId) => {
+    setReview({ loading: true });
+    try {
+      const res = await api.get("/v1/api/longtermhire/super_admin/partner-machine/" + machineId);
+      if (res?.data?.error) throw new Error();
+      setReview(res.data.data);
+    } catch (e) {
+      setReview(null);
+      toast.error("Could not open that");
+    }
+  };
 
   const load = async () => {
     try {
@@ -90,6 +219,7 @@ const Partners = () => {
 
   return (
     <div className="p-4 sm:p-8 bg-[#292A2B] min-h-screen">
+      <Review review={review} setReview={setReview} setStatus={setStatus} />
       <header className="mb-6">
         <h1 className="text-[#E5E5E5] font-[Inter] font-bold text-[28px] sm:text-[36px] leading-tight">
           Partners
@@ -180,6 +310,9 @@ const Partners = () => {
                 </p>
               </div>
               <div className="flex gap-2">
+                <button onClick={() => openReview(m.id)} className={BTN.primarySm}>
+                  Have a look
+                </button>
                 <button onClick={() => setStatus(m.id, "approved", m.equipment_name)}
                   className={BTN.successSm}>Approve</button>
                 <button onClick={() => setStatus(m.id, "declined", m.equipment_name)}

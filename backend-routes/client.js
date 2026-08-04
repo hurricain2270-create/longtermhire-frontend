@@ -1756,6 +1756,50 @@ module.exports = function (app) {
     }
   });
 
+  // Everything they sent, so approving is not a guess.
+  app.get('/v1/api/longtermhire/super_admin/partner-machine/:id', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const rows = await sdk.rawQuery(
+        'SELECT e.*, e.equipment_id AS plant_code, p.business_name AS owner, ' +
+        'p.contact_name AS owner_contact, p.phone AS owner_phone, p.email AS owner_email ' +
+        'FROM longtermhire_equipment_item e ' +
+        'LEFT JOIN longtermhire_partner p ON p.id = e.owner_partner_id ' +
+        'WHERE e.id = ? LIMIT 1', [req.params.id]
+      );
+      if (!rows || !rows.length) return res.status(404).json({ error: true, message: 'Not found' });
+      const m = rows[0];
+
+      const photos = await sdk.rawQuery(
+        'SELECT image_url FROM longtermhire_content_images WHERE equipment_id = ? ORDER BY id',
+        [m.id]
+      );
+      const content = await sdk.rawQuery(
+        'SELECT description FROM longtermhire_content WHERE equipment_id = ? LIMIT 1', [m.id]
+      );
+
+      let docs = [];
+      try {
+        docs = m.specs_files
+          ? (Array.isArray(m.specs_files) ? m.specs_files : JSON.parse(m.specs_files))
+          : [];
+      } catch (e) { docs = []; }
+
+      return res.status(200).json({
+        error: false,
+        data: Object.assign({}, m, {
+          photos: (photos || []).map((p2) => p2.image_url),
+          notes: content && content.length ? content[0].description : null,
+          docs,
+        }),
+      });
+    } catch (error) {
+      console.error('Partner machine detail error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
   // Approving a machine is what puts it in front of clients. Until then it is
   // in the fleet but marked pending and hidden from them.
   app.put('/v1/api/longtermhire/super_admin/partner-machine/:id', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
