@@ -1594,30 +1594,34 @@ module.exports = function (app) {
          last_service_date || null, p.id, ownerUserId, now, now]
       );
 
-      // The description lives in the content table, same as our own machines.
-      if (notes) {
-        try {
-          await sdk.rawQuery(
-            'INSERT INTO longtermhire_content ' +
-            '(equipment_id, equipment_name, description, created_at, updated_at) ' +
-            'VALUES (?, ?, ?, ?, ?)',
-            [result.insertId, equipment_name, notes, now, now]
-          );
-        } catch (noteErr) {
-          console.error('Partner notes not saved:', noteErr.message);
-        }
+      // A content row always, because the photos hang off it by content_id and
+      // the equipment tiles read from it. Without one, nothing displays.
+      let contentId = null;
+      try {
+        const contentRow = await sdk.rawQuery(
+          'INSERT INTO longtermhire_content ' +
+          '(equipment_id, equipment_name, description, created_at, updated_at) ' +
+          'VALUES (?, ?, ?, ?, ?)',
+          [result.insertId, equipment_name, notes || null, now, now]
+        );
+        contentId = contentRow.insertId;
+      } catch (noteErr) {
+        console.error('Partner content row not created:', noteErr.message);
       }
 
       // Photos come through as urls already uploaded.
-      if (Array.isArray(photos) && photos.length) {
+      if (contentId && Array.isArray(photos) && photos.length) {
+        let first = true;
         for (const p of photos.slice(0, 6)) {
           const url = typeof p === "string" ? p : p && p.url;
           if (!url) continue;
           try {
             await sdk.rawQuery(
-              'INSERT INTO longtermhire_content_images (equipment_id, image_url, created_at) VALUES (?, ?, ?)',
-              [result.insertId, url, now]
+              'INSERT INTO longtermhire_content_images ' +
+              '(content_id, image_url, is_main, created_at) VALUES (?, ?, ?, ?)',
+              [contentId, url, first ? 1 : 0, now]
             );
+            first = false;
           } catch (imgErr) {
             console.error('Partner photo not saved:', imgErr.message);
           }
@@ -1772,8 +1776,9 @@ module.exports = function (app) {
       const m = rows[0];
 
       const photos = await sdk.rawQuery(
-        'SELECT image_url FROM longtermhire_content_images WHERE equipment_id = ? ORDER BY id',
-        [m.id]
+        'SELECT ci.image_url FROM longtermhire_content_images ci ' +
+        'JOIN longtermhire_content c ON c.id = ci.content_id ' +
+        'WHERE c.equipment_id = ? ORDER BY ci.id', [m.id]
       );
       const content = await sdk.rawQuery(
         'SELECT description FROM longtermhire_content WHERE equipment_id = ? LIMIT 1', [m.id]
