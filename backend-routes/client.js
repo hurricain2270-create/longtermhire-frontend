@@ -1507,10 +1507,10 @@ module.exports = function (app) {
   // as it streams in, and awaiting a database query first lets that stream
   // drain - the file arrives, then there is nothing left to parse.
   app.post("/v1/api/longtermhire/partner/:token/photo", function (req, res) {
-    const cfg = app.get("configuration");
-    const uploadMiddleware = cfg.upload_type === "s3"
-      ? UploadService.s3_upload().single("file")
-      : UploadService.local_upload().single("file");
+    // upload_type is not set anywhere in this deployment, so testing it sent
+    // files to local disk, which nothing serves. The uploads that work go
+    // straight to S3 without checking, so do the same.
+    const uploadMiddleware = UploadService.s3_upload().single("file");
 
     uploadMiddleware(req, res, async function (err) {
       if (err) {
@@ -1533,12 +1533,7 @@ module.exports = function (app) {
       } catch (e) {
         return res.status(500).json({ error: true, message: e.message });
       }
-      let fileUrl = cfg.upload_type === "s3"
-        ? req.file.location
-        : getLocalPath(req.file.path);
-      if (fileUrl && !/^https?:\/\//i.test(fileUrl)) {
-        fileUrl = "https://api.longtermhire.com" + (fileUrl.startsWith("/") ? "" : "/") + fileUrl;
-      }
+      const fileUrl = req.file.location;
       return res.status(200).json({
         error: false,
         data: { url: fileUrl, name: req.file.originalname, type: req.file.mimetype },
