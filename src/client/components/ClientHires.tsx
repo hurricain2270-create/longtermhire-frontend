@@ -132,7 +132,9 @@ const ClientHires = ({ userRole = "member" }) => {
             monthsBetween(h.hire_start_date, isCompleted ? h.hire_end_date : null),
             months
           );
-          const progressPct = months > 0 ? Math.min(100, Math.round((monthsIn / months) * 100)) : 0;
+          const monthsShown = Math.min(monthsIn + (isCompleted ? 0 : 1), months);
+  const progressPct =
+    months > 0 ? Math.min(100, Math.round((monthsShown / months) * 100)) : 0;
           const isExpanded = expanded === h.assignment_id;
 
           const schedule = Array.from({ length: months }, (_, i) => {
@@ -190,7 +192,7 @@ const ClientHires = ({ userRole = "member" }) => {
                     <span>
                       {monthLabel(h.hire_start_date, Math.min(monthsIn + (isCompleted ? 0 : 1), months))}
                       {" · "}
-                      {Math.min(monthsIn + (isCompleted ? 0 : 1), months)} of {months}
+                      {monthsShown} of {months}
                     </span>
                     <span>{progressPct}%</span>
                   </div>
@@ -216,7 +218,10 @@ const ClientHires = ({ userRole = "member" }) => {
                   </div>
                   <div className="bg-[#292A2B] rounded p-2 sm:p-3">
                     <div className="text-[#9CA3AF] text-[10px] sm:text-[11px] mb-1">Invoiced to date</div>
-                    <div className="text-[#4CAF50] text-[13px] sm:text-[15px] font-semibold">
+                    <div className={
+                  (paidToDate > 0 ? "text-[#4CAF50]" : "text-[#9CA3AF]") +
+                  " text-[13px] sm:text-[15px] font-semibold"
+                }>
                       {fmt(paidToDate)}
                     </div>
                   </div>

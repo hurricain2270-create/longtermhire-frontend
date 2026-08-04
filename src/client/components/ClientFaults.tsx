@@ -334,7 +334,7 @@ const ClientFaults = () => {
       <div className="mb-3">
         <div className="flex justify-between text-[11px] text-[#9CA3AF] mb-1.5">
           <span>{done ? "Back in service" : "Being sorted"}</span>
-          <span>{done ? "took " + human(usedH) : Math.round(pct) + "% of the estimated fault repair timeline"}</span>
+          <span>{done ? "took " + human(usedH) : Math.round(pct) + "% of the repair window"}</span>
         </div>
         <div className="bg-[#252527] rounded-full h-2.5 overflow-hidden">
           <div className="h-2.5 transition-all" style={{ width: Math.max(2, pct) + "%", background: colour }} />

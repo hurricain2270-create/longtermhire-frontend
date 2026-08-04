@@ -158,17 +158,18 @@ const Card = ({
                 {f.resolved_at
                   ? "took " + human(hrs(f.reported_at, f.resolved_at))
                   : Math.round(Math.min(100, (hrs(f.reported_at) / (f.window_hours || 72)) * 100))
-                    + "% of the estimated fault repair timeline"}
+                    + "% of the repair window"}
               </span>
             </div>
-            <div className="bg-[#252527] rounded-full h-2 overflow-hidden">
-              <div className="h-2 transition-all" style={{
-                width: Math.max(2, Math.min(100, (hrs(f.reported_at, f.resolved_at) / (f.window_hours || 72)) * 100)) + "%",
-                background: f.resolved_at ? "#4CAF50"
-                  : (hrs(f.reported_at) / (f.window_hours || 72)) * 100 > 75 ? "#ef4444"
-                  : (hrs(f.reported_at) / (f.window_hours || 72)) * 100 > 40 ? "#F59E0B" : "#4CAF50",
-              }} />
-            </div>
+            {!f.resolved_at && (
+              <div className="bg-[#252527] rounded-full h-2 overflow-hidden">
+                <div className="h-2 transition-all" style={{
+                  width: Math.max(2, Math.min(100, (hrs(f.reported_at) / (f.window_hours || 72)) * 100)) + "%",
+                  background: (hrs(f.reported_at) / (f.window_hours || 72)) * 100 > 75 ? "#ef4444"
+                    : (hrs(f.reported_at) / (f.window_hours || 72)) * 100 > 40 ? "#F59E0B" : "#4CAF50",
+                }} />
+              </div>
+            )}
           </div>
         )
       )}
