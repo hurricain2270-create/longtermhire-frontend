@@ -1454,6 +1454,144 @@ module.exports = function (app) {
 
 
   /**
+   * The partner's own side. No login — the token in the address is the
+   * credential, same as the supplier job pages.
+   */
+  app.get('/v1/api/longtermhire/partner/:token', async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const rows = await sdk.rawQuery(
+        'SELECT id, business_name, contact_name, email, phone FROM longtermhire_partner ' +
+        'WHERE token = ? AND active = 1 LIMIT 1', [req.params.token]
+      );
+      if (!rows || !rows.length) return res.status(404).json({ error: true, message: 'not_found' });
+      const p = rows[0];
+
+      const machines = await sdk.rawQuery(
+        'SELECT e.id, e.equipment_id AS plant_code, e.equipment_name, e.category_name, ' +
+        'e.model, e.year_made, e.base_price, e.partner_status, e.description, ' +
+        'e.current_hours, e.last_service_date, ' +
+        "(SELECT COUNT(*) FROM longtermhire_client_equipment ce " +
+        " WHERE ce.equipment_id = e.id AND ce.hire_status = 'active') AS on_hire " +
+        'FROM longtermhire_equipment_item e WHERE e.owner_partner_id = ? ' +
+        'ORDER BY e.equipment_name', [p.id]
+      );
+
+      // The categories we hire out, so their machine lands somewhere real.
+      const cats = await sdk.rawQuery(
+        'SELECT DISTINCT category_name FROM longtermhire_equipment_item ' +
+        "WHERE category_name IS NOT NULL AND category_name <> '' ORDER BY category_name", []
+      );
+
+      return res.status(200).json({
+        error: false,
+        data: {
+          partner: { business_name: p.business_name, contact_name: p.contact_name },
+          machines: machines || [],
+          categories: (cats || []).map((c) => c.category_name),
+        },
+      });
+    } catch (error) {
+      console.error('Partner portal error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  // A machine they are listing. It goes straight into the fleet marked pending,
+  // so once approved everything downstream already knows about it.
+  app.post('/v1/api/longtermhire/partner/:token/machine', async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const rows = await sdk.rawQuery(
+        'SELECT id, business_name FROM longtermhire_partner WHERE token = ? AND active = 1 LIMIT 1',
+        [req.params.token]
+      );
+      if (!rows || !rows.length) return res.status(404).json({ error: true, message: 'not_found' });
+      const p = rows[0];
+
+      const { equipment_name, category_name, model, year_made, current_hours,
+              last_service_date, description, attachments, insured_by,
+              condition_notes, photos } = req.body;
+      if (!equipment_name) {
+        return res.status(400).json({ error: true, message: 'What is it?' });
+      }
+
+      // A code they cannot clash with ours. P for partner, then the next number.
+      const last = await sdk.rawQuery(
+        "SELECT equipment_id FROM longtermhire_equipment_item WHERE equipment_id LIKE 'P%' " +
+        'ORDER BY id DESC LIMIT 1', []
+      );
+      let n = 1;
+      if (last && last.length) {
+        const m = String(last[0].equipment_id).match(/\d+/);
+        if (m) n = parseInt(m[0], 10) + 1;
+      }
+      const plantCode = 'P' + String(n).padStart(3, '0');
+
+      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      const notes = [description, condition_notes, attachments ? 'Comes with: ' + attachments : '',
+                     insured_by ? 'Insured by ' + insured_by : '']
+        .filter(Boolean).join('\n\n');
+
+      const result = await sdk.rawQuery(
+        'INSERT INTO longtermhire_equipment_item ' +
+        '(equipment_id, equipment_name, category_name, model, year_made, description, ' +
+        'current_hours, last_service_date, owner_partner_id, partner_status, ' +
+        "ownership_status, availability, created_at, updated_at) " +
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'partner', 0, ?, ?)",
+        [plantCode, equipment_name, category_name || null, model || null,
+         year_made || null, notes || null, current_hours || null,
+         last_service_date || null, p.id, now, now]
+      );
+
+      // Photos come through as urls already uploaded.
+      if (Array.isArray(photos) && photos.length) {
+        for (const url of photos.slice(0, 6)) {
+          try {
+            await sdk.rawQuery(
+              'INSERT INTO longtermhire_content_images (equipment_id, image_url, created_at) VALUES (?, ?, ?)',
+              [result.insertId, url, now]
+            );
+          } catch (imgErr) {
+            console.error('Partner photo not saved:', imgErr.message);
+          }
+        }
+      }
+
+      // Tell whoever reads our mail that something is waiting.
+      try {
+        const MailService = require('../../../baas/services/MailService');
+        const config = app.get('configuration');
+        const mailService = new MailService(config);
+        const to = process.env.ADMIN_NOTIFY_EMAIL || config.mail?.from_mail;
+        if (to) {
+          await mailService.send(
+            config.mail?.from_mail || 'admin@longtermhire.com', to,
+            'A partner has listed a machine — ' + equipment_name,
+            `<div style="font-family:Inter,Arial,sans-serif;font-size:15px;color:#111;">
+               <p><b>${p.business_name}</b> has listed <b>${equipment_name}</b>.</p>
+               <p>${plantCode}${category_name ? ' · ' + category_name : ''}</p>
+               <p style="color:#666;font-size:13px;">Approve it under Partners.</p>
+             </div>`
+          );
+        }
+      } catch (mailErr) {
+        console.error('Partner listing notification failed:', mailErr);
+      }
+
+      return res.status(200).json({
+        error: false,
+        data: { id: result.insertId, plant_code: plantCode },
+      });
+    } catch (error) {
+      console.error('Partner machine error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
+  /**
    * Partners. People with plant sitting idle in their yard who are not in the
    * hire business themselves. They list a machine, we approve it, and from that
    * point it behaves like one of ours to a client — same tiles, same hires,

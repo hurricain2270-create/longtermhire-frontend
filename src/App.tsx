@@ -36,6 +36,7 @@ import ResetPassword from "./client/ResetPassword";
 import PriceHistory from "./PriceHistory";
 import Suppliers from "./Suppliers";
 import Partners from "./Partners";
+import PartnerPortal from "./PartnerPortal";
 
 // Without this, a single error anywhere unmounts the whole app and every page
 // goes blank with nothing on screen to explain it. Now the page that broke says
@@ -246,6 +247,11 @@ function App() {
           }
         />
         <Route path="/incoming" element={<Incoming />} />
+
+        {/* Partner portal. Public — a bloke with a machine in his yard is not
+            going to remember a password, so the token in the address is it. */}
+        <Route path="/partner/:token" element={
+          <PageErrorBoundary><PartnerPortal /></PageErrorBoundary>} />
 
         {/* Client Portal Routes. Each is wrapped so a crash shows the client
             what went wrong instead of a blank screen — the boundary in
