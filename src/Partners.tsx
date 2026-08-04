@@ -228,6 +228,23 @@ const Partners = () => {
                   <p className="text-[#6B7280] font-[Inter] text-[13px] mb-2">{p.notes}</p>
                 ) : null}
 
+                <div className="flex items-center gap-2 mt-2">
+                  <a href={"https://www.longtermhire.com/partner/" + p.token}
+                    target="_blank" rel="noreferrer"
+                    className="text-[#FDCE06] font-[Inter] text-[13px] hover:underline">
+                    Open their portal
+                  </a>
+                  <button
+                    onClick={() => {
+                      const link = "https://www.longtermhire.com/partner/" + p.token;
+                      navigator.clipboard?.writeText(link);
+                      toast.success("Link copied");
+                    }}
+                    className="text-[#6B7280] font-[Inter] text-[13px] hover:text-[#9CA3AF]">
+                    copy link
+                  </button>
+                </div>
+
                 <div className="border-t border-[#2a2a2a] mt-3 pt-3">
                   <div className="flex justify-between items-center">
                     <span className="text-[#9CA3AF] font-[Inter] text-[13px]">
