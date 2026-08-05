@@ -31,7 +31,7 @@ const Field = ({ label, value, onChange, placeholder, hint, ...rest }) => (
 
 // Out here on purpose. Declared inside, it would be a new component type on
 // every render and React would rebuild it from scratch each time.
-const Review = ({ review, setReview, setStatus }) => {
+const Review = ({ review, setReview, setStatus, margin, setMargin }) => {
   if (!review) return null;
   if (review.loading) {
     return (
@@ -129,14 +129,67 @@ const Review = ({ review, setReview, setStatus }) => {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2.5 p-5 border-t border-[#2a2a2a]">
+        <div className="p-5 border-t border-[#2a2a2a]">
+          <div className="bg-[#292A2B] border border-[#333] rounded-lg p-4 mb-4">
+            <p className="text-[#6B7280] font-[Inter] text-[11px] uppercase tracking-[0.05em] mb-2">
+              What it earns us
+            </p>
+            <div className="flex flex-wrap items-end gap-5">
+              <div>
+                <p className="text-[#9CA3AF] font-[Inter] text-[12px]">He wants</p>
+                <p className="text-[#E5E5E5] font-mono text-[18px]">
+                  {m.partner_price
+                    ? "$" + Number(m.partner_price).toLocaleString("en-AU")
+                    : "not stated"}
+                </p>
+              </div>
+              <div>
+                <p className="text-[#9CA3AF] font-[Inter] text-[12px]">Our margin</p>
+                <div className="flex items-center gap-1">
+                  <input value={margin} inputMode="decimal"
+                    onChange={(e) => setMargin(e.target.value)}
+                    className="w-20 bg-[#1F1F20] border border-[#333] rounded-lg text-[#E5E5E5]
+                               font-mono text-[18px] px-2.5 py-1 outline-none focus:border-[#FDCE06]" />
+                  <span className="text-[#9CA3AF] font-mono text-[16px]">%</span>
+                </div>
+              </div>
+              <div>
+                <p className="text-[#9CA3AF] font-[Inter] text-[12px]">Client pays</p>
+                <p className="text-[#FDCE06] font-mono text-[18px]">
+                  {m.partner_price
+                    ? "$" + Math.round(Number(m.partner_price) *
+                        (1 + (parseFloat(margin) || 0) / 100)).toLocaleString("en-AU")
+                    : "—"}
+                </p>
+              </div>
+              <div>
+                <p className="text-[#9CA3AF] font-[Inter] text-[12px]">We keep</p>
+                <p className="text-[#4CAF50] font-mono text-[18px]">
+                  {m.partner_price
+                    ? "$" + Math.round(Number(m.partner_price) *
+                        ((parseFloat(margin) || 0) / 100)).toLocaleString("en-AU")
+                    : "—"}
+                </p>
+              </div>
+            </div>
+            <p className="text-[#6B7280] font-[Inter] text-[12px] mt-2.5">
+              The client price is worked out from these, so it cannot drift when he
+              changes what he wants.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-2.5">
           <button
-            onClick={() => { setStatus(m.id, "approved", m.equipment_name); setReview(null); }}
+            onClick={() => {
+              setStatus(m.id, "approved", m.equipment_name, parseFloat(margin) || 0);
+              setReview(null);
+            }}
             className={BTN.success}>Approve it</button>
           <button
             onClick={() => { setStatus(m.id, "declined", m.equipment_name); setReview(null); }}
             className={BTN.secondary}>Not for us</button>
           <button onClick={() => setReview(null)} className={BTN.secondary}>Close</button>
+          </div>
         </div>
       </div>
     </div>
@@ -154,6 +207,7 @@ const Partners = () => {
   const [openPartner, setOpenPartner] = useState(null);
   // What they actually sent — approving without seeing it is a guess.
   const [review, setReview] = useState(null);
+  const [margin, setMargin] = useState("25");
 
   const openReview = async (machineId) => {
     setReview({ loading: true });
@@ -161,6 +215,7 @@ const Partners = () => {
       const res = await api.get("/v1/api/longtermhire/super_admin/partner-machine/" + machineId);
       if (res?.data?.error) throw new Error();
       setReview(res.data.data);
+      setMargin(String(res.data.data.partner_margin || 25));
     } catch (e) {
       setReview(null);
       toast.error("Could not open that");
@@ -221,12 +276,12 @@ const Partners = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const setStatus = async (machineId, status, name) => {
+  const setStatus = async (machineId, status, name, margin) => {
     if (status === "approved" &&
         !window.confirm("Approve " + name + "?\n\nIt goes live to clients straight away.")) return;
     try {
       await api.put("/v1/api/longtermhire/super_admin/partner-machine/" + machineId,
-                    { partner_status: status });
+                    { partner_status: status, partner_margin: margin });
       toast.success(status === "approved" ? name + " is live" : "Saved");
       load();
     } catch (e) {
@@ -245,7 +300,8 @@ const Partners = () => {
 
   return (
     <div className="p-4 sm:p-8 bg-[#292A2B] min-h-screen">
-      <Review review={review} setReview={setReview} setStatus={setStatus} />
+      <Review review={review} setReview={setReview} setStatus={setStatus}
+        margin={margin} setMargin={setMargin} />
       <header className="mb-6">
         <h1 className="text-[#E5E5E5] font-[Inter] font-bold text-[28px] sm:text-[36px] leading-tight">
           Partners

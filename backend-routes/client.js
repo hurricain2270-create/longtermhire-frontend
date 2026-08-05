@@ -1788,7 +1788,7 @@ module.exports = function (app) {
       );
       const machines = await sdk.rawQuery(
         'SELECT e.id, e.equipment_id AS plant_code, e.equipment_name, e.category_name, ' +
-        'e.base_price, e.partner_price, e.partner_changed_at, ' +
+        'e.base_price, e.partner_price, e.partner_margin, e.partner_changed_at, ' +
         'e.owner_partner_id, e.partner_status, p.business_name AS owner ' +
         'FROM longtermhire_equipment_item e ' +
         'JOIN longtermhire_partner p ON p.id = e.owner_partner_id ' +
@@ -1936,10 +1936,33 @@ module.exports = function (app) {
       if (!['pending', 'approved', 'declined'].includes(status)) {
         return res.status(400).json({ error: true, message: 'Unknown status' });
       }
+
+      // The client price is worked out, not typed - so it cannot drift when the
+      // partner changes what he wants.
+      const margin = req.body.partner_margin === undefined
+        ? null : parseFloat(req.body.partner_margin);
+      let basePrice = null;
+      if (status === 'approved') {
+        const rows = await sdk.rawQuery(
+          'SELECT partner_price, partner_margin FROM longtermhire_equipment_item WHERE id = ? LIMIT 1',
+          [req.params.id]
+        );
+        const m = rows && rows.length ? rows[0] : {};
+        const cost = parseFloat(m.partner_price) || 0;
+        const pct = margin !== null && !isNaN(margin)
+          ? margin
+          : (parseFloat(m.partner_margin) || 25);
+        if (cost > 0) basePrice = Math.round(cost * (1 + pct / 100));
+      }
+
       await sdk.rawQuery(
         'UPDATE longtermhire_equipment_item SET partner_status = ?, ' +
-        'availability = ?, partner_changed_at = NULL WHERE id = ?',
-        [status, status === 'approved' ? 1 : 0, req.params.id]
+        'availability = ?, partner_changed_at = NULL, ' +
+        'partner_margin = COALESCE(?, partner_margin), ' +
+        'base_price = COALESCE(?, base_price) WHERE id = ?',
+        [status, status === 'approved' ? 1 : 0,
+         margin !== null && !isNaN(margin) ? margin : null,
+         basePrice, req.params.id]
       );
       return res.status(200).json({ error: false, message: 'Saved' });
     } catch (error) {
