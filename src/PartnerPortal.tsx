@@ -61,6 +61,35 @@ const PartnerPortal = () => {
   const [uploading, setUploading] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [draggingDoc, setDraggingDoc] = useState(false);
+  // Updating a machine already listed - new hours, fresh photos, a renewed
+  // certificate. None of that should need a phone call.
+  const [updating, setUpdating] = useState(null);
+  const [upd, setUpd] = useState({ current_hours: "", last_service_date: "",
+                                   condition_notes: "", photos: [], docs: [] });
+
+  const sendUpdate = async () => {
+    setSending(true);
+    try {
+      const res = await fetch(
+        API + "/v1/api/longtermhire/partner/" + token + "/machine/" + updating.id,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(upd),
+        }
+      );
+      const j = await res.json();
+      if (j.error) throw new Error(j.message);
+      toast.success("Thanks, that is updated");
+      setUpdating(null);
+      setUpd({ current_hours: "", last_service_date: "", condition_notes: "", photos: [], docs: [] });
+      load();
+    } catch (e) {
+      toast.error("That did not save. Give it another go.");
+    } finally {
+      setSending(false);
+    }
+  };
   const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
 
   const load = async () => {
@@ -89,12 +118,14 @@ const PartnerPortal = () => {
 
   // Straight to S3 through our own endpoint - a partner has a token, not a
   // login, so this cannot go through the usual authenticated path.
-  const addFiles = async (files, key = "photos", max = 6, imagesOnly = true) => {
+  const addFiles = async (files, key = "photos", max = 6, imagesOnly = true,
+                          setter = setForm, current = null) => {
+    const target = current || form;
     const list = Array.from(files || []).filter(
       (f) => !imagesOnly || f.type.startsWith("image/") || f.type === "application/pdf"
     );
     if (!list.length) return;
-    if (form[key].length + list.length > max) {
+    if (target[key].length + list.length > max) {
       toast.error("That is as many as we need");
       return;
     }
@@ -113,7 +144,7 @@ const PartnerPortal = () => {
         });
         const j = await res.json();
         if (j.error) throw new Error(j.message);
-        setForm((f) => ({ ...f, [key]: [...f[key], { url: j.data.url, name: j.data.name, type: j.data.type }] }));
+        setter((f) => ({ ...f, [key]: [...f[key], { url: j.data.url, name: j.data.name, type: j.data.type }] }));
       } catch (e) {
         toast.error(file.name + " would not upload");
       }
@@ -204,6 +235,99 @@ const PartnerPortal = () => {
         ))}
       </div>
 
+      {updating && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-start justify-center p-4 overflow-y-auto">
+          <div className="bg-[#1F1F20] border border-[#333] rounded-xl w-full max-w-[440px] my-8 p-5">
+            <div className="flex justify-between items-start gap-3 mb-4">
+              <div>
+                <p className="text-[#E5E5E5] font-[Inter] text-[18px] font-semibold">
+                  {updating.equipment_name}
+                </p>
+                <p className="text-[#6B7280] font-[Inter] text-[12px] mt-0.5">
+                  Anything you leave blank stays as it is
+                </p>
+              </div>
+              <button onClick={() => setUpdating(null)}
+                className="text-[#6B7280] hover:text-[#E5E5E5] text-[22px] leading-none flex-none">×</button>
+            </div>
+
+            <Field label="Hours now"
+              hint={updating.current_hours ? "Last we knew, " + updating.current_hours : "Off the meter"}
+              value={upd.current_hours} inputMode="numeric"
+              onChange={(v) => setUpd({ ...upd, current_hours: v })} />
+
+            <Field label="Last serviced" type="date"
+              value={upd.last_service_date}
+              onChange={(v) => setUpd({ ...upd, last_service_date: v })} />
+
+            <Area label="Anything worth telling us"
+              hint="A repair, a new attachment, something that has come up"
+              value={upd.condition_notes}
+              onChange={(v) => setUpd({ ...upd, condition_notes: v })} />
+
+            <label className="block text-[#9CA3AF] font-[Inter] text-[13px] mb-1.5">
+              More photos
+            </label>
+            <div className="rounded-lg p-4 text-center mb-3 border border-dashed border-[#444] bg-[#292A2B]"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                addFiles(e.dataTransfer.files, "photos", 6, true, setUpd, upd);
+              }}>
+              <input id="upd-photos" type="file" accept="image/*" multiple className="hidden"
+                disabled={uploading}
+                onChange={(e) => {
+                  addFiles(e.target.files, "photos", 6, true, setUpd, upd);
+                  e.target.value = "";
+                }} />
+              <label htmlFor="upd-photos"
+                className="inline-block bg-[#292A2B] border border-[#FDCE06] text-[#FDCE06]
+                           font-[Inter] font-semibold text-[14px] px-4 py-2.5 rounded-lg cursor-pointer">
+                {uploading ? "Uploading…" : "+ Add photos"}
+              </label>
+            </div>
+
+            {upd.photos.length > 0 && (
+              <div className="grid grid-cols-3 gap-2 mb-3">
+                {upd.photos.map((p, i) => (
+                  <div key={i} className="aspect-[4/3] rounded-lg overflow-hidden bg-[#292A2B] border border-[#333]">
+                    <img src={p.url} alt="" className="w-full h-full object-cover" />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <label className="block text-[#9CA3AF] font-[Inter] text-[13px] mb-1.5">
+              A renewed certificate
+            </label>
+            <div className="rounded-lg p-4 text-center mb-4 border border-dashed border-[#444] bg-[#292A2B]">
+              <input id="upd-docs" type="file" accept="image/*,application/pdf" multiple
+                className="hidden" disabled={uploading}
+                onChange={(e) => {
+                  addFiles(e.target.files, "docs", 6, true, setUpd, upd);
+                  e.target.value = "";
+                }} />
+              <label htmlFor="upd-docs"
+                className="inline-block text-[#9CA3AF] font-[Inter] text-[14px] underline cursor-pointer">
+                {upd.docs.length > 0 ? upd.docs.length + " attached" : "Attach a document"}
+              </label>
+            </div>
+
+            <div className="flex gap-2.5">
+              <button onClick={sendUpdate} disabled={sending}
+                className="flex-1 bg-[#4CAF50] text-[#1A1A1B] font-[Inter] font-bold text-[15px]
+                           px-5 py-3 rounded-lg disabled:opacity-50">
+                {sending ? "Saving…" : "Send it through"}
+              </button>
+              <button onClick={() => setUpdating(null)}
+                className="px-5 py-3 rounded-lg border border-[#333] text-[#9CA3AF] font-[Inter] text-[15px]">
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {tab === "plant" && (
         <div className="space-y-3">
           {machines.length === 0 ? (
@@ -284,6 +408,11 @@ const PartnerPortal = () => {
                     We are looking at it. Nothing more needed from you for now.
                   </p>
                 )}
+
+                <button onClick={() => setUpdating(m)}
+                  className="text-[#FDCE06] font-[Inter] text-[13px] hover:underline mt-3">
+                  Update hours or add photos
+                </button>
               </div>
             );
           })}

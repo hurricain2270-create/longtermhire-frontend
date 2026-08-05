@@ -1672,6 +1672,87 @@ module.exports = function (app) {
     }
   });
 
+  // Their machine, after it is listed. Hours change, photos age, certificates
+  // expire — none of that should need a phone call to us.
+  app.put('/v1/api/longtermhire/partner/:token/machine/:id', async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const own = await sdk.rawQuery(
+        'SELECT e.id FROM longtermhire_equipment_item e ' +
+        'JOIN longtermhire_partner p ON p.id = e.owner_partner_id ' +
+        'WHERE e.id = ? AND p.token = ? AND p.active = 1 LIMIT 1',
+        [req.params.id, req.params.token]
+      );
+      if (!own || !own.length) return res.status(404).json({ error: true, message: 'not_found' });
+
+      const { current_hours, last_service_date, condition_notes, photos, docs } = req.body;
+      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+      if (current_hours || last_service_date) {
+        await sdk.rawQuery(
+          'UPDATE longtermhire_equipment_item SET current_hours = COALESCE(?, current_hours), ' +
+          'last_service_date = COALESCE(?, last_service_date), updated_at = ? WHERE id = ?',
+          [current_hours || null, last_service_date || null, now, req.params.id]
+        );
+      }
+
+      if (Array.isArray(docs) && docs.length) {
+        await sdk.rawQuery(
+          'UPDATE longtermhire_equipment_item SET specs_files = ? WHERE id = ?',
+          [JSON.stringify(docs.slice(0, 6)), req.params.id]
+        );
+      }
+
+      // Photos hang off the content row, so make sure there is one.
+      let contentId = null;
+      const existing = await sdk.rawQuery(
+        'SELECT id, description FROM longtermhire_content WHERE equipment_id = ? LIMIT 1',
+        [req.params.id]
+      );
+      if (existing && existing.length) {
+        contentId = existing[0].id;
+        if (condition_notes) {
+          const merged = [existing[0].description, condition_notes].filter(Boolean).join('\n\n');
+          await sdk.rawQuery(
+            'UPDATE longtermhire_content SET description = ?, updated_at = ? WHERE id = ?',
+            [merged, now, contentId]
+          );
+        }
+      } else {
+        const made = await sdk.rawQuery(
+          'INSERT INTO longtermhire_content ' +
+          '(equipment_id, equipment_name, description, created_at, updated_at) ' +
+          'VALUES (?, (SELECT equipment_name FROM longtermhire_equipment_item WHERE id = ?), ?, ?, ?)',
+          [req.params.id, req.params.id, condition_notes || null, now, now]
+        );
+        contentId = made.insertId;
+      }
+
+      if (contentId && Array.isArray(photos) && photos.length) {
+        const already = await sdk.rawQuery(
+          'SELECT COUNT(*) AS n FROM longtermhire_content_images WHERE content_id = ?', [contentId]
+        );
+        let isFirst = !already || !already.length || Number(already[0].n) === 0;
+        for (const p of photos.slice(0, 6)) {
+          const url = typeof p === 'string' ? p : p && p.url;
+          if (!url) continue;
+          await sdk.rawQuery(
+            'INSERT INTO longtermhire_content_images ' +
+            '(content_id, image_url, is_main, created_at) VALUES (?, ?, ?, ?)',
+            [contentId, url, isFirst ? 1 : 0, now]
+          );
+          isFirst = false;
+        }
+      }
+
+      return res.status(200).json({ error: false, message: 'Saved' });
+    } catch (error) {
+      console.error('Partner machine update error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
   /**
    * Partners. People with plant sitting idle in their yard who are not in the
    * hire business themselves. They list a machine, we approve it, and from that
