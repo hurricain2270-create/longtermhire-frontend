@@ -150,6 +150,7 @@ const Partners = () => {
   const [adding, setAdding] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(EMPTY);
+  const [editing, setEditing] = useState(null);
   const [openPartner, setOpenPartner] = useState(null);
   // What they actually sent — approving without seeing it is a guess.
   const [review, setReview] = useState(null);
@@ -186,17 +187,38 @@ const Partners = () => {
     }
     setSaving(true);
     try {
-      const res = await api.post("/v1/api/longtermhire/super_admin/partners", form);
-      if (res?.data?.error) throw new Error();
-      toast.success(res.data.data.sent ? "Partner added and invited" : "Partner added, but the email did not go");
+      if (editing) {
+        const res = await api.put("/v1/api/longtermhire/super_admin/partners/" + editing, form);
+        if (res?.data?.error) throw new Error();
+        toast.success("Saved");
+      } else {
+        const res = await api.post("/v1/api/longtermhire/super_admin/partners", form);
+        if (res?.data?.error) throw new Error();
+        toast.success(res.data.data.sent
+          ? "Partner added and invited"
+          : "Partner added, but the email did not go");
+      }
       setForm(EMPTY);
       setAdding(false);
+      setEditing(null);
       load();
     } catch (e) {
       toast.error("Could not save that");
     } finally {
       setSaving(false);
     }
+  };
+
+  const startEdit = (p) => {
+    setForm({
+      business_name: p.business_name || "", contact_name: p.contact_name || "",
+      email: p.email || "", phone: p.phone || "", abn: p.abn || "",
+      street: p.street || "", suburb: p.suburb || "", state: p.state || "",
+      postcode: p.postcode || "", notes: p.notes || "",
+    });
+    setEditing(p.id);
+    setAdding(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const setStatus = async (machineId, status, name) => {
@@ -249,10 +271,12 @@ const Partners = () => {
       {adding && (
         <section className="bg-[#1F1F20] border border-[#333333] rounded-xl p-5 mb-6 max-w-[560px]">
           <h2 className="text-[#E5E5E5] font-[Inter] text-[18px] font-semibold mb-1">
-            Add a partner
+            {editing ? "Edit partner" : "Add a partner"}
           </h2>
           <p className="text-[#9CA3AF] font-[Inter] text-[13px] mb-4">
-            They get a link to their own portal. No login to remember.
+            {editing
+              ? "Their link stays the same."
+              : "They get a link to their own portal. No login to remember."}
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
@@ -284,9 +308,10 @@ const Partners = () => {
 
           <div className="flex gap-2.5 mt-5">
             <button onClick={save} disabled={saving} className={BTN.success + " flex-1"}>
-              {saving ? "Saving…" : "Add and send the link"}
+              {saving ? "Saving…" : editing ? "Save" : "Add and send the link"}
             </button>
-            <button onClick={() => setAdding(false)} className={BTN.secondary}>Cancel</button>
+            <button onClick={() => { setAdding(false); setEditing(null); setForm(EMPTY); }}
+              className={BTN.secondary}>Cancel</button>
           </div>
         </section>
       )}
@@ -351,10 +376,13 @@ const Partners = () => {
                       </p>
                     ) : null}
                   </div>
-                  <span className="px-2.5 py-1 rounded-full bg-[#292A2B] border border-[#333]
-                                   text-[#9CA3AF] font-[Inter] text-[12px] flex-none">
-                    {mine.length} {mine.length === 1 ? "machine" : "machines"}
-                  </span>
+                  <div className="flex items-center gap-2 flex-none">
+                    <span className="px-2.5 py-1 rounded-full bg-[#292A2B] border border-[#333]
+                                     text-[#9CA3AF] font-[Inter] text-[12px]">
+                      {mine.length} {mine.length === 1 ? "machine" : "machines"}
+                    </span>
+                    <button onClick={() => startEdit(p)} className={BTN.editSm}>Edit</button>
+                  </div>
                 </div>
 
                 {p.notes ? (

@@ -1760,6 +1760,29 @@ module.exports = function (app) {
     }
   });
 
+  app.put('/v1/api/longtermhire/super_admin/partners/:id', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const { business_name, contact_name, email, phone, abn,
+              street, suburb, state, postcode, notes, active } = req.body;
+      await sdk.rawQuery(
+        'UPDATE longtermhire_partner SET business_name = COALESCE(?, business_name), ' +
+        'contact_name = ?, email = COALESCE(?, email), phone = ?, abn = ?, ' +
+        'street = ?, suburb = ?, state = ?, postcode = ?, notes = ?, ' +
+        'active = COALESCE(?, active) WHERE id = ?',
+        [business_name || null, contact_name || null, email || null, phone || null,
+         abn || null, street || null, suburb || null, state || null,
+         postcode || null, notes || null,
+         active === undefined ? null : (active ? 1 : 0), req.params.id]
+      );
+      return res.status(200).json({ error: false, message: 'Saved' });
+    } catch (error) {
+      console.error('Update partner error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
   // Everything they sent, so approving is not a guess.
   app.get('/v1/api/longtermhire/super_admin/partner-machine/:id', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
     try {
