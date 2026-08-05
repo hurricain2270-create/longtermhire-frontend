@@ -15,6 +15,7 @@ const BLANK = {
   equipment_name: "", category_name: "", model: "", year_made: "",
   current_hours: "", last_service_date: "", attachments: "",
   insured_by: "", condition_notes: "", description: "", photos: [], docs: [],
+  partner_price: "",
 };
 
 const STEPS = ["What is it", "How it has been treated", "Photos", "Paperwork", "The terms"];
@@ -65,7 +66,8 @@ const PartnerPortal = () => {
   // certificate. None of that should need a phone call.
   const [updating, setUpdating] = useState(null);
   const [upd, setUpd] = useState({ current_hours: "", last_service_date: "",
-                                   condition_notes: "", photos: [], docs: [] });
+                                   condition_notes: "", photos: [], docs: [],
+                                   partner_price: "" });
 
   const sendUpdate = async () => {
     setSending(true);
@@ -82,7 +84,8 @@ const PartnerPortal = () => {
       if (j.error) throw new Error(j.message);
       toast.success("Thanks, that is updated");
       setUpdating(null);
-      setUpd({ current_hours: "", last_service_date: "", condition_notes: "", photos: [], docs: [] });
+      setUpd({ current_hours: "", last_service_date: "", condition_notes: "",
+               photos: [], docs: [], partner_price: "" });
       load();
     } catch (e) {
       toast.error("That did not save. Give it another go.");
@@ -259,6 +262,13 @@ const PartnerPortal = () => {
             <Field label="Last serviced" type="date"
               value={upd.last_service_date}
               onChange={(v) => setUpd({ ...upd, last_service_date: v })} />
+
+            <Field label="What you want for it, per month"
+              hint={updating.partner_price
+                ? "Currently " + money(updating.partner_price)
+                : "Before GST. Leave blank to keep it as it is."}
+              value={upd.partner_price} inputMode="decimal"
+              onChange={(v) => setUpd({ ...upd, partner_price: v })} />
 
             <Area label="Anything worth telling us"
               hint="A repair, a new attachment, something that has come up"
@@ -596,6 +606,16 @@ const PartnerPortal = () => {
           )}
 
           {step === 4 && (
+            <>
+            <Field label="What you want for it, per month"
+              hint="Before GST. What you would be happy to receive while it is out."
+              value={form.partner_price} onChange={set("partner_price")}
+              inputMode="decimal" placeholder="2400" />
+            <p className="text-[#6B7280] font-[Inter] text-[12.5px] -mt-2 mb-4">
+              We add our margin on top when we quote a client, so this is what
+              comes to you. Tell us a figure and we will say if it works.
+            </p>
+
             <div className="bg-[#292A2B] border border-[#333] rounded-lg p-4 mb-4">
               <p className="text-[#E5E5E5] font-[Inter] text-[15px] font-semibold mb-3">
                 How it works
@@ -612,6 +632,7 @@ const PartnerPortal = () => {
                 what we think it will earn before anything goes anywhere.
               </p>
             </div>
+            </>
           )}
 
           <div className="flex gap-2.5 mt-5">

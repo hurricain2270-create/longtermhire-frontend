@@ -1556,7 +1556,7 @@ module.exports = function (app) {
 
       const { equipment_name, category_name, model, year_made, current_hours,
               last_service_date, description, attachments, insured_by,
-              condition_notes, photos, docs } = req.body;
+              condition_notes, photos, docs, partner_price } = req.body;
       if (!equipment_name) {
         return res.status(400).json({ error: true, message: 'What is it?' });
       }
@@ -1587,11 +1587,12 @@ module.exports = function (app) {
         'INSERT INTO longtermhire_equipment_item ' +
         '(equipment_id, equipment_name, category_name, model, year_made, ' +
         'current_hours, last_service_date, owner_partner_id, partner_status, ' +
-        "ownership_status, availability, user_id, created_at, updated_at) " +
-        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', 'partner', 0, ?, ?, ?)",
+        "partner_price, ownership_status, availability, user_id, created_at, updated_at) " +
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, 'partner', 0, ?, ?, ?)",
         [plantCode, equipment_name, category_name || null, model || null,
          year_made || null, current_hours || null,
-         last_service_date || null, p.id, ownerUserId, now, now]
+         last_service_date || null, p.id, parseFloat(partner_price) || null,
+         ownerUserId, now, now]
       );
 
       // A content row always, because the photos hang off it by content_id and
@@ -1686,8 +1687,23 @@ module.exports = function (app) {
       );
       if (!own || !own.length) return res.status(404).json({ error: true, message: 'not_found' });
 
-      const { current_hours, last_service_date, condition_notes, photos, docs } = req.body;
+      const { current_hours, last_service_date, condition_notes, photos, docs,
+              partner_price } = req.body;
       const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+
+      // Every change gets flagged, however small - we should always know. But an
+      // approved machine stays visible to the client while we look at it, or a
+      // new photo would pull a machine off site.
+      await sdk.rawQuery(
+        'UPDATE longtermhire_equipment_item SET partner_changed_at = ? WHERE id = ?',
+        [now, req.params.id]
+      );
+      if (partner_price) {
+        await sdk.rawQuery(
+          'UPDATE longtermhire_equipment_item SET partner_price = ? WHERE id = ?',
+          [parseFloat(partner_price) || null, req.params.id]
+        );
+      }
 
       if (current_hours || last_service_date) {
         await sdk.rawQuery(
@@ -1772,7 +1788,8 @@ module.exports = function (app) {
       );
       const machines = await sdk.rawQuery(
         'SELECT e.id, e.equipment_id AS plant_code, e.equipment_name, e.category_name, ' +
-        'e.base_price, e.owner_partner_id, e.partner_status, p.business_name AS owner ' +
+        'e.base_price, e.partner_price, e.partner_changed_at, ' +
+        'e.owner_partner_id, e.partner_status, p.business_name AS owner ' +
         'FROM longtermhire_equipment_item e ' +
         'JOIN longtermhire_partner p ON p.id = e.owner_partner_id ' +
         'ORDER BY e.partner_status, e.equipment_name', []
@@ -1921,7 +1938,7 @@ module.exports = function (app) {
       }
       await sdk.rawQuery(
         'UPDATE longtermhire_equipment_item SET partner_status = ?, ' +
-        'availability = ? WHERE id = ?',
+        'availability = ?, partner_changed_at = NULL WHERE id = ?',
         [status, status === 'approved' ? 1 : 0, req.params.id]
       );
       return res.status(200).json({ error: false, message: 'Saved' });

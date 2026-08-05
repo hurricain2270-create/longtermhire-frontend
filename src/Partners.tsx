@@ -237,7 +237,11 @@ const Partners = () => {
   const machinesOf = (partnerId) =>
     (data.machines || []).filter((m) => m.owner_partner_id === partnerId);
 
-  const pendingAll = (data.machines || []).filter((m) => m.partner_status === "pending");
+  // Anything new, and anything they have touched since we approved it. A
+  // changed machine stays live for the client while we look at it.
+  const pendingAll = (data.machines || []).filter(
+    (m) => m.partner_status === "pending" || m.partner_changed_at
+  );
 
   return (
     <div className="p-4 sm:p-8 bg-[#292A2B] min-h-screen">
@@ -332,7 +336,15 @@ const Partners = () => {
                 </p>
                 <p className="text-[#6B7280] font-[Inter] text-[12px]">
                   {m.owner}{m.category_name ? " · " + m.category_name : ""}
+                  {m.partner_price
+                    ? " · wants $" + Number(m.partner_price).toLocaleString("en-AU") + "/mo"
+                    : ""}
                 </p>
+                {m.partner_changed_at && m.partner_status === "approved" ? (
+                  <p className="text-[#F59E0B] font-[Inter] text-[12px] mt-0.5">
+                    Changed since you approved it — still live for the client
+                  </p>
+                ) : null}
               </div>
               <div className="flex gap-2">
                 <button onClick={() => openReview(m.id)} className={BTN.primarySm}>
