@@ -37,6 +37,9 @@ const EquipmentManagement = () => {
   const [hireFilter, setHireFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [gapFilter, setGapFilter] = useState("all");
+  // Ours or somebody else's. Worth seeing one without the other, because a
+  // partner machine cannot be quoted or committed the same way.
+  const [ownerFilter, setOwnerFilter] = useState("all");
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -171,6 +174,10 @@ const EquipmentManagement = () => {
   const matchesHire = (item) =>
     hireFilter === "all" ||
     (hireFilter === "on" ? isOnHire(item) : !isOnHire(item));
+  const matchesOwner = (item) =>
+    ownerFilter === "all" ||
+    (ownerFilter === "ours" ? !item.owner_partner_id : !!item.owner_partner_id);
+
   const matchesGap = (item) => {
     if (gapFilter === "all") return true;
     if (gapFilter === "desc") return descOf(item).length === 0;
@@ -216,14 +223,16 @@ const EquipmentManagement = () => {
   ).sort();
 
   const visible = equipment
-    .filter((i) => matchesText(i) && matchesHire(i) && matchesCategory(i) && matchesGap(i))
+    .filter((i) => matchesText(i) && matchesHire(i) && matchesCategory(i) &&
+                   matchesGap(i) && matchesOwner(i))
     .slice()
     .sort((a, b) =>
       String(a.equipment_id || "").localeCompare(String(b.equipment_id || ""),
         undefined, { numeric: true, sensitivity: "base" })
     );
   const filtersActive =
-    hireFilter !== "all" || categoryFilter !== "all" || gapFilter !== "all";
+    hireFilter !== "all" || categoryFilter !== "all" || gapFilter !== "all" ||
+    ownerFilter !== "all";
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -400,6 +409,34 @@ const EquipmentManagement = () => {
         <section className="bg-[#1F1F20] border border-[#333333] rounded-lg p-5 mb-8">
           <div className="mb-3">
             <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2">
+              Whose machine
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                { key: "all", label: "All" },
+                { key: "ours", label: "Ours" },
+                { key: "partner", label: "Partners" },
+              ].map((o) => (
+                <button key={o.key} onClick={() => setOwnerFilter(o.key)}
+                  className={
+                    o.key === "partner" && ownerFilter === o.key
+                      ? "px-3.5 py-1.5 rounded-full font-[Inter] text-[13px] bg-[#7F77DD] text-[#1F1F20] font-semibold"
+                      : CHIP(ownerFilter === o.key)
+                  }>
+                  {o.label}{" "}
+                  <span className="opacity-60">
+                    {equipment.filter((i) =>
+                      matchesText(i) && matchesHire(i) && matchesCategory(i) && matchesGap(i) &&
+                      (o.key === "all" || (o.key === "ours" ? !i.owner_partner_id : !!i.owner_partner_id))
+                    ).length}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="mb-3">
+            <div className="text-[#9CA3AF] font-[Inter] text-[12px] uppercase tracking-[0.06em] mb-2">
               Hire status
             </div>
             <div className="flex flex-wrap gap-2">
@@ -469,7 +506,7 @@ const EquipmentManagement = () => {
             </div>
             {filtersActive && (
               <button
-                onClick={() => { setHireFilter("all"); setCategoryFilter("all"); setGapFilter("all"); }}
+                onClick={() => { setHireFilter("all"); setCategoryFilter("all"); setGapFilter("all"); setOwnerFilter("all"); }}
                 className={BTN.secondarySm}
               >
                 Clear filters
