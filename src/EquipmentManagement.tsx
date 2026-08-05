@@ -568,7 +568,7 @@ const EquipmentManagement = () => {
                         </div>
                       ) : (
                         <div className="w-full aspect-[16/9] flex flex-col items-center justify-center gap-1.5 bg-[#3a2f14] border-b border-[#333333]">
-                          <span className="text-[#F59E0B] font-[Inter] text-[24px]">No photos yet</span>
+                          <span className="text-[#F59E0B] font-[Inter] text-[14px]">No photos yet</span>
                         </div>
                       )}
                       {isOnHire(item) && (
@@ -616,14 +616,14 @@ const EquipmentManagement = () => {
                       </div>
 
                       <div className="flex gap-2">
-                        <button onClick={() => setEditingId(item.id)} className={BTN.editLg}>
+                        <button onClick={() => setEditingId(item.id)} className={BTN.edit}>
                           Edit
                         </button>
-                        <button onClick={() => handleViewDetails(item)} className={BTN.primaryLg}>
+                        <button onClick={() => handleViewDetails(item)} className={BTN.primary}>
                           Details
                         </button>
                         <button onClick={() => handleDeleteEquipment(item.id)}
-                          className={BTN.dangerLg + " ml-auto"}>
+                          className={BTN.danger + " ml-auto"}>
                           Delete
                         </button>
                       </div>
