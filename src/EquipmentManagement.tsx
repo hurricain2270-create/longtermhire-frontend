@@ -572,17 +572,17 @@ const EquipmentManagement = () => {
                         </div>
                       )}
                       {isOnHire(item) && (
-                        <span className="absolute top-3 right-3 px-4 py-1.5 rounded-full bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[20px]">
+                        <span className="absolute top-3 right-3 px-4 py-1.5 rounded-full bg-[#4CAF50] text-[#1F1F20] font-[Inter] font-bold text-[14px]">
                           On hire
                         </span>
                       )}
                     </div>
 
                     <div className="p-5">
-                      <div className="text-[#E5E5E5] font-[Inter] text-[30px] leading-tight font-semibold">
+                      <div className="text-[#E5E5E5] font-[Inter] text-[21px] leading-tight font-semibold">
                         {item.equipment_name || "Unnamed"}
                       </div>
-                      <div className="text-[#9CA3AF] font-[Inter] text-[22px] mt-1 mb-3.5">
+                      <div className="text-[#9CA3AF] font-[Inter] text-[15px] mt-1 mb-3.5">
                         <span className={partner ? "text-[#7F77DD] font-semibold" : ""}>
                           {item.equipment_id || "—"}
                         </span>
@@ -591,16 +591,16 @@ const EquipmentManagement = () => {
                       {partner && (
                         <div className="flex items-center gap-2 -mt-2 mb-3.5">
                           <span className="px-2.5 py-1 rounded-full bg-[#2A2740] border border-[#7F77DD]
-                                           text-[#B9B2F5] font-[Inter] text-[13px] font-semibold">
+                                           text-[#B9B2F5] font-[Inter] text-[12px] font-semibold">
                             Not ours
                           </span>
-                          <span className="text-[#9CA3AF] font-[Inter] text-[15px]">
+                          <span className="text-[#9CA3AF] font-[Inter] text-[13px]">
                             {item.owner_name || item.partner_name || "Partner machine"}
                           </span>
                         </div>
                       )}
 
-                      <div className="flex flex-wrap gap-x-6 gap-y-2 font-[Inter] text-[22px] mb-4">
+                      <div className="flex flex-wrap gap-x-5 gap-y-1.5 font-[Inter] text-[15px] mb-3.5">
                         <span className={written ? "text-[#9CA3AF]" : "text-[#F59E0B]"}>
                           {written ? "Written" : "No description"}
                         </span>
