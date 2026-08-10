@@ -267,8 +267,13 @@ const ClientManagement = () => {
   const handleInviteClient = async (clientData) => {
     try {
       setInviteLoading(true);
-      await clientApi.inviteClient(clientData);
-      toast.success("Client invited successfully! Invitation email sent.");
+      const res = await clientApi.inviteClient(clientData);
+      const sent = res?.data?.email_sent ?? res?.email_sent;
+      toast.success(
+        sent
+          ? "Client created and the invitation is on its way"
+          : "Client created. Nothing has been emailed yet — send the invitation when you are ready"
+      );
       setIsAddClientModalOpen(false);
       loadInitialData(); // Reload clients
     } catch (error) {
