@@ -806,10 +806,14 @@ const ClientManagement = () => {
                         </button>
                         <button
                           onClick={() => handleSendWelcome(client)}
-                          title="Send the welcome email with their login and what the portal does"
-                          className={BTN.success}
+                          title={
+                            client.invited_at
+                              ? "Already welcomed. Sends it again with a new password."
+                              : "Send the welcome email with their login and what the portal does"
+                          }
+                          className={client.invited_at ? BTN.secondary : BTN.success}
                         >
-                          Send welcome
+                          {client.invited_at ? "Welcomed" : "Send welcome"}
                         </button>
                         <button onClick={() => handleDeleteClient(client.id)} className={BTN.danger}>
                           Delete
