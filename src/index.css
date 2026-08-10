@@ -123,16 +123,15 @@ select option {
    invisible on our dark fields - so it looked as though there was no picker at
    all. Invert it, make it yellow on hover, and widen the hit area. */
 input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.75);
+  filter: invert(78%) sepia(60%) saturate(1600%) hue-rotate(1deg) brightness(103%);
   cursor: pointer;
-  opacity: 0.8;
+  opacity: 1;
   padding: 4px;
   margin-right: -2px;
 }
 
 input[type="date"]::-webkit-calendar-picker-indicator:hover {
-  filter: invert(0.85) sepia(1) saturate(6) hue-rotate(5deg);
-  opacity: 1;
+  filter: invert(85%) sepia(70%) saturate(2000%) hue-rotate(1deg) brightness(112%);
 }
 
 /* Firefox and anything that shows the whole field as clickable. */
