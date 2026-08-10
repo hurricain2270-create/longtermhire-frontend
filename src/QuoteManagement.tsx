@@ -9,6 +9,21 @@ import { quoteApi } from "./services/quoteApi";
 import { clientApi } from "./services/clientApi";
 import { settingsApi } from "./services/settingsApi";
 
+// What a client sees on a quote unless we say otherwise. Kept here so it
+// survives a client being deleted - it has been retyped twice already.
+const DEFAULT_TERMS = [
+  "Prices exclude GST.",
+  "",
+  "The following apply to the standard hire rate: Maintenance Levy 3.5%, " +
+    "Environmental Levy 1.5%, and Damage Waiver 7.5% where accepted.",
+  "",
+  "Delivery and pick up quoted separately.",
+  "",
+  "Valid for the period shown, subject to availability.",
+  "",
+  "Full terms are in the hire agreement.",
+].join("\n");
+
 const QuoteManagement = () => {
   const [clients, setClients] = useState([]);
   const [quotes, setQuotes] = useState([]);
@@ -58,7 +73,7 @@ const QuoteManagement = () => {
           companyEmail: q.company_email || "",
           companyLogo: q.company_logo || null,
           gstPercentage: q.gst_percentage?.toString() || "10",
-          termsOfHire: q.terms_of_hire || "",
+          termsOfHire: q.terms_of_hire || DEFAULT_TERMS,
           quoteExpiresAfter: q.quote_expires_after?.toString() || "7",
           produceQuoteFor: q.produce_quote_for?.toString() || "12",
           equipmentName: q.equipment_name || "",

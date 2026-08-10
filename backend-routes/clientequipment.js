@@ -3,6 +3,11 @@ const RoleMiddleware = require("../middleware/RoleMiddleware");
 const MailService = require("../../../baas/services/MailService");
 
 module.exports = function (app) {
+  // Default quote terms, pre-filled for every new client and editable per
+  // client. These were retyped twice after deletes wiped them.
+  const DEFAULT_TERMS =
+    "Prices exclude GST.\n\nThe following apply to the standard hire rate: Maintenance Levy 3.5%, Environmental Levy 1.5%, and Damage Waiver 7.5% where accepted.\n\nDelivery and pick up quoted separately.\n\nValid for the period shown, subject to availability.\n\nFull terms are in the hire agreement.";
+
   // Get client's assigned equipment with pricing and discounts
   app.get(
     "/v1/api/longtermhire/client/equipment",
@@ -752,8 +757,7 @@ module.exports = function (app) {
               quote_expires_after: 7,
               produce_quote_for: 12,
               gst_percentage: 15,
-              terms_of_hire:
-                "Standard Long Term Hire Terms & Conditions apply.",
+              terms_of_hire: DEFAULT_TERMS,
               is_default: true,
             },
           });
@@ -799,8 +803,7 @@ module.exports = function (app) {
               quote_expires_after: 7,
               produce_quote_for: 12,
               gst_percentage: 15,
-              terms_of_hire:
-                "Standard Long Term Hire Terms & Conditions apply.",
+              terms_of_hire: DEFAULT_TERMS,
               is_default: true,
             },
           });
