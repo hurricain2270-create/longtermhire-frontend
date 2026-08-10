@@ -1479,7 +1479,7 @@ module.exports = function (app) {
     try {
       const sdk = app.get('sdk');
       sdk.setProjectId('longtermhire');
-      const query = 'SELECT ce.id as assignment_id, ce.client_user_id, ce.equipment_id, ce.discount, ce.discount_type, ce.compounding_discount, ce.compounding_discount_type, ce.custom_base_price, ce.hire_start_date, ce.hire_end_date, ce.hire_status, e.equipment_name, e.equipment_id as equip_code, e.base_price, c.client_name, c.company_name, u.email, COALESCE((SELECT q.produce_quote_for FROM longtermhire_quote q WHERE q.client_user_id = ce.client_user_id AND q.equipment_name IS NULL ORDER BY q.id DESC LIMIT 1), 12) as produce_quote_for FROM longtermhire_client_equipment ce JOIN longtermhire_equipment_item e ON e.id = ce.equipment_id JOIN longtermhire_client c ON c.user_id = ce.client_user_id JOIN longtermhire_user u ON u.id = ce.client_user_id ORDER BY c.company_name, e.equipment_name';
+      const query = 'SELECT ce.id as assignment_id, ce.client_user_id, ce.equipment_id, ce.discount, ce.discount_type, ce.compounding_discount, ce.compounding_discount_type, ce.custom_base_price, ce.hire_start_date, ce.hire_end_date, ce.hire_status, e.equipment_name, e.equipment_id as equip_code, e.base_price, e.owner_partner_id, c.client_name, c.company_name, u.email, COALESCE((SELECT q.produce_quote_for FROM longtermhire_quote q WHERE q.client_user_id = ce.client_user_id AND q.equipment_name IS NULL ORDER BY q.id DESC LIMIT 1), 12) as produce_quote_for FROM longtermhire_client_equipment ce JOIN longtermhire_equipment_item e ON e.id = ce.equipment_id JOIN longtermhire_client c ON c.user_id = ce.client_user_id JOIN longtermhire_user u ON u.id = ce.client_user_id ORDER BY c.company_name, e.equipment_name';
       const results = await sdk.rawQuery(query, []);
       return res.status(200).json({ error: false, data: results });
     } catch (error) {
@@ -2903,7 +2903,7 @@ function send(){
     try {
       const sdk = app.get('sdk');
       sdk.setProjectId('longtermhire');
-      const query = 'SELECT ce.id as assignment_id, ce.discount, ce.discount_type, ce.compounding_discount, ce.compounding_discount_type, ce.custom_base_price, ce.hire_start_date, ce.hire_end_date, ce.hire_status, e.equipment_name, e.equipment_id as equip_code, e.base_price, COALESCE((SELECT q.produce_quote_for FROM longtermhire_quote q WHERE q.client_user_id = ce.client_user_id AND q.equipment_name IS NULL ORDER BY q.id DESC LIMIT 1), 12) as produce_quote_for FROM longtermhire_client_equipment ce JOIN longtermhire_equipment_item e ON e.id = ce.equipment_id WHERE ce.client_user_id = ? AND ce.hire_status IN (?, ?) ORDER BY e.equipment_name';
+      const query = 'SELECT ce.id as assignment_id, ce.discount, ce.discount_type, ce.compounding_discount, ce.compounding_discount_type, ce.custom_base_price, ce.hire_start_date, ce.hire_end_date, ce.hire_status, e.equipment_name, e.equipment_id as equip_code, e.base_price, e.owner_partner_id, COALESCE((SELECT q.produce_quote_for FROM longtermhire_quote q WHERE q.client_user_id = ce.client_user_id AND q.equipment_name IS NULL ORDER BY q.id DESC LIMIT 1), 12) as produce_quote_for FROM longtermhire_client_equipment ce JOIN longtermhire_equipment_item e ON e.id = ce.equipment_id WHERE ce.client_user_id = ? AND ce.hire_status IN (?, ?) ORDER BY e.equipment_name';
       const results = await sdk.rawQuery(query, [req.user_id, 'active', 'completed']);
       return res.status(200).json({ error: false, data: results });
     } catch (error) {
