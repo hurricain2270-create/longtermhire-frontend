@@ -39,7 +39,9 @@ const DashboardGauges = () => {
         const open = res?.data?.open_count || 0;
         const waiting = res?.data?.unanswered_count || 0;
         // Answered means we replied last. Nothing open reads as fully on top.
-        const pct = open > 0 ? pctOf(open - waiting, open) : 100;
+        // Nothing open is not a score. Showing 100% green makes an empty system
+    // look like a well-run one.
+    const pct = open > 0 ? pctOf(open - waiting, open) : 0;
         setG((s) => ({
           ...s,
           faults: { pct, value: pct + "%",
@@ -59,14 +61,14 @@ const DashboardGauges = () => {
             (!!c.pricing_package_id || Number(c.has_custom_discounts) > 0) &&
             Number(c.has_welcome) > 0
         ).length;
-        const pct = pctOf(ready, rows.length);
-        setG((s) => ({
-          ...s,
-          clients: { pct, value: pct + "%",
-                     caption: rows.length - ready
-                       ? rows.length - ready + " incomplete"
-                       : "all set up" },
-        }));
+              // With no clients at all this was 0% beside "all set up", which
+      // contradicts itself.
+      const pct = rows.length > 0 ? pctOf(ready, rows.length) : 0;
+      setG((s) => ({ ...s, clients: { pct, value: rows.length > 0 ? pct + "%" : "—",
+        caption: rows.length === 0
+          ? "no clients yet"
+          : rows.length - ready ? rows.length - ready + " incomplete" : "all set up" },
+      }));
       } catch (e) {
         console.error("Clients gauge:", e);
       }

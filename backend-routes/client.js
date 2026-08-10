@@ -748,6 +748,40 @@ module.exports = function (app) {
 
         const userId = clientResult[0].user_id;
 
+        // Everything that hangs off this client, deepest first. Leaving any of
+        // it behind means orphaned rows counted on the dashboard, pointing at a
+        // company that no longer exists.
+        const sweep = [
+          ["fault updates", "DELETE fu FROM longtermhire_fault_update fu " +
+            "JOIN longtermhire_fault f ON f.id = fu.fault_id WHERE f.client_user_id = ?"],
+          ["dispatches", "DELETE d FROM longtermhire_dispatch d " +
+            "JOIN longtermhire_fault f ON f.id = d.fault_id WHERE f.client_user_id = ?"],
+          ["faults", "DELETE FROM longtermhire_fault WHERE client_user_id = ?"],
+          ["invoices", "DELETE hi FROM longtermhire_hire_invoice hi " +
+            "JOIN longtermhire_client_equipment ce ON ce.id = hi.client_equipment_id " +
+            "WHERE ce.client_user_id = ?"],
+          ["equipment requests", "DELETE FROM longtermhire_equipment_requests WHERE client_id = ?"],
+          ["requests", "DELETE FROM longtermhire_request WHERE client_user_id = ?"],
+          ["quotes", "DELETE FROM longtermhire_quote WHERE client_user_id = ?"],
+          ["contracts", "DELETE FROM longtermhire_contract WHERE client_user_id = ?"],
+          ["chat notifications", "DELETE FROM longtermhire_chat_notifications WHERE client_user_id = ?"],
+          ["chat messages", "DELETE cm FROM longtermhire_chat_messages cm " +
+            "JOIN longtermhire_chat_conversations cc ON cc.id = cm.conversation_id " +
+            "WHERE cc.client_user_id = ?"],
+          ["chat conversations", "DELETE FROM longtermhire_chat_conversations WHERE client_user_id = ?"],
+          ["login logs", "DELETE FROM longtermhire_client_login_logs WHERE client_id = ?"],
+        ];
+        for (const [what, sql] of sweep) {
+          try {
+            await sdk.rawQuery(sql, [userId]);
+          } catch (sweepErr) {
+            // A missing column here should not block the delete, but we want to
+            // know which one so it can be fixed.
+            console.error("Could not clear " + what + " for client " + userId + ":",
+                          sweepErr.message);
+          }
+        }
+
         // Delete client equipment assignments
         await sdk.rawQuery(
           "DELETE FROM longtermhire_client_equipment WHERE client_user_id = ?",
