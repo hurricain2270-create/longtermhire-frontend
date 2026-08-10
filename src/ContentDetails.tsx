@@ -298,7 +298,12 @@ const ContentDetails = () => {
                 <label className="block text-[#9CA3AF] font-[Inter] font-medium text-sm mb-2">
                   Documents
                 </label>
-                {formData.specsFiles.map((url, index) => (
+                {formData.specsFiles.map((entry, index) => {
+                  const url = typeof entry === "string" ? entry : (entry && entry.url) || "";
+                  const label = typeof entry === "string"
+                    ? String(url).split("/").pop()
+                    : (entry && entry.name) || String(url).split("/").pop();
+                  return (
                   <div
                     key={index}
                     className="flex items-center justify-between bg-[#292A2B] border border-[#333333] rounded-md p-3"
@@ -319,7 +324,7 @@ const ContentDetails = () => {
                         <polyline points="10 9 9 9 8 9" />
                       </svg>
                       <span className="text-[#E5E5E5] text-sm truncate">
-                        {url.split("/").pop()}
+                        {label}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -362,7 +367,8 @@ const ContentDetails = () => {
                       </button>
                     </div>
                   </div>
-                ))}
+                );
+                })}
               </div>
             )}
           </div>
