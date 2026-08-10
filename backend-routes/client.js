@@ -1685,11 +1685,18 @@ module.exports = function (app) {
         if (to) {
           await mailService.send(
             config.mail?.from_mail || 'admin@longtermhire.com', to,
-            'A partner has listed a machine — ' + equipment_name,
-            `<div style="font-family:Inter,Arial,sans-serif;font-size:15px;color:#111;">
-               <p><b>${p.business_name}</b> has listed <b>${equipment_name}</b>.</p>
-               <p>${plantCode}${category_name ? ' · ' + category_name : ''}</p>
-               <p style="color:#666;font-size:13px;">Approve it under Partners.</p>
+            'Partner listing - ' + equipment_name,
+            `<div style="font-family: Inter, Arial, sans-serif; max-width:560px; background:#292A2B; padding:20px;">
+               <div style="background:#1F1F20; border-left:4px solid #7F77DD; border-radius:8px; padding:22px;">
+                 <p style="margin:0 0 3px; color:#B9B2F5; font-size:12px; text-transform:uppercase; letter-spacing:0.06em;">Partner listing - not our machine</p>
+                 <p style="margin:0 0 16px; color:#E5E5E5; font-size:19px;">${p.business_name}</p>
+                 <div style="background:#292A2B; border-radius:6px; padding:16px; margin-bottom:16px;">
+                   <p style="margin:0 0 4px; color:#E5E5E5; font-size:17px;">${equipment_name}</p>
+                   <p style="margin:0; color:#B9B2F5; font-family:monospace; font-size:14px;">${plantCode}${category_name ? ' &middot; ' + category_name : ''}</p>
+                   ${partner_price ? '<p style="margin:8px 0 0; color:#ADAEBC; font-size:14px;">Wants $' + Number(partner_price).toLocaleString('en-AU') + ' a month</p>' : ''}
+                 </div>
+                 <p style="margin:0; color:#ADAEBC; font-size:13px;">Have a look at it under Partners before it goes anywhere.</p>
+               </div>
              </div>`
           );
         }

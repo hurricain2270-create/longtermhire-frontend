@@ -65,6 +65,28 @@ const PartnerPortal = () => {
   // Updating a machine already listed - new hours, fresh photos, a renewed
   // certificate. None of that should need a phone call.
   const [updating, setUpdating] = useState(null);
+  const [msg, setMsg] = useState("");
+  const [msgSending, setMsgSending] = useState(false);
+
+  const sendMessage = async () => {
+    if (!msg.trim()) return;
+    setMsgSending(true);
+    try {
+      const res = await fetch(API + "/v1/api/longtermhire/partner/" + token + "/message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg }),
+      });
+      const j = await res.json();
+      if (j.error) throw new Error(j.message);
+      toast.success("Sent. We will come back to you.");
+      setMsg("");
+    } catch (e) {
+      toast.error("That did not send. Ring us instead.");
+    } finally {
+      setMsgSending(false);
+    }
+  };
   const [upd, setUpd] = useState({ current_hours: "", last_service_date: "",
                                    condition_notes: "", photos: [], docs: [],
                                    partner_price: "" });
@@ -204,6 +226,7 @@ const PartnerPortal = () => {
     { key: "plant", label: "My plant" },
     { key: "add", label: "Add a machine" },
     { key: "earnings", label: "Earnings" },
+    { key: "ask", label: "Ask us" },
   ];
 
   return (
@@ -659,6 +682,28 @@ const PartnerPortal = () => {
           <p className="text-[#6B7280] font-[Inter] text-[12px] mt-3 text-center">
             Half-finished is fine — it is saved on this device until you come back.
           </p>
+        </div>
+      )}
+
+      {tab === "ask" && (
+        <div className="bg-[#1F1F20] border border-[#333] rounded-xl p-5">
+          <p className="text-[#E5E5E5] font-[Inter] text-[16px] font-semibold mb-1">
+            Ask us anything
+          </p>
+          <p className="text-[#9CA3AF] font-[Inter] text-[14px] mb-4">
+            Goes straight to the office. We will come back to you by email or give
+            you a ring, whichever suits.
+          </p>
+          <textarea value={msg} rows={5}
+            onChange={(e) => setMsg(e.target.value)}
+            placeholder="When do you think you will know? Can I get it back in March?"
+            className="w-full bg-[#292A2B] border border-[#333333] rounded-lg text-[#E5E5E5]
+                       text-[16px] px-3.5 py-3 outline-none focus:border-[#FDCE06] resize-y mb-3" />
+          <button onClick={sendMessage} disabled={msgSending || !msg.trim()}
+            className="bg-[#FDCE06] text-[#1A1A1B] font-[Inter] font-bold text-[15px]
+                       px-5 py-3 rounded-lg disabled:opacity-40">
+            {msgSending ? "Sending…" : "Send it"}
+          </button>
         </div>
       )}
 

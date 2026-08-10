@@ -370,7 +370,17 @@ const HireManagement = () => {
                       <React.Fragment key={item.assignment_id}>
                         <tr className="border-b border-[#1a1a1a] last:border-0">
                           <td className="px-4 py-3 text-sm font-medium" style={{ color: isCompleted ? "#666" : isActive ? "#E5E5E5" : "#666" }}>{item.equipment_name}</td>
-                          <td className="px-4 py-3 text-xs text-[#9CA3AF]">{item.equip_code}</td>
+                          <td className="px-4 py-3 text-xs">
+                            <span className={item.owner_partner_id ? "text-[#B9B2F5] font-semibold" : "text-[#9CA3AF]"}>
+                              {item.equip_code}
+                            </span>
+                            {item.owner_partner_id ? (
+                              <span className="ml-1.5 px-1.5 py-0.5 rounded bg-[#2A2740] border border-[#7F77DD]
+                                               text-[#B9B2F5] text-[10px] font-semibold align-middle">
+                                Not ours
+                              </span>
+                            ) : null}
+                          </td>
                           <td className="px-4 py-3 text-sm text-[#9CA3AF]">
                             {item.hire_start_date ? (
                               <button
