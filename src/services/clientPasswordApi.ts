@@ -1,6 +1,23 @@
 import api from "./api";
 
 export const clientPasswordApi = {
+  // Change your own password while logged in. The page has always called this;
+  // it just was not here.
+  changePassword: async (currentPassword, newPassword) => {
+    try {
+      const response = await api.put(
+        "/v1/api/longtermhire/client/change-password",
+        { current_password: currentPassword, new_password: newPassword }
+      );
+      if (response.data && !response.data.error) {
+        return response.data;
+      }
+      throw new Error(response.data?.message || "Could not change your password");
+    } catch (error) {
+      throw error.response?.data || error.message || error;
+    }
+  },
+
   // Step 1: Send OTP to email for password reset
   forgotPassword: async (email) => {
     try {
