@@ -1,6 +1,7 @@
 // @ts-nocheck
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+import SaveButton from "./SaveButton";
 import { toast } from "react-toastify";
 
 const API = "https://api.longtermhire.com";
@@ -111,6 +112,7 @@ const PartnerPortal = () => {
       load();
     } catch (e) {
       toast.error("That did not save. Give it another go.");
+      throw e;
     } finally {
       setSending(false);
     }
@@ -196,6 +198,7 @@ const PartnerPortal = () => {
       load();
     } catch (e) {
       toast.error("That did not send. Give it another go, or ring us.");
+      throw e;   // so the button drops back rather than showing a tick
     } finally {
       setSending(false);
     }
@@ -347,11 +350,11 @@ const PartnerPortal = () => {
             </div>
 
             <div className="flex gap-2.5">
-              <button onClick={sendUpdate} disabled={sending}
+              <SaveButton onSave={sendUpdate} onRefresh={load}
                 className="flex-1 bg-[#4CAF50] text-[#1A1A1B] font-[Inter] font-bold text-[15px]
                            px-5 py-3 rounded-lg disabled:opacity-50">
-                {sending ? "Saving…" : "Send it through"}
-              </button>
+                Send it through
+              </SaveButton>
               <button onClick={() => setUpdating(null)}
                 className="px-5 py-3 rounded-lg border border-[#333] text-[#9CA3AF] font-[Inter] text-[15px]">
                 Cancel
@@ -672,11 +675,11 @@ const PartnerPortal = () => {
                 Next
               </button>
             ) : (
-              <button onClick={submit} disabled={sending}
+              <SaveButton onSave={submit} onRefresh={load}
                 className="flex-1 bg-[#4CAF50] text-[#1A1A1B] font-[Inter] font-bold text-[15px]
                            px-5 py-3 rounded-lg disabled:opacity-50">
-                {sending ? "Sending…" : "Send it to Long Term Hire"}
-              </button>
+                Send it to Long Term Hire
+              </SaveButton>
             )}
           </div>
           <p className="text-[#6B7280] font-[Inter] text-[12px] mt-3 text-center">

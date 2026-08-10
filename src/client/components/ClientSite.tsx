@@ -1,6 +1,7 @@
 // @ts-nocheck
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import SaveButton from "../../SaveButton";
 
 const API = "https://api.longtermhire.com";
 
@@ -104,6 +105,7 @@ const ClientSite = ({ userRole = "member" }) => {
       load();
     } catch (e) {
       toast.error("Could not log that reading");
+      throw e;   // so the button does not show a tick on a failure
     } finally {
       setSaving(null);
     }
@@ -201,13 +203,14 @@ const ClientSite = ({ userRole = "member" }) => {
                       placeholder={e.current_hours ? "Read the meter" : "First reading"}
                       className="flex-1 min-w-0 bg-[#292A2B] border border-[#3A3A3C] rounded-lg px-3 py-2 text-[#E5E5E5] text-sm outline-none focus:border-[#FDCE06] transition-colors"
                     />
-                    <button
-                      onClick={() => logHours(e)}
+                    <SaveButton
+                      onSave={() => logHours(e)}
+                      onRefresh={load}
                       disabled={busy}
                       className="px-4 py-2 rounded-lg bg-[#FDCE06] text-[#1F1F20] font-bold text-sm hover:bg-[#E5B800] disabled:opacity-50 transition-colors whitespace-nowrap"
                     >
-                      {busy ? "…" : "Log"}
-                    </button>
+                      Log
+                    </SaveButton>
                   </div>
                   <div className="text-[#6B7280] text-xs mt-2">
                     {e.current_hours
