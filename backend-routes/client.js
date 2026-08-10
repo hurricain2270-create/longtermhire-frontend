@@ -1714,6 +1714,58 @@ module.exports = function (app) {
     }
   });
 
+  // A message box, not a chat. A partner has little to say between listing a
+  // machine and getting it back, but when he does have a question there should
+  // be somewhere to put it other than the phone.
+  app.post('/v1/api/longtermhire/partner/:token/message', async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const rows = await sdk.rawQuery(
+        'SELECT id, business_name, contact_name, email, phone FROM longtermhire_partner ' +
+        'WHERE token = ? AND active = 1 LIMIT 1', [req.params.token]
+      );
+      if (!rows || !rows.length) return res.status(404).json({ error: true, message: 'not_found' });
+      const p = rows[0];
+      const body = String(req.body.message || '').trim();
+      if (!body) return res.status(400).json({ error: true, message: 'Nothing to send' });
+
+      const esc = (s) => String(s == null ? '' : s)
+        .replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+
+      try {
+        const MailService = require('../../../baas/services/MailService');
+        const config = app.get('configuration');
+        const mailService = new MailService(config);
+        const to = process.env.ADMIN_NOTIFY_EMAIL || config.mail?.from_mail;
+        await mailService.send(
+          config.mail?.from_mail || 'admin@longtermhire.com', to,
+          'Message from ' + p.business_name + ' (partner)',
+          `<div style="font-family: Inter, Arial, sans-serif; max-width:560px; background:#292A2B; padding:20px;">
+             <div style="background:#1F1F20; border-left:4px solid #7F77DD; border-radius:8px; padding:22px;">
+               <p style="margin:0 0 3px; color:#B9B2F5; font-size:12px; text-transform:uppercase; letter-spacing:0.06em;">Partner</p>
+               <p style="margin:0 0 16px; color:#E5E5E5; font-size:19px;">${esc(p.business_name)}</p>
+               <div style="background:#292A2B; border-radius:6px; padding:16px; margin-bottom:16px;">
+                 <p style="margin:0; color:#E5E5E5; font-size:15px; line-height:1.6; white-space:pre-line;">${esc(body)}</p>
+               </div>
+               <p style="margin:0; color:#ADAEBC; font-size:13px;">
+                 ${esc(p.contact_name || '')}${p.phone ? ' &middot; ' + esc(p.phone) : ''}<br>
+                 Reply to <a href="mailto:${esc(p.email)}" style="color:#B9B2F5;">${esc(p.email)}</a>
+               </p>
+             </div>
+           </div>`
+        );
+      } catch (mailErr) {
+        console.error('Partner message failed:', mailErr);
+        return res.status(500).json({ error: true, message: 'Could not send that' });
+      }
+      return res.status(200).json({ error: false, message: 'Sent' });
+    } catch (error) {
+      console.error('Partner message error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
   // Their machine, after it is listed. Hours change, photos age, certificates
   // expire — none of that should need a phone call to us.
   app.put('/v1/api/longtermhire/partner/:token/machine/:id', async (req, res) => {
