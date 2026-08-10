@@ -7,6 +7,7 @@ import "react-toastify/dist/ReactToastify.css";
 import AddClientModal from "./components/AddClientModal";
 import EditClientModal from "./components/EditClientModal";
 import { BTN } from "./styles/buttons";
+import OnboardingSteps from "./OnboardingSteps";
 import ClientDetailsModal from "./components/ClientDetailsModal";
 import EquipmentPopover from "./components/EquipmentPopover";
 
@@ -66,6 +67,7 @@ const ClientManagement = () => {
   const [subs, setSubs] = useState([]);
   const [showSubs, setShowSubs] = useState(false);
   const [inviting, setInviting] = useState(false);
+  const [howTo, setHowTo] = useState(false);
   const [invite, setInvite] = useState({ contact_name: "", email: "" });
 
   const loadSubs = async () => {
@@ -520,6 +522,7 @@ const ClientManagement = () => {
 
   return (
     <div className="p-8 bg-[#292A2B] min-h-screen">
+      <OnboardingSteps open={howTo} onClose={() => setHowTo(false)} />
       {/* Header */}
       <header className="mb-8">
         <h1 className="text-[#E5E5E5] font-[Inter] font-bold text-[36px] leading-[1.11em]">
@@ -578,6 +581,9 @@ const ClientManagement = () => {
           </button>
           <button onClick={() => setInviting(true)} className={BTN.successSm}>
             + Send an onboarding form
+          </button>
+          <button onClick={() => setHowTo(true)} className={BTN.secondarySm}>
+            Start onboarding
           </button>
         </div>
 
