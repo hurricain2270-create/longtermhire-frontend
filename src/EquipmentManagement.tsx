@@ -562,7 +562,7 @@ const EquipmentManagement = () => {
               Nothing matches those filters.
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-y-4 gap-x-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-y-4 gap-x-5">
               {visible.map((item) => {
                 const photo = mainPhoto(item);
                 const pc = photosOf(item).length;
@@ -596,7 +596,7 @@ const EquipmentManagement = () => {
                     </div>
 
                     <div className="p-5">
-                      <div className="text-[#E5E5E5] font-[Inter] text-[21px] leading-tight font-semibold">
+                      <div className="text-[#E5E5E5] font-[Inter] text-[18px] leading-tight font-semibold">
                         {item.equipment_name || "Unnamed"}
                       </div>
                       <div className="text-[#9CA3AF] font-[Inter] text-[15px] mt-1 mb-3.5">
