@@ -116,3 +116,27 @@ select option {
   align-self: center;
 }
 .Toastify__close-button:hover { color: #E5E5E5; }
+
+/* Date fields.
+   Every date input in the app is type="date", so the browser already provides a
+   calendar. The trouble is the little icon renders as a dark glyph, which is
+   invisible on our dark fields - so it looked as though there was no picker at
+   all. Invert it, make it yellow on hover, and widen the hit area. */
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.75);
+  cursor: pointer;
+  opacity: 0.8;
+  padding: 4px;
+  margin-right: -2px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  filter: invert(0.85) sepia(1) saturate(6) hue-rotate(5deg);
+  opacity: 1;
+}
+
+/* Firefox and anything that shows the whole field as clickable. */
+input[type="date"] {
+  cursor: pointer;
+  color-scheme: dark;
+}
