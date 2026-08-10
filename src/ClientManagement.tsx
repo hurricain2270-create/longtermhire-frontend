@@ -78,6 +78,23 @@ const ClientManagement = () => {
   };
   useEffect(() => { loadSubs(); }, []);
 
+  // Come back to this page - from another tab, another window, or another
+  // screen in the app - and it refetches quietly. No blank page, no manual
+  // reload, and no more stale dropdowns.
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState !== "visible") return;
+      loadInitialData(currentPage, debouncedSearchData, false);
+      loadSubs();
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [currentPage, debouncedSearchData]);
+
   const waiting = subs.filter((s) => s.status === "submitted");
 
   const sendInvite = async () => {

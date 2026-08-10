@@ -29,9 +29,25 @@ const HireManagement = () => {
     loadData();
   }, []);
 
-  const loadData = async () => {
+  // Come back to this page and it refetches quietly - no blank screen, no
+  // manual reload, no stale data from before you changed something elsewhere.
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState !== "visible") return;
+      loadData(true);
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, []);
+
+
+  const loadData = async (quiet = false) => {
     try {
-      setLoading(true);
+      if (!quiet) setLoading(true);
       setError(null);
       const res = await api.get("/v1/api/longtermhire/super_admin/hire-management");
       if (res && res.data && !res.data.error) {

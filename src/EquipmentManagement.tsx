@@ -60,9 +60,9 @@ const EquipmentManagement = () => {
   const [debouncedSearchData, setDebouncedSearchData] = useState(searchData);
 
   // Fetch equipment data from API with pagination and search
-  const fetchEquipment = async (page = 1, searchFilters = {}) => {
+  const fetchEquipment = async (page = 1, searchFilters = {}, quiet = false) => {
     try {
-      setLoading(true);
+      if (!quiet) setLoading(true);
       setError(null);
       const data = await equipmentApi.getEquipment(page, 200, searchFilters);
       setEquipment(data.data || []);
@@ -110,6 +110,23 @@ const EquipmentManagement = () => {
     }
   };
   useEffect(() => { loadContent(); }, []);
+
+  // Come back to this page and it refetches quietly - no blank screen, no
+  // manual reload, no stale data from before you changed something elsewhere.
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState !== "visible") return;
+      fetchEquipment(true);
+      loadContent();
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, []);
+
 
   const [onHireIds, setOnHireIds] = useState(new Set());
   useEffect(() => {

@@ -383,6 +383,22 @@ const Faults = () => {
   const [, tick] = useState(0);
 
   useEffect(() => { load(); }, []);
+
+  // Come back to this page and it refetches quietly - no blank screen, no
+  // manual reload, no stale data from before you changed something elsewhere.
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState !== "visible") return;
+      load(true);
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, []);
+
   useEffect(() => {
     const t = setInterval(() => tick((n) => n + 1), 30000);
     return () => clearInterval(t);
@@ -403,9 +419,9 @@ const Faults = () => {
     return () => clearInterval(t);
   }, [open]);
 
-  const load = async (silent = false) => {
+  const load = async (silent = false, quiet = false) => {
     try {
-      if (!silent) setLoading(true);
+      if (!silent) if (!quiet) setLoading(true);
       const res = await api.get("/v1/api/longtermhire/super_admin/faults");
       if (res?.data && !res.data.error) setRows(res.data.data || []);
     } catch (e) {

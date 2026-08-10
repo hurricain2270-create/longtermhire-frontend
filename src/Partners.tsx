@@ -235,6 +235,22 @@ const Partners = () => {
   };
   useEffect(() => { load(); }, []);
 
+  // Come back to this page and it refetches quietly - no blank screen, no
+  // manual reload, no stale data from before you changed something elsewhere.
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState !== "visible") return;
+      load();
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, []);
+
+
   const save = async () => {
     if (!form.business_name || !form.email) {
       toast.error("A business name and an email are needed");
