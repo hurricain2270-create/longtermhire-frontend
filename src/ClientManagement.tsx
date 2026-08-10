@@ -576,7 +576,7 @@ const ClientManagement = () => {
             }>
             Submissions <span className="opacity-70">{waiting.length}</span>
           </button>
-          <button onClick={() => setInviting(true)} className={BTN.secondarySm}>
+          <button onClick={() => setInviting(true)} className={BTN.successSm}>
             + Send an onboarding form
           </button>
         </div>
