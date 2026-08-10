@@ -1862,6 +1862,95 @@ module.exports = function (app) {
     }
   });
 
+  // The welcome email on its own. It only fired when a client was first created,
+  // so an existing client could never be sent one - the invite button fell back
+  // to a bare credentials note, which is a poor first impression.
+  app.post('/v1/api/longtermhire/super_admin/send-welcome/:userId', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const rows = await sdk.rawQuery(
+        'SELECT c.client_name, c.company_name, u.email, u.id AS user_id ' +
+        'FROM longtermhire_client c JOIN longtermhire_user u ON u.id = c.user_id ' +
+        'WHERE c.user_id = ? LIMIT 1', [req.params.userId]
+      );
+      if (!rows || !rows.length) {
+        return res.status(404).json({ error: true, message: 'Client not found' });
+      }
+      const client = rows[0];
+
+      // A fresh password, because the welcome carries their login.
+      const plain = Math.random().toString(36).slice(-10);
+      const hashed = await bcrypt.hash(plain, 10);
+      await sdk.rawQuery('UPDATE longtermhire_user SET password = ? WHERE id = ?',
+                         [hashed, client.user_id]);
+
+      const esc = (s) => String(s == null ? '' : s)
+        .replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+
+      const html = `
+        <div style="font-family: Inter, Arial, sans-serif; max-width:600px; margin:0 auto; background:#292A2B; padding:20px;">
+          <div style="background:#1F1F20; padding:30px; border-radius:8px; border:1px solid #333333;">
+            <div style="text-align:center; margin-bottom:26px; padding-bottom:20px; border-bottom:1px solid #333333;">
+              <img src="https://longtermhire.com/login-logo.png" alt="Long Term Hire" style="width:200px; margin-bottom:8px;" />
+            </div>
+
+            <p style="margin:0 0 6px; color:#E5E5E5; font-size:22px;">Welcome, ${esc(client.client_name)}</p>
+            <p style="margin:0 0 22px; color:#ADAEBC; font-size:15px; line-height:1.6;">
+              Your account for ${esc(client.company_name || 'your company')} is ready.
+              Everything to do with your hire lives in one place now.
+            </p>
+
+            <div style="background:#292A2B; border-radius:6px; padding:18px; margin-bottom:22px;">
+              <p style="margin:0 0 12px; color:#FDCE06; font-size:13px; text-transform:uppercase; letter-spacing:0.06em;">What you can do</p>
+              <p style="margin:0 0 9px; color:#E5E5E5; font-size:14px; line-height:1.5;">See the machines available to you, with photos and rates.</p>
+              <p style="margin:0 0 9px; color:#E5E5E5; font-size:14px; line-height:1.5;">Work out what a longer hire saves you, and generate your own quote.</p>
+              <p style="margin:0 0 9px; color:#E5E5E5; font-size:14px; line-height:1.5;">Report a fault from the seat of the machine and watch it get sorted.</p>
+              <p style="margin:0; color:#E5E5E5; font-size:14px; line-height:1.5;">Track every hire, month by month, with nothing hidden.</p>
+            </div>
+
+            <div style="background:#1C1C1C; padding:18px; border-radius:6px; border:1px solid #444; margin-bottom:22px;">
+              <p style="margin:0 0 8px; color:#ADAEBC; font-size:13px;">Email: <span style="color:#E5E5E5; font-family:monospace;">${esc(client.email)}</span></p>
+              <p style="margin:0; color:#ADAEBC; font-size:13px;">Password: <span style="color:#E5E5E5; font-family:monospace;">${plain}</span></p>
+            </div>
+
+            <div style="text-align:center; margin:26px 0;">
+              <a href="https://longtermhire.com/client/login" style="background:#FDCE06; color:#1F1F20; padding:14px 30px; border-radius:6px; font-size:15px; font-weight:600; text-decoration:none; display:inline-block;">Have a look around</a>
+            </div>
+
+            <div style="border-top:1px solid #333; padding-top:16px; text-align:center;">
+              <p style="margin:0; color:#ADAEBC; font-size:13px;">
+                Any questions, contact us at <b style="color:#E5E5E5;">admin@longtermhire.com</b>.
+              </p>
+            </div>
+          </div>
+        </div>`;
+
+      const config = app.get('configuration');
+      const MailService = require('../../../baas/services/MailService');
+      const mailService2 = new MailService(config);
+      const result = await mailService2.send(
+        config.mail?.from_mail || 'admin@longtermhire.com',
+        client.email,
+        'Welcome to Long Term Hire - your account is ready',
+        html
+      );
+
+      const now = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      await sdk.rawQuery('UPDATE longtermhire_client SET invited_at = ? WHERE user_id = ?',
+                         [now, client.user_id]);
+
+      return res.status(200).json({
+        error: false,
+        email_sent: !result?.error,
+        message: result?.error ? 'Saved, but the email did not go' : 'Welcome sent',
+      });
+    } catch (error) {
+      console.error('Send welcome error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
   /**
    * Partners. People with plant sitting idle in their yard who are not in the
    * hire business themselves. They list a machine, we approve it, and from that

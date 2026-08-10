@@ -266,6 +266,29 @@ const ClientManagement = () => {
     };
   };
 
+  // The welcome email, not a bare credentials note. First impression matters.
+  const handleSendWelcome = async (client) => {
+    const again = !!client.invited_at;
+    if (!window.confirm(
+      (again
+        ? "Send " + (client.client_name || "this client") + " the welcome again?"
+        : "Send " + (client.client_name || "this client") + " their welcome?") +
+      "\n\nIt sets a new password and emails it with an introduction to the portal."
+    )) return;
+    try {
+      const res = await api.post(
+        "/v1/api/longtermhire/super_admin/send-welcome/" + client.user_id, {}
+      );
+      const sent = res?.data?.email_sent;
+      toast.success(sent
+        ? "Welcome sent to " + (client.email || client.client_name)
+        : "Password reset, but the email did not go");
+      loadInitialData(currentPage, debouncedSearchData, false);
+    } catch (e) {
+      toast.error("Could not send that");
+    }
+  };
+
   const handleResendInvitation = async (client) => {
     const firstTime = !client.invited_at;
     try {
@@ -782,18 +805,21 @@ const ClientManagement = () => {
                           Edit
                         </button>
                         <button
-                          onClick={() => setInviteTarget(client)}
-                          title={
-                            client.invited_at
-                              ? "Reset password and email new login details"
-                              : "Send this client their login details for the first time"
-                          }
-                          className={BTN.secondary}
+                          onClick={() => handleSendWelcome(client)}
+                          title="Send the welcome email with their login and what the portal does"
+                          className={BTN.success}
                         >
-                          {client.invited_at ? "Resend" : "Send invite"}
+                          Send welcome
                         </button>
                         <button onClick={() => handleDeleteClient(client.id)} className={BTN.danger}>
                           Delete
+                        </button>
+                        <button
+                          onClick={() => setInviteTarget(client)}
+                          title="Reset their password and email the new details, nothing else"
+                          className={BTN.secondary}
+                        >
+                          Resend login
                         </button>
                       </div>
                     </td>
