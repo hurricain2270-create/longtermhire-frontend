@@ -1,7 +1,7 @@
 # Voiceover script
 
-Seventeen lines, one per panel. Record or generate each as its own file and
-name it to match, then drop them into `public/film/` in the frontend repo.
+One recording per line. Name each to match and drop them into `public/film/`
+in the frontend repo.
 
 The panel waits for its clip to finish before moving on, so nothing can drift.
 A missing file is not a problem - that line falls back to its own timing and
@@ -58,24 +58,32 @@ You see the whole term before you sign anything. Check the arithmetic yourself.
 
 **line-12.mp3**
 
-When something goes wrong, your supervisor reports it from the seat. A photo, thirty seconds.
+Every machine on your site, and where it is up to. Month four of twelve, and what is left to run.
 
 **line-13.mp3**
 
-We have a fitter on the way before anyone has picked up a phone. And you can watch it happen from your desk.
+And whether it is being looked after. Hours and time, watched separately, because they never fall due together.
 
 **line-14.mp3**
 
-We have not seen another hire company in Australia doing this.
+When something goes wrong, your supervisor reports it from the seat. A photo, thirty seconds.
 
 **line-15.mp3**
 
-Not a website. Your own portal, your own rates, your own machines, open whenever you want it.
+We have a fitter on the way before anyone has picked up a phone. And you can watch it happen from your desk.
 
 **line-16.mp3**
 
-Everything else stays the same. Same machines, same trucks, same blokes.
+We have not seen another hire company in Australia doing this.
 
 **line-17.mp3**
+
+Not a website. Your own portal, your own rates, your own machines, open whenever you want it.
+
+**line-18.mp3**
+
+Everything else stays the same. Same machines, same trucks, same blokes.
+
+**line-19.mp3**
 
 You just stop waiting for someone to ring you back.

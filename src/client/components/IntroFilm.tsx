@@ -27,6 +27,8 @@ const LINES = [
   "Generate your own quote. On our letterhead, with your figures, at eleven at night if that is when you are working.",
   "Every other supplier's rate goes one way. Ours falls one percent a month for as long as you keep the machine.",
   "You see the whole term before you sign anything. Check the arithmetic yourself.",
+  "Every machine on your site, and where it is up to. Month four of twelve, and what is left to run.",
+  "And whether it is being looked after. Hours and time, watched separately, because they never fall due together.",
   "When something goes wrong, your supervisor reports it from the seat. A photo, thirty seconds.",
   "We have a fitter on the way before anyone has picked up a phone. And you can watch it happen from your desk.",
   "We have not seen another hire company in Australia doing this.",
@@ -40,6 +42,7 @@ const DURATIONS = [
   4000,
   7000, 6000, 7000, 9000,
   9000, 7000,
+  8000, 9000,
   8000, 9000,
   6500, 8000,
   6000, 5500,
@@ -428,8 +431,72 @@ const IntroFilm = ({ onClose }) => {
           </text>
         </Panel>
 
-        {/* 12 — reported from the seat */}
+        {/* 12 — hire progress */}
         <Panel n={11} active={i === 11}>
+          {[
+            { name: "1.7 ton Excavator", pct: 33, label: "month 4 of 12" },
+            { name: "Kubota SVL 75-3", pct: 75, label: "month 9 of 12" },
+            { name: "Fuso Tipper", pct: 8, label: "month 1 of 12" },
+          ].map((m, k) => (
+            <g key={m.name} className="ltf-in" style={{ animationDelay: k * 0.55 + "s" }}>
+              <text x="120" y={84 + k * 62} fill="#E5E5E5" fontSize="14"
+                fontFamily="Inter, sans-serif">{m.name}</text>
+              <text x="520" y={84 + k * 62} textAnchor="end" fill="#6B7280" fontSize="12"
+                fontFamily="Inter, sans-serif">{m.label}</text>
+              <rect x="120" y={94 + k * 62} width="400" height="9" rx="4.5" fill="#292A2B" />
+              <rect x="120" y={94 + k * 62} width="0" height="9" rx="4.5" fill="#FDCE06">
+                <animate attributeName="width" from="0" to={4 * m.pct} dur="1.1s"
+                  begin={0.5 + k * 0.55 + "s"} fill="freeze"
+                  calcMode="spline" keySplines="0.4 0 0.2 1" />
+              </rect>
+            </g>
+          ))}
+          <text x="320" y="268" textAnchor="middle" fill="#6B7280" fontSize="12.5"
+            fontFamily="Inter, sans-serif" className="ltf-in" style={{ animationDelay: "2.4s" }}>
+            no ringing up to ask where you are
+          </text>
+        </Panel>
+
+        {/* 13 — servicing */}
+        <Panel n={12} active={i === 12}>
+          {[
+            { name: "1.7 ton Excavator", hrs: 28, mth: 42 },
+            { name: "Kubota SVL 75-3", hrs: 71, mth: 55 },
+            { name: "14 ton Excavator", hrs: 94, mth: 61 },
+          ].map((m, k) => {
+            const colour = (p) => (p >= 85 ? "#ef4444" : p >= 60 ? "#F59E0B" : "#4CAF50");
+            return (
+              <g key={m.name} className="ltf-in" style={{ animationDelay: k * 0.55 + "s" }}>
+                <text x="118" y={78 + k * 66} fill="#E5E5E5" fontSize="13.5"
+                  fontFamily="Inter, sans-serif">{m.name}</text>
+                {[
+                  { p: m.hrs, tag: "hours", dy: 0 },
+                  { p: m.mth, tag: "time", dy: 20 },
+                ].map((bar) => (
+                  <g key={bar.tag}>
+                    <text x="118" y={98 + k * 66 + bar.dy} fill="#6B7280" fontSize="10.5"
+                      fontFamily="Inter, sans-serif">{bar.tag}</text>
+                    <rect x="164" y={90 + k * 66 + bar.dy} width="300" height="8" rx="4"
+                      fill="#292A2B" />
+                    <rect x="164" y={90 + k * 66 + bar.dy} width="0" height="8" rx="4"
+                      fill={colour(bar.p)}>
+                      <animate attributeName="width" from="0" to={3 * bar.p} dur="1s"
+                        begin={0.5 + k * 0.55 + "s"} fill="freeze"
+                        calcMode="spline" keySplines="0.4 0 0.2 1" />
+                    </rect>
+                  </g>
+                ))}
+              </g>
+            );
+          })}
+          <text x="320" y="276" textAnchor="middle" fill="#6B7280" fontSize="12.5"
+            fontFamily="Inter, sans-serif" className="ltf-in" style={{ animationDelay: "2.6s" }}>
+            four hundred hours and four months never fall due together
+          </text>
+        </Panel>
+
+        {/* 14 — reported from the seat */}
+        <Panel n={13} active={i === 13}>
           <g className="ltf-in">
             <rect x="248" y="70" width="144" height="180" rx="14"
               fill="#1F1F20" stroke="#3A3A3C" strokeWidth="2" />
@@ -446,7 +513,7 @@ const IntroFilm = ({ onClose }) => {
         </Panel>
 
         {/* 13 — a fitter on the way */}
-        <Panel n={12} active={i === 12}>
+        <Panel n={14} active={i === 14}>
           {[
             ["Reported", "#F59E0B", 0],
             ["Sent to the fitter", "#FDCE06", 1],
@@ -470,7 +537,7 @@ const IntroFilm = ({ onClose }) => {
         </Panel>
 
         {/* 14 — the claim */}
-        <Panel n={13} active={i === 13}>
+        <Panel n={15} active={i === 15}>
           <g className="ltf-in">
             <text x="320" y="150" textAnchor="middle" fill="#E5E5E5"
               fontSize="21" fontFamily="Inter, sans-serif">
@@ -484,7 +551,7 @@ const IntroFilm = ({ onClose }) => {
         </Panel>
 
         {/* 15 — not a website */}
-        <Panel n={14} active={i === 14}>
+        <Panel n={16} active={i === 16}>
           <g className="ltf-in">
             <rect x="170" y="80" width="300" height="150" rx="10"
               fill="#1F1F20" stroke="#FDCE06" strokeWidth="2" />
@@ -499,7 +566,7 @@ const IntroFilm = ({ onClose }) => {
         </Panel>
 
         {/* 16 — everything else stays the same */}
-        <Panel n={15} active={i === 15}>
+        <Panel n={17} active={i === 17}>
           <g className="ltf-in">
             <rect x="120" y="150" width="120" height="56" rx="6" fill="#292A2B" stroke="#3A3A3C" strokeWidth="1.5" />
             <rect x="260" y="150" width="120" height="56" rx="6" fill="#292A2B" stroke="#3A3A3C" strokeWidth="1.5" />
@@ -511,7 +578,7 @@ const IntroFilm = ({ onClose }) => {
         </Panel>
 
         {/* 17 — the close */}
-        <Panel n={16} active={i === 16}>
+        <Panel n={18} active={i === 18}>
           <g className="ltf-in">
             <text x="320" y="140" textAnchor="middle" fill="#E5E5E5"
               fontSize="19" fontFamily="Inter, sans-serif">
