@@ -92,8 +92,13 @@ const RateSheet = ({ open, onClose }) => {
             border-bottom: 2px solid #FDCE06 !important;
             padding-bottom: 2px;
           }
-          /* Not our machine. */
+          /* Not our machine - the rate and the code both say so. */
           #rate-sheet .partner-mark { color: #4b3fa8 !important; font-weight: 700 !important; }
+          #rate-sheet .rate-partner {
+            color: #4b3fa8 !important;
+            font-weight: 700 !important;
+            background: #efedfb !important;
+          }
 
           #rate-sheet tr { page-break-inside: avoid; }
           #rate-sheet .company { page-break-inside: avoid; }
@@ -203,7 +208,9 @@ const RateSheet = ({ open, onClose }) => {
                             </td>
                             <td className={
                               "py-2 font-[Inter] text-[13px] font-semibold text-right pr-3 " +
-                              (custom ? "rate-custom text-[#FDCE06]" : "text-[#E5E5E5]")
+                              (r.owner_partner_id
+                                ? "rate-partner text-[#B9B2F5]"
+                                : custom ? "rate-custom text-[#FDCE06]" : "text-[#E5E5E5]")
                             }>
                               <span className="tabular-nums">
                                 <span className={custom ? "" : "invisible"}>*</span>
@@ -236,7 +243,8 @@ const RateSheet = ({ open, onClose }) => {
           {rows && rows.length > 0 ? (
             <p className="band text-[#6B7280] font-[Inter] text-[11.5px] border-t border-[#333] pt-3 mt-2 leading-relaxed">
               * a rate set for that client rather than the list price.
-              (P) marks a machine we do not own.
+              (P) marks a machine we do not own — those rates are shown in purple,
+              and what we keep on them is the margin, not the whole figure.
               "Can see it" means the machine is in their catalogue but not on hire.
             </p>
           ) : null}
