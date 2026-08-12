@@ -1550,9 +1550,29 @@ function ClientDashboard() {
               </span>
               <button
                 onClick={() => setShowFilm(true)}
-                className="text-[#9CA3AF] text-xs sm:text-sm hover:text-[#FDCE06] transition-colors hidden sm:block"
+                title="Watch the two minute introduction"
+                aria-label="Watch the introduction"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#333333]
+                           text-[#9CA3AF] hover:border-[#FDCE06] hover:text-[#FDCE06]
+                           transition-colors"
               >
-                Watch again
+                <svg width="19" height="19" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"
+                  strokeLinejoin="round" aria-hidden="true">
+                  {/* body of the camera */}
+                  <rect x="2.5" y="7" width="12" height="8.5" rx="1.6" />
+                  {/* the lens hood off the front */}
+                  <path d="M14.5 10.2 L20 7.6 v8.3 l-5.5 -2.6 z" />
+                  {/* two reels on top */}
+                  <circle cx="6" cy="4.6" r="2.1" />
+                  <circle cx="11" cy="4.6" r="2.1" />
+                  {/* tripod legs */}
+                  <path d="M8.5 15.5 v2.2" />
+                  <path d="M8.5 17.7 L5 21.5" />
+                  <path d="M8.5 17.7 L12 21.5" />
+                  <path d="M8.5 17.7 L8.5 21.5" />
+                </svg>
+                <span className="text-xs sm:text-sm hidden sm:inline">Watch again</span>
               </button>
               <button
                 onClick={() => navigate("/client/profile")}

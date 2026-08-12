@@ -3,6 +3,7 @@ import { dashboardApi } from "./services/dashboardApi";
 import { BTN } from "./styles/buttons";
 import TurnoverGauge from "./components/TurnoverGauge";
 import DashboardGauges from "./components/DashboardGauges";
+import IntroFilm from "./client/components/IntroFilm";
 
 // Skeleton Loading Components
 const StatCardSkeleton = () => (
@@ -37,6 +38,8 @@ const ActivitySkeleton = () => (
 );
 
 function DashboardMain() {
+  // So the film can be watched from here without logging in as a client.
+  const [showFilm, setShowFilm] = useState(false);
   const [stats, setStats] = useState({
     total_companies: 0,
     total_clients: 0,
@@ -109,11 +112,35 @@ function DashboardMain() {
 
   return (
     <div className="relative p-4 sm:p-6 lg:p-8 w-full min-h-screen">
+      {showFilm && <IntroFilm onClose={() => setShowFilm(false)} />}
+
       {/* Header */}
-      <header className="mb-8 sm:mb-10 lg:mb-12">
+      <header className="mb-8 sm:mb-10 lg:mb-12 flex items-center justify-between gap-4">
         <h1 className="text-[#E5E5E5] font-[Inter] font-bold text-2xl sm:text-3xl lg:text-4xl leading-tight">
           Dashboard
         </h1>
+        <button
+          onClick={() => setShowFilm(true)}
+          title="Watch the film a client sees"
+          aria-label="Watch the introduction film"
+          className="flex items-center gap-2 px-3.5 py-2 rounded-lg border border-[#333333]
+                     text-[#9CA3AF] hover:border-[#FDCE06] hover:text-[#FDCE06]
+                     transition-colors flex-none"
+        >
+          <svg width="21" height="21" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"
+            strokeLinejoin="round" aria-hidden="true">
+            <rect x="2.5" y="7" width="12" height="8.5" rx="1.6" />
+            <path d="M14.5 10.2 L20 7.6 v8.3 l-5.5 -2.6 z" />
+            <circle cx="6" cy="4.6" r="2.1" />
+            <circle cx="11" cy="4.6" r="2.1" />
+            <path d="M8.5 15.5 v2.2" />
+            <path d="M8.5 17.7 L5 21.5" />
+            <path d="M8.5 17.7 L12 21.5" />
+            <path d="M8.5 17.7 L8.5 21.5" />
+          </svg>
+          <span className="font-[Inter] text-[13px] hidden sm:inline">The film</span>
+        </button>
       </header>
 
       {/* Stats Section */}
