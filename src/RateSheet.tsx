@@ -127,12 +127,23 @@ const RateSheet = ({ open, onClose }) => {
                     </p>
                   </div>
 
-                  <table className="w-full border-collapse">
+                  <table className="w-full border-collapse table-fixed">
+                    <colgroup>
+                      <col className="w-[13%]" />
+                      <col className="w-[34%]" />
+                      <col className="w-[13%]" />
+                      <col className="w-[15%]" />
+                      <col className="w-[13%]" />
+                      <col className="w-[12%]" />
+                    </colgroup>
                     <thead>
                       <tr className="border-b border-[#333]">
                         {["Plant", "Machine", "List", "They pay", "Discount", "Status"].map((h) => (
                           <th key={h}
-                            className="band text-left text-[#9CA3AF] font-[Inter] text-[11px] uppercase tracking-[0.05em] font-normal py-1.5">
+                            className={
+                              "band text-[#9CA3AF] font-[Inter] text-[11px] uppercase tracking-[0.05em] font-normal py-1.5 " +
+                              (h === "List" || h === "They pay" ? "text-right pr-3" : "text-left")
+                            }>
                             {h}
                           </th>
                         ))}
@@ -151,14 +162,15 @@ const RateSheet = ({ open, onClose }) => {
                               {r.plant_code}
                               {r.owner_partner_id ? " (P)" : ""}
                             </td>
-                            <td className="py-2 text-[#E5E5E5] font-[Inter] text-[13px]">
+                            <td className="py-2 text-[#E5E5E5] font-[Inter] text-[13px] truncate pr-2"
+                              title={r.equipment_name}>
                               {r.equipment_name}
                             </td>
-                            <td className="py-2 text-[#9CA3AF] font-[Inter] text-[13px]">
+                            <td className="py-2 text-[#9CA3AF] font-[Inter] text-[13px] text-right pr-3">
                               {money(r.list_price)}
                             </td>
                             <td className={
-                              "py-2 font-[Inter] text-[13px] font-semibold " +
+                              "py-2 font-[Inter] text-[13px] font-semibold text-right pr-3 " +
                               (custom ? "text-[#FDCE06]" : "text-[#E5E5E5]")
                             }>
                               {money(theirs)}
