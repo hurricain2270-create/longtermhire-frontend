@@ -586,9 +586,8 @@ const ClientManagement = () => {
             + Send an onboarding form
           </button>
           <button onClick={() => setRateSheet(true)}
-            className="rounded-lg font-[Inter] font-bold px-2.5 py-1 text-[12px]
-                       border border-[#FDCE06] text-[#FDCE06]
-                       hover:bg-[#FDCE06] hover:text-[#1F1F20] transition-colors">
+            className="ml-12 rounded-lg font-[Inter] font-bold px-3.5 py-1.5 text-[12px]
+                       bg-[#FDCE06] text-[#1F1F20] hover:bg-[#E5B800] transition-colors">
             Rates by client
           </button>
           <button onClick={() => setHowTo(true)}
