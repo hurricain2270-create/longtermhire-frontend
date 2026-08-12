@@ -58,13 +58,13 @@ const CSS = `
   @keyframes ltf-drop { from { opacity:0; transform:translateY(-14px); } to { opacity:1; transform:translateY(0); } }
   @keyframes ltf-pulse { 0%,100% { opacity:.35; } 50% { opacity:1; } }
   @keyframes ltf-sweep { from { width:0; } to { width:var(--w); } }
-  @keyframes ltf-hook { 0%,72%,100% { transform:translateY(0) rotate(0deg); }
-    78% { transform:translateY(-9px) rotate(-4deg); }
-    84% { transform:translateY(-3px) rotate(3deg); }
-    90% { transform:translateY(-6px) rotate(-2deg); } }
+  @keyframes ltf-hook { 0%,100% { transform:translate(-30px,-58px) rotate(-24deg); }
+    25% { transform:translate(-32px,-61px) rotate(-28deg); }
+    50% { transform:translate(-28px,-56px) rotate(-20deg); }
+    75% { transform:translate(-31px,-60px) rotate(-26deg); } }
   @keyframes ltf-wave { 0% { opacity:0; transform:scale(.7); } 35% { opacity:1; transform:scale(1); } 100% { opacity:0; transform:scale(1.15); } }
   @keyframes ltf-zed { 0% { opacity:0; transform:translateY(6px); } 30% { opacity:.9; } 100% { opacity:0; transform:translateY(-16px); } }
-  .ltf-hook { animation: ltf-hook 1.4s ease-in-out infinite; transform-origin: 50% 100%; }
+  .ltf-hook { animation: ltf-hook 0.5s ease-in-out infinite; }
   .ltf-wave { animation: ltf-wave 1.6s ease-out infinite; transform-origin: center; }
   .ltf-zed { animation: ltf-zed 3s ease-out infinite; }
   .ltf-ring { animation: ltf-ring 1.1s ease-in-out infinite; transform-origin: 50% 40%; }
@@ -81,45 +81,50 @@ const Panel = ({ n, active, children }) => (
   </div>
 );
 
-// An old desk phone. Everyone knows what this is on sight, which a mobile
-// handset cannot claim - and the receiver jumping off the cradle is the whole
-// point of the picture.
+// An old desk phone, drawn as a solid silhouette rather than an outline - it
+// reads at a glance and at any size. The receiver sits up and away from the
+// cradle, tilted, which is what says "ringing" without a word.
 const DeskPhone = ({ x, y, s = 1, delay = 0, ringing = false }) => (
   <g transform={`translate(${x},${y}) scale(${s})`}
      className={ringing ? "" : "ltf-drop"}
      style={{ animationDelay: delay + "s" }}>
-    {/* base */}
-    <path d="M-42 18 L-34 -6 h68 l8 24 z" fill="#2C2C2E" stroke="#5A5A5C" strokeWidth="2"
-      strokeLinejoin="round" />
-    {/* dial face */}
-    <circle cx="0" cy="6" r="11" fill="#1A1A1B" stroke="#5A5A5C" strokeWidth="1.5" />
-    <circle cx="0" cy="6" r="3.5" fill="#5A5A5C" />
-    {/* cradle arms */}
-    <rect x="-38" y="-12" width="10" height="8" rx="2" fill="#3A3A3C" />
-    <rect x="28" y="-12" width="10" height="8" rx="2" fill="#3A3A3C" />
-    {/* the receiver, jumping */}
-    <g className={ringing ? "ltf-hook" : ""}>
-      <path d="M-38 -20 q38 -16 76 0 l-6 9 q-32 -12 -64 0 z"
-        fill="#3A3A3C" stroke="#6A6A6C" strokeWidth="2" strokeLinejoin="round" />
+    {/* base, seen slightly from the front */}
+    <path d="M-46 26 q0 -8 8 -10 l10 -26 q2 -5 8 -5 h40 q6 0 8 5 l10 26 q8 2 8 10 q0 6 -8 6 h-76 q-8 0 -8 -6 z"
+      fill="#FDCE06" />
+    {/* dial */}
+    <circle cx="0" cy="8" r="13" fill="#1A1A1B" />
+    <circle cx="0" cy="8" r="4.5" fill="#FDCE06" />
+    {[0,1,2,3,4,5,6,7,8,9].map((k) => {
+      const a = (k / 10) * Math.PI * 2 - Math.PI / 2;
+      return <circle key={k} cx={Math.cos(a) * 9} cy={8 + Math.sin(a) * 9} r="1.7" fill="#FDCE06" />;
+    })}
+    {/* cradle arms, empty because the receiver is up */}
+    <rect x="-40" y="-14" width="12" height="7" rx="3" fill="#FDCE06" />
+    <rect x="28" y="-14" width="12" height="7" rx="3" fill="#FDCE06" />
+
+    {/* the receiver, up and tilted off the hook */}
+    <g className={ringing ? "ltf-hook" : ""}
+       transform={ringing ? undefined : "translate(-30,-58) rotate(-24)"}>
+      <path d="M0 0 q6 -13 20 -13 h26 q14 0 20 13 l-9 7 q-5 -8 -13 -8 h-22 q-8 0 -13 8 z"
+        fill="#FDCE06" />
+      <path d="M-4 -2 q-7 5 -3 13 q4 8 12 5 l4 -10 q-6 -2 -8 -6 z" fill="#FDCE06" />
+      <path d="M62 -2 q7 5 3 13 q-4 8 -12 5 l-4 -10 q6 -2 8 -6 z" fill="#FDCE06" />
     </g>
-    {/* cord */}
-    <path d="M34 10 q14 8 8 20 q-6 12 8 16" fill="none" stroke="#4A4A4C"
-      strokeWidth="2" strokeLinecap="round" />
+
+    {/* cord, curling down from the receiver */}
+    <path d="M-26 -34 q-16 10 -10 24 q6 14 -6 22"
+      fill="none" stroke="#FDCE06" strokeWidth="3.5" strokeLinecap="round" />
   </g>
 );
 
-// Sound coming off a ringing phone.
+// Three arcs sweeping off the receiver. The convention everybody reads as sound.
 const RingWaves = ({ x, y, s = 1 }) => (
   <g transform={`translate(${x},${y}) scale(${s})`}>
     {[0, 1, 2].map((k) => (
-      <g key={k}>
-        <path d={`M${-18 - k * 13} ${-10 - k * 7} a${14 + k * 12} ${14 + k * 12} 0 0 0 0 ${20 + k * 14}`}
-          fill="none" stroke="#FDCE06" strokeWidth="2.5" strokeLinecap="round"
-          className="ltf-wave" style={{ animationDelay: k * 0.22 + "s" }} />
-        <path d={`M${18 + k * 13} ${-10 - k * 7} a${14 + k * 12} ${14 + k * 12} 0 0 1 0 ${20 + k * 14}`}
-          fill="none" stroke="#FDCE06" strokeWidth="2.5" strokeLinecap="round"
-          className="ltf-wave" style={{ animationDelay: k * 0.22 + "s" }} />
-      </g>
+      <path key={k}
+        d={`M${10 + k * 11} ${-16 - k * 9} q${16 + k * 8} ${18 + k * 8} 0 ${40 + k * 18}`}
+        fill="none" stroke="#FDCE06" strokeWidth="4" strokeLinecap="round"
+        className="ltf-wave" style={{ animationDelay: k * 0.2 + "s" }} />
     ))}
   </g>
 );
@@ -232,8 +237,8 @@ const IntroFilm = ({ onClose }) => {
       <div className="flex-1 relative max-w-[860px] w-full mx-auto px-6 pt-10">
         {/* 1 — you ring around */}
         <Panel n={0} active={i === 0}>
-          <RingWaves x={320} y={132} s={1.25} />
-          <DeskPhone x={320} y={140} s={1.5} ringing />
+          <DeskPhone x={300} y={160} s={1.45} ringing />
+          <RingWaves x={352} y={92} s={1.35} />
           <text x="320" y="252" textAnchor="middle" fill="#6B7280"
             fontSize="13" fontFamily="Inter, sans-serif" className="ltf-in"
             style={{ animationDelay: "1.4s" }}>
