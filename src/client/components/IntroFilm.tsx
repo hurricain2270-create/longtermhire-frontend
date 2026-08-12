@@ -58,6 +58,15 @@ const CSS = `
   @keyframes ltf-drop { from { opacity:0; transform:translateY(-14px); } to { opacity:1; transform:translateY(0); } }
   @keyframes ltf-pulse { 0%,100% { opacity:.35; } 50% { opacity:1; } }
   @keyframes ltf-sweep { from { width:0; } to { width:var(--w); } }
+  @keyframes ltf-hook { 0%,72%,100% { transform:translateY(0) rotate(0deg); }
+    78% { transform:translateY(-9px) rotate(-4deg); }
+    84% { transform:translateY(-3px) rotate(3deg); }
+    90% { transform:translateY(-6px) rotate(-2deg); } }
+  @keyframes ltf-wave { 0% { opacity:0; transform:scale(.7); } 35% { opacity:1; transform:scale(1); } 100% { opacity:0; transform:scale(1.15); } }
+  @keyframes ltf-zed { 0% { opacity:0; transform:translateY(6px); } 30% { opacity:.9; } 100% { opacity:0; transform:translateY(-16px); } }
+  .ltf-hook { animation: ltf-hook 1.4s ease-in-out infinite; transform-origin: 50% 100%; }
+  .ltf-wave { animation: ltf-wave 1.6s ease-out infinite; transform-origin: center; }
+  .ltf-zed { animation: ltf-zed 3s ease-out infinite; }
   .ltf-ring { animation: ltf-ring 1.1s ease-in-out infinite; transform-origin: 50% 40%; }
   .ltf-in { animation: ltf-in .7s ease both; }
   .ltf-drop { animation: ltf-drop .6s ease both; }
@@ -72,14 +81,63 @@ const Panel = ({ n, active, children }) => (
   </div>
 );
 
-// A phone handset, used three times as the calls stack up.
-const Phone = ({ x, y, s = 1, delay = 0, ringing }) => (
+// An old desk phone. Everyone knows what this is on sight, which a mobile
+// handset cannot claim - and the receiver jumping off the cradle is the whole
+// point of the picture.
+const DeskPhone = ({ x, y, s = 1, delay = 0, ringing = false }) => (
   <g transform={`translate(${x},${y}) scale(${s})`}
-     className={ringing ? "ltf-ring" : "ltf-drop"}
+     className={ringing ? "" : "ltf-drop"}
      style={{ animationDelay: delay + "s" }}>
-    <rect x="-16" y="-26" width="32" height="52" rx="5" fill="#2C2C2E" stroke="#4A4A4C" strokeWidth="1.5" />
-    <rect x="-12" y="-21" width="24" height="36" rx="2" fill="#1A1A1B" />
-    <circle cx="0" cy="20" r="2.5" fill="#4A4A4C" />
+    {/* base */}
+    <path d="M-42 18 L-34 -6 h68 l8 24 z" fill="#2C2C2E" stroke="#5A5A5C" strokeWidth="2"
+      strokeLinejoin="round" />
+    {/* dial face */}
+    <circle cx="0" cy="6" r="11" fill="#1A1A1B" stroke="#5A5A5C" strokeWidth="1.5" />
+    <circle cx="0" cy="6" r="3.5" fill="#5A5A5C" />
+    {/* cradle arms */}
+    <rect x="-38" y="-12" width="10" height="8" rx="2" fill="#3A3A3C" />
+    <rect x="28" y="-12" width="10" height="8" rx="2" fill="#3A3A3C" />
+    {/* the receiver, jumping */}
+    <g className={ringing ? "ltf-hook" : ""}>
+      <path d="M-38 -20 q38 -16 76 0 l-6 9 q-32 -12 -64 0 z"
+        fill="#3A3A3C" stroke="#6A6A6C" strokeWidth="2" strokeLinejoin="round" />
+    </g>
+    {/* cord */}
+    <path d="M34 10 q14 8 8 20 q-6 12 8 16" fill="none" stroke="#4A4A4C"
+      strokeWidth="2" strokeLinecap="round" />
+  </g>
+);
+
+// Sound coming off a ringing phone.
+const RingWaves = ({ x, y, s = 1 }) => (
+  <g transform={`translate(${x},${y}) scale(${s})`}>
+    {[0, 1, 2].map((k) => (
+      <g key={k}>
+        <path d={`M${-18 - k * 13} ${-10 - k * 7} a${14 + k * 12} ${14 + k * 12} 0 0 0 0 ${20 + k * 14}`}
+          fill="none" stroke="#FDCE06" strokeWidth="2.5" strokeLinecap="round"
+          className="ltf-wave" style={{ animationDelay: k * 0.22 + "s" }} />
+        <path d={`M${18 + k * 13} ${-10 - k * 7} a${14 + k * 12} ${14 + k * 12} 0 0 1 0 ${20 + k * 14}`}
+          fill="none" stroke="#FDCE06" strokeWidth="2.5" strokeLinecap="round"
+          className="ltf-wave" style={{ animationDelay: k * 0.22 + "s" }} />
+      </g>
+    ))}
+  </g>
+);
+
+// The universal shorthand for waiting.
+const Zeds = ({ x, y, delay = 0 }) => (
+  <g transform={`translate(${x},${y})`}>
+    {[
+      { d: 0, s: 15, dx: 0, dy: 0 },
+      { d: 0.5, s: 21, dx: 20, dy: -20 },
+      { d: 1.0, s: 28, dx: 46, dy: -46 },
+    ].map((z, k) => (
+      <text key={k} x={z.dx} y={z.dy} fill="#6B7280" fontSize={z.s}
+        fontFamily="Inter, sans-serif" fontWeight="600"
+        className="ltf-zed" style={{ animationDelay: delay + z.d + "s" }}>
+        z
+      </text>
+    ))}
   </g>
 );
 
@@ -174,56 +232,64 @@ const IntroFilm = ({ onClose }) => {
       <div className="flex-1 relative max-w-[860px] w-full mx-auto px-6 pt-10">
         {/* 1 — you ring around */}
         <Panel n={0} active={i === 0}>
-          <Phone x={320} y={140} s={1.6} ringing />
-          <text x="320" y="238" textAnchor="middle" fill="#6B7280"
+          <RingWaves x={320} y={132} s={1.25} />
+          <DeskPhone x={320} y={140} s={1.5} ringing />
+          <text x="320" y="252" textAnchor="middle" fill="#6B7280"
             fontSize="13" fontFamily="Inter, sans-serif" className="ltf-in"
-            style={{ animationDelay: "1.2s" }}>
+            style={{ animationDelay: "1.4s" }}>
             ringing out
           </text>
         </Panel>
 
         {/* 2 — someone will get back to you */}
         <Panel n={1} active={i === 1}>
-          <Phone x={250} y={150} s={1.4} ringing />
-          <text x="380" y="140" fill="#9CA3AF" fontSize="15" fontFamily="Inter, sans-serif"
-            className="ltf-in" style={{ animationDelay: ".6s" }}>
+          <DeskPhone x={250} y={160} s={1.3} />
+          <Zeds x={330} y={112} />
+          <text x="430" y="146" fill="#9CA3AF" fontSize="16" fontFamily="Inter, sans-serif"
+            className="ltf-in" style={{ animationDelay: "1s" }}>
             an hour?
           </text>
-          <text x="380" y="170" fill="#9CA3AF" fontSize="15" fontFamily="Inter, sans-serif"
-            className="ltf-in" style={{ animationDelay: "2.2s" }}>
+          <text x="430" y="176" fill="#9CA3AF" fontSize="16" fontFamily="Inter, sans-serif"
+            className="ltf-in" style={{ animationDelay: "2.6s" }}>
             Thursday?
           </text>
         </Panel>
 
         {/* 3 — and again, and again */}
         <Panel n={2} active={i === 2}>
-          <Phone x={200} y={150} s={1.1} delay={0} />
-          <Phone x={320} y={150} s={1.1} delay={1.4} />
-          <Phone x={440} y={150} s={1.1} delay={2.8} />
-          <text x="320" y="246" textAnchor="middle" fill="#6B7280" fontSize="13"
-            fontFamily="Inter, sans-serif" className="ltf-in" style={{ animationDelay: "3.6s" }}>
+          <DeskPhone x={168} y={150} s={0.82} delay={0} />
+          <DeskPhone x={320} y={150} s={0.82} delay={1.5} />
+          <DeskPhone x={472} y={150} s={0.82} delay={3.0} />
+          <text x="320" y="248" textAnchor="middle" fill="#6B7280" fontSize="13"
+            fontFamily="Inter, sans-serif" className="ltf-in" style={{ animationDelay: "3.9s" }}>
             same question, three times
           </text>
         </Panel>
 
         {/* 4 — in somebody else's head */}
         <Panel n={3} active={i === 3}>
+          {/* the bloke at the other end */}
           <g className="ltf-in">
-            <circle cx="320" cy="130" r="52" fill="none" stroke="#3A3A3C" strokeWidth="2" />
-            <path d="M296 118 q24 -22 48 0" fill="none" stroke="#4A4A4C" strokeWidth="2" />
-            <circle cx="306" cy="140" r="4" fill="#4A4A4C" />
-            <circle cx="334" cy="140" r="4" fill="#4A4A4C" />
+            <circle cx="410" cy="128" r="30" fill="#292A2B" stroke="#5A5A5C" strokeWidth="2" />
+            <path d="M368 214 q0 -44 42 -44 q42 0 42 44" fill="#292A2B"
+              stroke="#5A5A5C" strokeWidth="2" strokeLinejoin="round" />
+            {/* a padlock where the answers are */}
+            <rect x="398" y="122" width="24" height="19" rx="3" fill="#FDCE06" />
+            <path d="M403 122 v-6 a7 7 0 0 1 14 0 v6" fill="none" stroke="#FDCE06" strokeWidth="2.5" />
+            <circle cx="410" cy="131" r="2.6" fill="#1A1A1B" />
           </g>
-          {[
-            "rate?", "available?", "when?", "how much?",
-          ].map((t, k) => (
-            <text key={t} x={320} y={126 + k * 0} textAnchor="middle"
-              fill="#D97B6C" fontSize="13" fontFamily="Inter, sans-serif"
-              className="ltf-in"
-              transform={`translate(${[-118, 118, -96, 96][k]}, ${[-40, -40, 44, 44][k]})`}
-              style={{ animationDelay: 0.7 + k * 0.5 + "s" }}>
-              {t}
-            </text>
+
+          {/* the questions, going nowhere */}
+          {["what does it cost?", "have you got one?", "when can I have it?"].map((t, k) => (
+            <g key={t} className="ltf-in" style={{ animationDelay: 0.6 + k * 0.9 + "s" }}>
+              <rect x={118} y={92 + k * 46} width={172} height={32} rx="16"
+                fill="#1F1F20" stroke="#3A3A3C" strokeWidth="1.5" />
+              <text x={204} y={113 + k * 46} textAnchor="middle" fill="#9CA3AF"
+                fontSize="13" fontFamily="Inter, sans-serif">{t}</text>
+              {/* an arrow that stops short of him */}
+              <path d={`M296 ${108 + k * 46} h44`} stroke="#4A4A4C" strokeWidth="2"
+                strokeDasharray="4 5" />
+            </g>
           ))}
         </Panel>
 
