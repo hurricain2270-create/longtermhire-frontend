@@ -8,6 +8,7 @@ import AddClientModal from "./components/AddClientModal";
 import EditClientModal from "./components/EditClientModal";
 import { BTN } from "./styles/buttons";
 import OnboardingSteps from "./OnboardingSteps";
+import RateSheet from "./RateSheet";
 import ClientDetailsModal from "./components/ClientDetailsModal";
 import EquipmentPopover from "./components/EquipmentPopover";
 
@@ -68,6 +69,7 @@ const ClientManagement = () => {
   const [showSubs, setShowSubs] = useState(false);
   const [inviting, setInviting] = useState(false);
   const [howTo, setHowTo] = useState(false);
+  const [rateSheet, setRateSheet] = useState(false);
   const [invite, setInvite] = useState({ contact_name: "", email: "" });
 
   const loadSubs = async () => {
@@ -523,6 +525,7 @@ const ClientManagement = () => {
   return (
     <div className="p-8 bg-[#292A2B] min-h-screen">
       <OnboardingSteps open={howTo} onClose={() => setHowTo(false)} />
+      <RateSheet open={rateSheet} onClose={() => setRateSheet(false)} />
       {/* Header */}
       <header className="mb-8">
         <h1 className="text-[#E5E5E5] font-[Inter] font-bold text-[36px] leading-[1.11em]">
@@ -581,6 +584,12 @@ const ClientManagement = () => {
           </button>
           <button onClick={() => setInviting(true)} className={BTN.successSm}>
             + Send an onboarding form
+          </button>
+          <button onClick={() => setRateSheet(true)}
+            className="rounded-lg font-[Inter] font-bold px-2.5 py-1 text-[12px]
+                       border border-[#FDCE06] text-[#FDCE06]
+                       hover:bg-[#FDCE06] hover:text-[#1F1F20] transition-colors">
+            Rates by client
           </button>
           <button onClick={() => setHowTo(true)}
             className="rounded-lg font-[Inter] font-bold px-2.5 py-1 text-[12px]

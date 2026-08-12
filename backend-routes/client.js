@@ -1951,6 +1951,30 @@ module.exports = function (app) {
     }
   });
 
+  // Every client, every machine they can see, and what they pay for it. A
+  // printable snapshot - nothing is stored, it is worked out when asked for.
+  app.get('/v1/api/longtermhire/super_admin/rate-sheet', TokenMiddleware(), RoleMiddleware(['super_admin']), async (req, res) => {
+    try {
+      const sdk = app.get('sdk');
+      sdk.setProjectId('longtermhire');
+      const rows = await sdk.rawQuery(
+        'SELECT c.company_name, c.client_name, ' +
+        'e.equipment_id AS plant_code, e.equipment_name, e.category_name, ' +
+        'e.base_price AS list_price, e.owner_partner_id, ' +
+        'ce.custom_base_price, ce.discount, ce.discount_type, ' +
+        'ce.compounding_discount, ce.hire_status, ce.hire_start_date, ce.hire_end_date ' +
+        'FROM longtermhire_client_equipment ce ' +
+        'JOIN longtermhire_client c ON c.user_id = ce.client_user_id ' +
+        'JOIN longtermhire_equipment_item e ON e.id = ce.equipment_id ' +
+        'ORDER BY c.company_name, e.equipment_id', []
+      );
+      return res.status(200).json({ error: false, data: rows || [] });
+    } catch (error) {
+      console.error('Rate sheet error:', error);
+      return res.status(500).json({ error: true, message: error.message });
+    }
+  });
+
   /**
    * Partners. People with plant sitting idle in their yard who are not in the
    * hire business themselves. They list a machine, we approve it, and from that
