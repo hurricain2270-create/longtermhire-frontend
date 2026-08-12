@@ -63,11 +63,38 @@ const RateSheet = ({ open, onClose }) => {
           #rate-sheet, #rate-sheet * { visibility: visible; }
           #rate-sheet { position: absolute; left: 0; top: 0; width: 100%; }
           .no-print { display: none !important; }
+
+          /* Paper is white. Everything reads as black unless it is carrying
+             information, and then it keeps its colour. */
           #rate-sheet { background: #fff !important; color: #111 !important; }
-          #rate-sheet * { color: #111 !important; border-color: #ccc !important; }
-          #rate-sheet .band { color: #444 !important; }
+          #rate-sheet p, #rate-sheet td, #rate-sheet th { color: #111 !important; }
+          #rate-sheet .band, #rate-sheet th { color: #666 !important; }
+          #rate-sheet { border-color: #bbb !important; }
+          #rate-sheet table, #rate-sheet tr, #rate-sheet td, #rate-sheet th {
+            border-color: #ccc !important;
+          }
+
+          /* A rate set for that client, rather than list. The whole point of
+             the sheet. */
+          #rate-sheet .rate-custom {
+            color: #8a6d00 !important;
+            font-weight: 700 !important;
+            background: #fff6d6 !important;
+          }
+          /* Out earning. */
+          #rate-sheet .status-on { color: #1c6b32 !important; font-weight: 600 !important; }
+          /* Company headings, so the eye finds them on a long sheet. */
+          #rate-sheet .company-name {
+            color: #111 !important;
+            border-bottom: 2px solid #FDCE06 !important;
+            padding-bottom: 2px;
+          }
+          /* Not our machine. */
+          #rate-sheet .partner-mark { color: #4b3fa8 !important; font-weight: 700 !important; }
+
           #rate-sheet tr { page-break-inside: avoid; }
           #rate-sheet .company { page-break-inside: avoid; }
+          @page { margin: 14mm; }
         }
       `}</style>
 
@@ -118,7 +145,7 @@ const RateSheet = ({ open, onClose }) => {
               return (
                 <div key={name} className="company mb-7">
                   <div className="flex justify-between items-baseline mb-2">
-                    <p className="text-[#E5E5E5] font-[Inter] text-[16px] font-semibold">
+                    <p className="company-name text-[#E5E5E5] font-[Inter] text-[16px] font-semibold">
                       {name}
                     </p>
                     <p className="band text-[#9CA3AF] font-[Inter] text-[12px]">
@@ -160,7 +187,9 @@ const RateSheet = ({ open, onClose }) => {
                           <tr key={i} className="border-b border-[#2a2a2a]">
                             <td className="py-2 font-mono text-[12px] text-[#9CA3AF]">
                               {r.plant_code}
-                              {r.owner_partner_id ? " (P)" : ""}
+                              {r.owner_partner_id ? (
+                                <span className="partner-mark text-[#B9B2F5]"> (P)</span>
+                              ) : null}
                             </td>
                             <td className="py-2 text-[#E5E5E5] font-[Inter] text-[13px] truncate pr-2"
                               title={r.equipment_name}>
@@ -171,7 +200,7 @@ const RateSheet = ({ open, onClose }) => {
                             </td>
                             <td className={
                               "py-2 font-[Inter] text-[13px] font-semibold text-right pr-3 " +
-                              (custom ? "text-[#FDCE06]" : "text-[#E5E5E5]")
+                              (custom ? "rate-custom text-[#FDCE06]" : "text-[#E5E5E5]")
                             }>
                               {money(theirs)}
                               {custom ? " *" : ""}
@@ -185,7 +214,7 @@ const RateSheet = ({ open, onClose }) => {
                             </td>
                             <td className={
                               "py-2 font-[Inter] text-[13px] " +
-                              (onHire ? "text-[#4CAF50]" : "text-[#6B7280]")
+                              (onHire ? "status-on text-[#4CAF50]" : "text-[#6B7280]")
                             }>
                               {onHire ? "On hire" : "Can see it"}
                             </td>
