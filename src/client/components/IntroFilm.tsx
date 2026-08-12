@@ -251,8 +251,8 @@ const IntroFilm = ({ onClose }) => {
 
         {/* 2 — someone will get back to you */}
         <Panel n={1} active={i === 1}>
-          <DeskPhone x={250} y={160} s={1.3} />
-          <Zeds x={330} y={112} />
+          <DeskPhone x={210} y={168} s={1.15} />
+          <Zeds x={286} y={104} />
           <text x="430" y="146" fill="#9CA3AF" fontSize="16" fontFamily="Inter, sans-serif"
             className="ltf-in" style={{ animationDelay: "1s" }}>
             an hour?
@@ -265,9 +265,9 @@ const IntroFilm = ({ onClose }) => {
 
         {/* 3 — and again, and again */}
         <Panel n={2} active={i === 2}>
-          <DeskPhone x={168} y={150} s={0.82} delay={0} />
-          <DeskPhone x={320} y={150} s={0.82} delay={1.5} />
-          <DeskPhone x={472} y={150} s={0.82} delay={3.0} />
+          <DeskPhone x={190} y={158} s={0.72} delay={0} />
+          <DeskPhone x={320} y={158} s={0.72} delay={1.5} />
+          <DeskPhone x={450} y={158} s={0.72} delay={3.0} />
           <text x="320" y="248" textAnchor="middle" fill="#6B7280" fontSize="13"
             fontFamily="Inter, sans-serif" className="ltf-in" style={{ animationDelay: "3.9s" }}>
             same question, three times
