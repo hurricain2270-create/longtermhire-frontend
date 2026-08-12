@@ -45,6 +45,10 @@ const DURATIONS = [
   6000, 5500,
 ];
 
+// One recording per line, named to match. Drop them in /film/ on the site and
+// they play; leave them out and the film runs silent on the timings above.
+const VOICE = LINES.map((_, k) => "/film/line-" + String(k + 1).padStart(2, "0") + ".mp3");
+
 const CSS = `
   .ltf-panel { opacity:0; transition:opacity .6s ease; position:absolute; inset:0; }
   .ltf-panel.on { opacity:1; }
@@ -81,15 +85,49 @@ const Phone = ({ x, y, s = 1, delay = 0, ringing }) => (
 
 const IntroFilm = ({ onClose }) => {
   const [i, setI] = useState(0);
+  const [sound, setSound] = useState(false);
   const timer = useRef(null);
+  const audio = useRef(null);
 
   useEffect(() => {
     clearTimeout(timer.current);
-    if (i < LINES.length - 1) {
+    if (audio.current) {
+      audio.current.pause();
+      audio.current = null;
+    }
+    if (i >= LINES.length - 1) return;
+
+    // With sound on, the panel waits for its own clip rather than a stopwatch,
+    // so a line that runs long cannot get cut off by the next picture.
+    if (sound) {
+      const clip = new Audio(VOICE[i]);
+      audio.current = clip;
+      let moved = false;
+      const next = () => {
+        if (moved) return;
+        moved = true;
+        setI((n) => n + 1);
+      };
+      clip.addEventListener("ended", () => setTimeout(next, 700));
+      // No clip for this line, or it will not load - fall back to the timing.
+      clip.addEventListener("error", () => {
+        timer.current = setTimeout(next, DURATIONS[i]);
+      });
+      clip.play().catch(() => {
+        timer.current = setTimeout(next, DURATIONS[i]);
+      });
+    } else {
       timer.current = setTimeout(() => setI((n) => n + 1), DURATIONS[i]);
     }
-    return () => clearTimeout(timer.current);
-  }, [i]);
+
+    return () => {
+      clearTimeout(timer.current);
+      if (audio.current) {
+        audio.current.pause();
+        audio.current = null;
+      }
+    };
+  }, [i, sound]);
 
   const done = i >= LINES.length - 1;
 
@@ -97,13 +135,41 @@ const IntroFilm = ({ onClose }) => {
     <div className="fixed inset-0 z-[100] bg-[#0E0E0F] flex flex-col">
       <style>{CSS}</style>
 
-      <button
-        onClick={onClose}
-        className="absolute top-4 right-5 z-10 text-[#6B7280] hover:text-[#E5E5E5]
-                   font-[Inter] text-[13px] transition-colors"
-      >
-        Skip
-      </button>
+      <div className="absolute top-4 right-5 z-10 flex items-center gap-4">
+        <button
+          onClick={() => setSound((s) => !s)}
+          title={sound ? "Turn the sound off" : "Turn the sound on"}
+          aria-label={sound ? "Turn the sound off" : "Turn the sound on"}
+          className="flex items-center gap-2 text-[#6B7280] hover:text-[#FDCE06] transition-colors"
+        >
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="1.7" strokeLinecap="round"
+            strokeLinejoin="round" aria-hidden="true">
+            <path d="M11 5 L6 9 H2.5 v6 H6 l5 4 z" />
+            {sound ? (
+              <>
+                <path d="M15 9.5 a3.5 3.5 0 0 1 0 5" />
+                <path d="M17.8 6.8 a7.5 7.5 0 0 1 0 10.4" />
+              </>
+            ) : (
+              <>
+                <path d="M16 10 l5 4" />
+                <path d="M21 10 l-5 4" />
+              </>
+            )}
+          </svg>
+          <span className="font-[Inter] text-[13px] hidden sm:inline">
+            {sound ? "Sound on" : "Sound off"}
+          </span>
+        </button>
+
+        <button
+          onClick={onClose}
+          className="text-[#6B7280] hover:text-[#E5E5E5] font-[Inter] text-[13px] transition-colors"
+        >
+          Skip
+        </button>
+      </div>
 
       <div className="flex-1 relative max-w-[860px] w-full mx-auto px-6 pt-10">
         {/* 1 — you ring around */}
