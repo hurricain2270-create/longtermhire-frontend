@@ -1,66 +1,82 @@
 // @ts-nocheck
 import React, { useEffect, useRef, useState } from "react";
 
-// The 60 second introduction, shown once when a client first logs in. They have
-// been set up to look around, not to hire, so this makes the case for long term
-// hire rather than explaining an interface they have not committed to.
+// The film a client sees on first login, and can play again from the header.
+//
+// Aimed at whoever decides which hire company to use. He has hired plant before
+// and does not need convincing to hire — so there is nothing here about capital
+// or depreciation. He settled that years ago. What he has not seen is a supplier
+// where he can find things out himself.
+//
+// The argument is section two: every answer he wants is in somebody else's head.
+// Everything after it is the contrast.
+//
+// Panel is declared at MODULE scope on purpose. Inside the component it would be
+// a new type on every render, and the dashboard's polling would restart every
+// animation a few times a minute.
+
 const LINES = [
-  "Hire short term and you pay the top rate every time. Float in, float out, again next month.",
-  "Keep it, and you save more every month. One percent off the rate, compounding, for as long as it stays on your site.",
-  "No capital tied up. No maintenance bill. Nothing to sell at the end of it.",
-  "Rates, specifications and quotes, there when you want them. Eleven at night, pricing a job. No phone calls. No waiting.",
-  "And when something goes wrong, it is reported from the seat. Photo, machine, what it is doing.",
-  "You see it as it happens. The clock starts. We answer in the same place.",
-  "Hours come off the machine, so it is serviced on time and stays safe to work.",
-  "Long Term Hire. The longer you keep it, the more you save.",
+  "You need a machine on Monday. So you ring around.",
+  "Someone will get back to you. Might be an hour. Might be Thursday.",
+  "Then you ring again to check the rate. Then again to see if it is still available.",
+  "Every answer you want is in somebody else's head, and you have to ask for it.",
+  "Or you log in.",
+  "Every machine we have. Photos, specifications, hours, what it will do.",
+  "What it costs. This month, and every month after it.",
+  "Move the slider. Twelve months instead of three, and watch the rate fall.",
+  "Generate your own quote. On our letterhead, with your figures, at eleven at night if that is when you are working.",
+  "Every other supplier's rate goes one way. Ours falls one percent a month for as long as you keep the machine.",
+  "You see the whole term before you sign anything. Check the arithmetic yourself.",
+  "When something goes wrong, your supervisor reports it from the seat. A photo, thirty seconds.",
+  "We have a fitter on the way before anyone has picked up a phone. And you can watch it happen from your desk.",
+  "We have not seen another hire company in Australia doing this.",
+  "Not a website. Your own portal, your own rates, your own machines, open whenever you want it.",
+  "Everything else stays the same. Same machines, same trucks, same blokes.",
+  "You just stop waiting for someone to ring you back.",
 ];
-const DURATIONS = [8000, 9000, 7000, 10000, 8000, 8000, 6000, 4000];
+
+const DURATIONS = [
+  5000, 6000, 6500, 7000,
+  4000,
+  7000, 6000, 7000, 9000,
+  9000, 7000,
+  8000, 9000,
+  6500, 8000,
+  6000, 5500,
+];
 
 const CSS = `
-.ltf-panel { opacity:0; transition:opacity .5s ease; position:absolute; inset:0; }
-.ltf-panel.on { opacity:1; }
-@keyframes ltfIn { to { opacity:1; } }
-.ltf-panel.on .p1a { animation:ltfIn .4s .6s forwards; }
-.ltf-panel.on .p1b { animation:ltfIn .4s 2.4s forwards; }
-.ltf-panel.on .p1c { animation:ltfIn .4s 4.2s forwards; }
-.ltf-panel.on .b1 { animation:ltfG1 .5s .3s forwards; }
-.ltf-panel.on .b2 { animation:ltfG2 .5s 1.3s forwards; }
-.ltf-panel.on .b3 { animation:ltfG3 .5s 2.3s forwards; }
-.ltf-panel.on .b4 { animation:ltfG4 .5s 3.3s forwards; }
-.ltf-panel.on .b5 { animation:ltfG5 .5s 4.3s forwards; }
-@keyframes ltfG1 { to { height:150px; y:80px; } }
-@keyframes ltfG2 { to { height:124px; y:106px; } }
-@keyframes ltfG3 { to { height:100px; y:130px; } }
-@keyframes ltfG4 { to { height:80px; y:150px; } }
-@keyframes ltfG5 { to { height:64px; y:166px; } }
-.ltf-panel.on .lbl1 { animation:ltfIn .4s .8s forwards; }
-.ltf-panel.on .lbl5 { animation:ltfIn .4s 4.8s forwards; }
-.ltf-panel.on .pct  { animation:ltfIn .5s 5.4s forwards; }
-.ltf-panel.on .fade3 { animation:ltfOut 2s 1.6s forwards; }
-@keyframes ltfOut { to { opacity:.12; } }
-.ltf-panel.on .ph { animation:ltfIn .6s .8s forwards; }
-.ltf-panel.on .flash { animation:ltfFl 1.2s .4s; }
-@keyframes ltfFl { 0%,100% { opacity:0; } 40% { opacity:1; } }
-.ltf-panel.on .arrow { stroke-dasharray:80; stroke-dashoffset:80; animation:ltfDash .8s 1.4s forwards; }
-@keyframes ltfDash { to { stroke-dashoffset:0; } }
-.ltf-panel.on .alert { animation:ltfIn .4s 2.2s forwards; }
-.ltf-panel.on .rbar { animation:ltfRb 3s .4s forwards; }
-@keyframes ltfRb { to { width:320px; } }
-.ltf-panel.on .rbar2 { animation:ltfRb2 3s .4s forwards; }
-@keyframes ltfRb2 { to { width:130px; } }
-.ltf-panel.on .reply { animation:ltfIn .5s 4s forwards; }
-.ltf-panel.on .sbar { animation:ltfSb 3.5s .3s forwards; }
-@keyframes ltfSb { to { width:420px; } }
+  .ltf-panel { opacity:0; transition:opacity .6s ease; position:absolute; inset:0; }
+  .ltf-panel.on { opacity:1; }
+  @keyframes ltf-ring { 0%,100% { transform:rotate(0deg); } 20% { transform:rotate(-9deg); } 40% { transform:rotate(9deg); } 60% { transform:rotate(-5deg); } }
+  @keyframes ltf-in { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes ltf-slide { from { transform:translateX(0); } to { transform:translateX(150px); } }
+  @keyframes ltf-drop { from { opacity:0; transform:translateY(-14px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes ltf-pulse { 0%,100% { opacity:.35; } 50% { opacity:1; } }
+  @keyframes ltf-sweep { from { width:0; } to { width:var(--w); } }
+  .ltf-ring { animation: ltf-ring 1.1s ease-in-out infinite; transform-origin: 50% 40%; }
+  .ltf-in { animation: ltf-in .7s ease both; }
+  .ltf-drop { animation: ltf-drop .6s ease both; }
+  .ltf-pulse { animation: ltf-pulse 1.6s ease-in-out infinite; }
 `;
 
-// Defined outside the component on purpose. Declared inside, this would be a
-// new component type on every render, so React would unmount and remount the
-// panels — restarting every animation. The dashboard re-renders often (chat
-// polling, unread counts), which made the slides flicker and repeat.
-const Panel = ({ n, active, children, bg }) => (
-  <div className={"ltf-panel" + (active ? " on" : "")} style={bg ? { background: bg } : undefined}>
-    <svg viewBox="0 0 640 300" style={{ width: "100%", height: "100%" }}>{children}</svg>
+const Panel = ({ n, active, children }) => (
+  <div className={"ltf-panel" + (active ? " on" : "")}>
+    <svg viewBox="0 0 640 300" style={{ width: "100%", height: "100%" }}>
+      {active ? children : null}
+    </svg>
   </div>
+);
+
+// A phone handset, used three times as the calls stack up.
+const Phone = ({ x, y, s = 1, delay = 0, ringing }) => (
+  <g transform={`translate(${x},${y}) scale(${s})`}
+     className={ringing ? "ltf-ring" : "ltf-drop"}
+     style={{ animationDelay: delay + "s" }}>
+    <rect x="-16" y="-26" width="32" height="52" rx="5" fill="#2C2C2E" stroke="#4A4A4C" strokeWidth="1.5" />
+    <rect x="-12" y="-21" width="24" height="36" rx="2" fill="#1A1A1B" />
+    <circle cx="0" cy="20" r="2.5" fill="#4A4A4C" />
+  </g>
 );
 
 const IntroFilm = ({ onClose }) => {
@@ -75,165 +91,328 @@ const IntroFilm = ({ onClose }) => {
     return () => clearTimeout(timer.current);
   }, [i]);
 
+  const done = i >= LINES.length - 1;
+
   return (
-    <div
-      role="dialog"
-      aria-label="Introduction to Long Term Hire"
-      style={{
-        position: "fixed", inset: 0, zIndex: 60,
-        background: "rgba(0,0,0,0.85)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "20px",
-      }}
-    >
+    <div className="fixed inset-0 z-[100] bg-[#0E0E0F] flex flex-col">
       <style>{CSS}</style>
-      <div style={{ width: "100%", maxWidth: "760px" }}>
-        <div style={{ background: "#111", border: "1px solid #333", borderRadius: "12px", overflow: "hidden" }}>
-          <div style={{ position: "relative", aspectRatio: "16/9", background: "#111" }}>
 
-            <Panel n={0} active={i === 0}>
-              <g stroke="#fff" strokeWidth="2" fill="none">
-                <path d="M70 200 h120 v-30 h30 l18 30 h20" /><circle cx="100" cy="212" r="13" /><circle cx="172" cy="212" r="13" />
-                <path d="M120 170 l28 -38 l24 14" />
-              </g>
-              <g className="p1a" opacity="0"><text x="330" y="120" fill="#FDCE06" fontSize="26" textAnchor="middle">$6,000</text></g>
-              <g className="p1b" opacity="0"><text x="450" y="120" fill="#FDCE06" fontSize="26" textAnchor="middle">$6,000</text></g>
-              <g className="p1c" opacity="0"><text x="570" y="120" fill="#FDCE06" fontSize="26" textAnchor="middle">$6,000</text></g>
-              <g stroke="#666" strokeWidth="2" fill="none" opacity=".7">
-                <path d="M300 200 h60 M360 200 l-12 -8 M360 200 l-12 8" />
-                <path d="M420 200 h60 M480 200 l-12 -8 M480 200 l-12 8" />
-              </g>
-            </Panel>
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-5 z-10 text-[#6B7280] hover:text-[#E5E5E5]
+                   font-[Inter] text-[13px] transition-colors"
+      >
+        Skip
+      </button>
 
-            <Panel n={1} active={i === 1}>
-              <g stroke="#fff" strokeWidth="2" fill="none">
-                <path d="M60 210 h110 v-28 h28 l16 28 h18" /><circle cx="88" cy="222" r="12" /><circle cx="156" cy="222" r="12" />
-              </g>
-              <line x1="290" y1="230" x2="600" y2="230" stroke="#444" strokeWidth="1.5" />
-              <rect className="b1" x="300" y="230" width="42" height="0" fill="#FDCE06" />
-              <rect className="b2" x="358" y="230" width="42" height="0" fill="#FDCE06" opacity=".85" />
-              <rect className="b3" x="416" y="230" width="42" height="0" fill="#FDCE06" opacity=".7" />
-              <rect className="b4" x="474" y="230" width="42" height="0" fill="#FDCE06" opacity=".55" />
-              <rect className="b5" x="532" y="230" width="42" height="0" fill="#FDCE06" opacity=".4" />
-              <text className="lbl1" x="321" y="70" fill="#9CA3AF" fontSize="13" textAnchor="middle" opacity="0">$6,000</text>
-              <text className="lbl5" x="553" y="152" fill="#4CAF50" fontSize="13" textAnchor="middle" opacity="0">$5,706</text>
-              <text className="pct" x="445" y="272" fill="#4CAF50" fontSize="15" textAnchor="middle" opacity="0">−1% every month</text>
-            </Panel>
+      <div className="flex-1 relative max-w-[860px] w-full mx-auto px-6 pt-10">
+        {/* 1 — you ring around */}
+        <Panel n={0} active={i === 0}>
+          <Phone x={320} y={140} s={1.6} ringing />
+          <text x="320" y="238" textAnchor="middle" fill="#6B7280"
+            fontSize="13" fontFamily="Inter, sans-serif" className="ltf-in"
+            style={{ animationDelay: "1.2s" }}>
+            ringing out
+          </text>
+        </Panel>
 
-            <Panel n={2} active={i === 2}>
-              <g className="fade3" stroke="#fff" strokeWidth="2" fill="none" opacity=".85">
-                <rect x="80" y="130" width="80" height="60" /><path d="M100 130 v-24 h40 v24" />
-                <rect x="200" y="130" width="80" height="60" /><path d="M220 130 v-24 h40 v24" />
-                <rect x="320" y="130" width="80" height="60" /><path d="M340 130 v-24 h40 v24" />
-              </g>
-              <g className="fade3" fill="#FDCE06" fontSize="18" textAnchor="middle" opacity=".85">
-                <text x="120" y="220">$210k</text><text x="240" y="220">$180k</text><text x="360" y="220">$260k</text>
-              </g>
-              <g stroke="#fff" strokeWidth="2.5" fill="none">
-                <path d="M450 200 h110 v-28 h28 l16 28 h16" /><circle cx="478" cy="212" r="13" /><circle cx="546" cy="212" r="13" />
-                <path d="M498 172 l28 -36 l24 14" />
-              </g>
-            </Panel>
+        {/* 2 — someone will get back to you */}
+        <Panel n={1} active={i === 1}>
+          <Phone x={250} y={150} s={1.4} ringing />
+          <text x="380" y="140" fill="#9CA3AF" fontSize="15" fontFamily="Inter, sans-serif"
+            className="ltf-in" style={{ animationDelay: ".6s" }}>
+            an hour?
+          </text>
+          <text x="380" y="170" fill="#9CA3AF" fontSize="15" fontFamily="Inter, sans-serif"
+            className="ltf-in" style={{ animationDelay: "2.2s" }}>
+            Thursday?
+          </text>
+        </Panel>
 
-            <Panel n={3} active={i === 3} bg="#080808">
-              <circle cx="560" cy="60" r="22" fill="none" stroke="#444" strokeWidth="2" />
-              <g stroke="#3a3a3a" strokeWidth="2" fill="none">
-                <path d="M40 250 h200 M60 250 v-60 h160 v60" /><path d="M88 190 v-34 h104 v34" />
+        {/* 3 — and again, and again */}
+        <Panel n={2} active={i === 2}>
+          <Phone x={200} y={150} s={1.1} delay={0} />
+          <Phone x={320} y={150} s={1.1} delay={1.4} />
+          <Phone x={440} y={150} s={1.1} delay={2.8} />
+          <text x="320" y="246" textAnchor="middle" fill="#6B7280" fontSize="13"
+            fontFamily="Inter, sans-serif" className="ltf-in" style={{ animationDelay: "3.6s" }}>
+            same question, three times
+          </text>
+        </Panel>
+
+        {/* 4 — in somebody else's head */}
+        <Panel n={3} active={i === 3}>
+          <g className="ltf-in">
+            <circle cx="320" cy="130" r="52" fill="none" stroke="#3A3A3C" strokeWidth="2" />
+            <path d="M296 118 q24 -22 48 0" fill="none" stroke="#4A4A4C" strokeWidth="2" />
+            <circle cx="306" cy="140" r="4" fill="#4A4A4C" />
+            <circle cx="334" cy="140" r="4" fill="#4A4A4C" />
+          </g>
+          {[
+            "rate?", "available?", "when?", "how much?",
+          ].map((t, k) => (
+            <text key={t} x={320} y={126 + k * 0} textAnchor="middle"
+              fill="#D97B6C" fontSize="13" fontFamily="Inter, sans-serif"
+              className="ltf-in"
+              transform={`translate(${[-118, 118, -96, 96][k]}, ${[-40, -40, 44, 44][k]})`}
+              style={{ animationDelay: 0.7 + k * 0.5 + "s" }}>
+              {t}
+            </text>
+          ))}
+        </Panel>
+
+        {/* 5 — or you log in */}
+        <Panel n={4} active={i === 4}>
+          <g className="ltf-in">
+            <rect x="150" y="70" width="340" height="170" rx="10"
+              fill="#1F1F20" stroke="#FDCE06" strokeWidth="2" />
+            <rect x="150" y="70" width="340" height="30" rx="10" fill="#292A2B" />
+            <circle cx="168" cy="85" r="4" fill="#3A3A3C" />
+            <circle cx="182" cy="85" r="4" fill="#3A3A3C" />
+            <text x="320" y="170" textAnchor="middle" fill="#FDCE06"
+              fontSize="17" fontFamily="Inter, sans-serif" fontWeight="600">
+              Long Term Hire
+            </text>
+          </g>
+        </Panel>
+
+        {/* 6 — every machine we have */}
+        <Panel n={5} active={i === 5}>
+          {[0, 1, 2, 3, 4, 5].map((k) => (
+            <g key={k} className="ltf-drop" style={{ animationDelay: k * 0.22 + "s" }}>
+              <rect x={120 + (k % 3) * 140} y={80 + Math.floor(k / 3) * 100}
+                width="120" height="84" rx="7" fill="#1F1F20" stroke="#333" strokeWidth="1.5" />
+              <rect x={128 + (k % 3) * 140} y={88 + Math.floor(k / 3) * 100}
+                width="104" height="44" rx="4" fill="#292A2B" />
+              <rect x={128 + (k % 3) * 140} y={140 + Math.floor(k / 3) * 100}
+                width="58" height="6" rx="3" fill="#3A3A3C" />
+              <rect x={128 + (k % 3) * 140} y={150 + Math.floor(k / 3) * 100}
+                width="38" height="5" rx="2.5" fill="#FDCE06" opacity="0.7" />
+            </g>
+          ))}
+        </Panel>
+
+        {/* 7 — what it costs */}
+        <Panel n={6} active={i === 6}>
+          <g className="ltf-in">
+            <rect x="180" y="90" width="280" height="120" rx="9"
+              fill="#1F1F20" stroke="#333" strokeWidth="1.5" />
+            <text x="320" y="140" textAnchor="middle" fill="#FDCE06"
+              fontSize="34" fontFamily="Inter, sans-serif" fontWeight="600">
+              $2,700
+            </text>
+            <text x="320" y="166" textAnchor="middle" fill="#6B7280"
+              fontSize="13" fontFamily="Inter, sans-serif">
+              a month
+            </text>
+            <text x="320" y="192" textAnchor="middle" fill="#9CA3AF"
+              fontSize="12" fontFamily="Inter, sans-serif" className="ltf-in"
+              style={{ animationDelay: "1.6s" }}>
+              and every month after it
+            </text>
+          </g>
+        </Panel>
+
+        {/* 8 — the slider */}
+        <Panel n={7} active={i === 7}>
+          <g className="ltf-in">
+            <rect x="140" y="150" width="360" height="4" rx="2" fill="#3A3A3C" />
+            <circle cx="200" cy="152" r="11" fill="#FDCE06">
+              <animate attributeName="cx" from="200" to="460" dur="3.5s"
+                begin="0.8s" fill="freeze" calcMode="spline"
+                keySplines="0.4 0 0.2 1" />
+            </circle>
+            <text x="200" y="120" textAnchor="middle" fill="#9CA3AF"
+              fontSize="13" fontFamily="Inter, sans-serif">3 months</text>
+            <text x="460" y="120" textAnchor="middle" fill="#FDCE06"
+              fontSize="13" fontFamily="Inter, sans-serif">12 months</text>
+            <text x="320" y="210" textAnchor="middle" fill="#FDCE06"
+              fontSize="26" fontFamily="Inter, sans-serif" fontWeight="600"
+              className="ltf-in" style={{ animationDelay: "3.4s" }}>
+              $1,724 back in your pocket
+            </text>
+          </g>
+        </Panel>
+
+        {/* 9 — your own quote */}
+        <Panel n={8} active={i === 8}>
+          <g className="ltf-in">
+            <rect x="215" y="60" width="210" height="180" rx="6"
+              fill="#F2F0EA" stroke="#CFCBC0" strokeWidth="1" />
+            <rect x="235" y="82" width="76" height="9" rx="4" fill="#FDCE06" />
+            <rect x="235" y="104" width="140" height="5" rx="2.5" fill="#BDB8AC" />
+            <rect x="235" y="116" width="112" height="5" rx="2.5" fill="#BDB8AC" />
+            {[0, 1, 2, 3, 4].map((k) => (
+              <g key={k} className="ltf-drop" style={{ animationDelay: 0.9 + k * 0.28 + "s" }}>
+                <rect x="235" y={140 + k * 17} width="90" height="5" rx="2.5" fill="#8C877A" />
+                <rect x={340} y={140 + k * 17} width={62 - k * 7} height="5" rx="2.5" fill="#1F1F20" />
               </g>
-              <rect x="290" y="60" width="110" height="190" rx="14" fill="#0f0f0f" stroke="#fff" strokeWidth="2.5" />
-              <rect x="300" y="82" width="90" height="146" fill="#1F1F20" />
-              <g className="ph" opacity="0">
-                <rect x="308" y="90" width="74" height="40" rx="4" fill="#292A2B" />
-                <text x="316" y="150" fill="#FDCE06" fontSize="18">$6,000</text>
-                <text x="316" y="170" fill="#4CAF50" fontSize="11">Save 1%/month</text>
-                <rect x="308" y="184" width="46" height="20" rx="5" fill="#FDCE06" />
-                <text x="331" y="198" fill="#1F1F20" fontSize="10" textAnchor="middle">Request</text>
-                <rect x="360" y="184" width="26" height="20" rx="5" fill="none" stroke="#555" />
-                <text x="373" y="198" fill="#9CA3AF" fontSize="9" textAnchor="middle">Info</text>
-              </g>
-            </Panel>
+            ))}
+          </g>
+          <text x="320" y="268" textAnchor="middle" fill="#6B7280" fontSize="12.5"
+            fontFamily="Inter, sans-serif" className="ltf-in" style={{ animationDelay: "2.6s" }}>
+            eleven at night, if that is when you are working
+          </text>
+        </Panel>
 
-            <Panel n={4} active={i === 4}>
-              <g stroke="#fff" strokeWidth="2" fill="none">
-                <path d="M50 210 h100 v-28 h26 l16 28 h16" /><circle cx="76" cy="222" r="12" /><circle cx="140" cy="222" r="12" />
-              </g>
-              <circle className="flash" cx="150" cy="150" r="8" fill="#FDCE06" opacity="0" />
-              <rect x="230" y="110" width="60" height="96" rx="9" fill="none" stroke="#fff" strokeWidth="2" />
-              <rect x="240" y="126" width="40" height="48" fill="#FDCE06" opacity=".28" />
-              <path className="arrow" d="M320 158 h70 M390 158 l-14 -9 M390 158 l-14 9" stroke="#fff" strokeWidth="2" fill="none" />
-              <rect x="410" y="96" width="180" height="120" rx="8" fill="#1F1F20" stroke="#333" strokeWidth="2" />
-              <line x1="410" y1="124" x2="590" y2="124" stroke="#333" strokeWidth="2" />
-              <rect className="alert" x="426" y="140" width="80" height="14" rx="3" fill="#ef4444" opacity="0" />
-              <line x1="426" y1="172" x2="574" y2="172" stroke="#3a3a3a" strokeWidth="3" />
-              <line x1="426" y1="192" x2="520" y2="192" stroke="#3a3a3a" strokeWidth="3" />
-            </Panel>
+        {/* 10 — the rate falls */}
+        <Panel n={9} active={i === 9}>
+          <line x1="120" y1="240" x2="520" y2="240" stroke="#3A3A3C" strokeWidth="1.5" />
+          <g className="ltf-in">
+            <path d="M140 100 L500 76" stroke="#D97B6C" strokeWidth="2.5" fill="none"
+              strokeDasharray="420" strokeDashoffset="420">
+              <animate attributeName="stroke-dashoffset" from="420" to="0" dur="2s"
+                begin="0.4s" fill="freeze" />
+            </path>
+            <text x="508" y="72" fill="#D97B6C" fontSize="12" fontFamily="Inter, sans-serif"
+              className="ltf-in" style={{ animationDelay: "2.2s" }}>theirs</text>
 
-            <Panel n={5} active={i === 5}>
-              <rect x="60" y="50" width="520" height="200" rx="12" fill="#1F1F20" stroke="#333" strokeWidth="2" />
-              <text x="84" y="86" fill="#E5E5E5" fontSize="17">Hydraulic leak on boom</text>
-              <text x="84" y="106" fill="#6B7280" fontSize="12">Reported from site · 2 hours ago</text>
-              <rect x="440" y="68" width="118" height="24" rx="12" fill="#B91C1C22" stroke="#B91C1C55" />
-              <text x="499" y="85" fill="#B91C1C" fontSize="12" textAnchor="middle">Emergency · 24h</text>
-              <text x="84" y="140" fill="#9CA3AF" fontSize="11">RESPONSE</text>
-              <rect x="84" y="148" width="440" height="8" rx="4" fill="#2F2F31" />
-              <rect className="rbar" x="84" y="148" width="0" height="8" rx="4" fill="#F59E0B" />
-              <text x="84" y="186" fill="#9CA3AF" fontSize="11">REPAIR</text>
-              <rect x="84" y="194" width="440" height="8" rx="4" fill="#2F2F31" />
-              <rect className="rbar2" x="84" y="194" width="0" height="8" rx="4" fill="#4CAF50" />
-              <g className="reply" opacity="0">
-                <rect x="330" y="216" width="194" height="22" rx="11" fill="#FDCE06" />
-                <text x="427" y="231" fill="#1F1F20" fontSize="12" textAnchor="middle">Seals on the way</text>
-              </g>
-            </Panel>
+            <path d="M140 130 L500 206" stroke="#FDCE06" strokeWidth="3" fill="none"
+              strokeDasharray="420" strokeDashoffset="420">
+              <animate attributeName="stroke-dashoffset" from="420" to="0" dur="2s"
+                begin="0.9s" fill="freeze" />
+            </path>
+            <text x="508" y="212" fill="#FDCE06" fontSize="12" fontFamily="Inter, sans-serif"
+              className="ltf-in" style={{ animationDelay: "2.7s" }}>ours</text>
+          </g>
+        </Panel>
 
-            <Panel n={6} active={i === 6}>
-              <rect x="70" y="90" width="170" height="60" rx="6" fill="none" stroke="#fff" strokeWidth="2" />
-              <text x="155" y="132" fill="#FDCE06" fontSize="32" textAnchor="middle" fontFamily="monospace">3590</text>
-              <rect x="70" y="196" width="500" height="12" rx="6" fill="#2F2F31" />
-              <rect className="sbar" x="70" y="196" width="0" height="12" rx="6" fill="#F59E0B" />
-              <line x1="500" y1="182" x2="500" y2="222" stroke="#fff" strokeWidth="3" />
-              <text x="500" y="244" fill="#888" fontSize="13" textAnchor="middle">service</text>
-              <text x="155" y="172" fill="#6B7280" fontSize="12" textAnchor="middle">hours</text>
-              <path d="M330 120 h110 v66 h-110 z M330 120 l55 -30 l55 30" fill="none" stroke="#3a3a3a" strokeWidth="2" />
-            </Panel>
+        {/* 11 — the whole term */}
+        <Panel n={10} active={i === 10}>
+          {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((k) => (
+            <g key={k} className="ltf-drop" style={{ animationDelay: k * 0.14 + "s" }}>
+              <rect x={132 + k * 31} y={220 - (100 - k * 6)} width="22"
+                height={100 - k * 6} rx="3" fill="#FDCE06" opacity={0.9 - k * 0.03} />
+            </g>
+          ))}
+          <text x="320" y="256" textAnchor="middle" fill="#6B7280" fontSize="12.5"
+            fontFamily="Inter, sans-serif" className="ltf-in" style={{ animationDelay: "2s" }}>
+            every month of it, before you sign
+          </text>
+        </Panel>
 
-            <Panel n={7} active={i === 7}>
-              <text x="320" y="150" fill="#FDCE06" fontSize="42" textAnchor="middle" fontWeight="700">LONG TERM HIRE</text>
-              <line x1="180" y1="176" x2="460" y2="176" stroke="#333" strokeWidth="2" />
-              <text x="320" y="206" fill="#9CA3AF" fontSize="15" textAnchor="middle">longtermhire.com</text>
-            </Panel>
+        {/* 12 — reported from the seat */}
+        <Panel n={11} active={i === 11}>
+          <g className="ltf-in">
+            <rect x="248" y="70" width="144" height="180" rx="14"
+              fill="#1F1F20" stroke="#3A3A3C" strokeWidth="2" />
+            <rect x="258" y="86" width="124" height="120" rx="4" fill="#292A2B" />
+            <circle cx="320" cy="146" r="26" fill="none" stroke="#4A4A4C" strokeWidth="2" />
+            <circle cx="320" cy="146" r="9" fill="#4A4A4C" />
+            <rect x="278" y="218" width="84" height="18" rx="9" fill="#FDCE06"
+              className="ltf-drop" style={{ animationDelay: "1.4s" }} />
+          </g>
+          <text x="320" y="278" textAnchor="middle" fill="#6B7280" fontSize="12.5"
+            fontFamily="Inter, sans-serif" className="ltf-in" style={{ animationDelay: "2.2s" }}>
+            thirty seconds, from the machine
+          </text>
+        </Panel>
 
+        {/* 13 — a fitter on the way */}
+        <Panel n={12} active={i === 12}>
+          {[
+            ["Reported", "#F59E0B", 0],
+            ["Sent to the fitter", "#FDCE06", 1],
+            ["On his way", "#7F77DD", 2],
+            ["Back in service", "#4CAF50", 3],
+          ].map(([label, colour, k]) => (
+            <g key={label} className="ltf-drop" style={{ animationDelay: k * 0.9 + "s" }}>
+              <circle cx="180" cy={92 + k * 44} r="7" fill={colour} />
+              {k < 3 ? (
+                <line x1="180" y1={101 + k * 44} x2="180" y2={127 + k * 44}
+                  stroke="#3A3A3C" strokeWidth="2" />
+              ) : null}
+              <text x="206" y={97 + k * 44} fill="#E5E5E5" fontSize="14"
+                fontFamily="Inter, sans-serif">{label}</text>
+            </g>
+          ))}
+          <text x="470" y="252" textAnchor="end" fill="#6B7280" fontSize="12"
+            fontFamily="Inter, sans-serif" className="ltf-in" style={{ animationDelay: "3.8s" }}>
+            from your desk
+          </text>
+        </Panel>
+
+        {/* 14 — the claim */}
+        <Panel n={13} active={i === 13}>
+          <g className="ltf-in">
+            <text x="320" y="150" textAnchor="middle" fill="#E5E5E5"
+              fontSize="21" fontFamily="Inter, sans-serif">
+              We have not seen this
+            </text>
+            <text x="320" y="182" textAnchor="middle" fill="#FDCE06"
+              fontSize="21" fontFamily="Inter, sans-serif" fontWeight="600">
+              anywhere else in Australia
+            </text>
+          </g>
+        </Panel>
+
+        {/* 15 — not a website */}
+        <Panel n={14} active={i === 14}>
+          <g className="ltf-in">
+            <rect x="170" y="80" width="300" height="150" rx="10"
+              fill="#1F1F20" stroke="#FDCE06" strokeWidth="2" />
+            <rect x="170" y="80" width="300" height="28" rx="10" fill="#292A2B" />
+            <text x="320" y="150" textAnchor="middle" fill="#9CA3AF"
+              fontSize="14" fontFamily="Inter, sans-serif">yours</text>
+            <text x="320" y="178" textAnchor="middle" fill="#E5E5E5"
+              fontSize="15" fontFamily="Inter, sans-serif">
+              your rates, your machines
+            </text>
+          </g>
+        </Panel>
+
+        {/* 16 — everything else stays the same */}
+        <Panel n={15} active={i === 15}>
+          <g className="ltf-in">
+            <rect x="120" y="150" width="120" height="56" rx="6" fill="#292A2B" stroke="#3A3A3C" strokeWidth="1.5" />
+            <rect x="260" y="150" width="120" height="56" rx="6" fill="#292A2B" stroke="#3A3A3C" strokeWidth="1.5" />
+            <rect x="400" y="150" width="120" height="56" rx="6" fill="#292A2B" stroke="#3A3A3C" strokeWidth="1.5" />
+            <text x="180" y="184" textAnchor="middle" fill="#9CA3AF" fontSize="13" fontFamily="Inter, sans-serif">machines</text>
+            <text x="320" y="184" textAnchor="middle" fill="#9CA3AF" fontSize="13" fontFamily="Inter, sans-serif">trucks</text>
+            <text x="460" y="184" textAnchor="middle" fill="#9CA3AF" fontSize="13" fontFamily="Inter, sans-serif">blokes</text>
+          </g>
+        </Panel>
+
+        {/* 17 — the close */}
+        <Panel n={16} active={i === 16}>
+          <g className="ltf-in">
+            <text x="320" y="140" textAnchor="middle" fill="#E5E5E5"
+              fontSize="19" fontFamily="Inter, sans-serif">
+              You just stop waiting
+            </text>
+            <text x="320" y="170" textAnchor="middle" fill="#E5E5E5"
+              fontSize="19" fontFamily="Inter, sans-serif">
+              for someone to ring you back.
+            </text>
+          </g>
+        </Panel>
+      </div>
+
+      {/* The line, under the picture */}
+      <div className="max-w-[860px] w-full mx-auto px-6 pb-10">
+        <p key={i} className="ltf-in text-[#E5E5E5] font-[Inter] text-[19px] sm:text-[23px]
+                              leading-[1.45] min-h-[72px]">
+          {LINES[i]}
+        </p>
+
+        <div className="flex items-center gap-3 mt-5">
+          <div className="flex-1 h-[3px] bg-[#292A2B] rounded overflow-hidden">
+            <div className="h-full bg-[#FDCE06] transition-all duration-500"
+              style={{ width: ((i + 1) / LINES.length) * 100 + "%" }} />
           </div>
-
-          <div style={{ padding: "16px 20px 18px", background: "#0d0d0d", borderTop: "1px solid #262626" }}>
-            <p style={{ margin: "0 0 14px", color: "#E5E5E5", fontSize: "16px", lineHeight: 1.5, minHeight: "48px" }}>
-              {LINES[i]}
-            </p>
-            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
-              <div style={{ display: "flex", gap: "6px", flex: 1 }}>
-                {LINES.map((_, n) => (
-                  <div key={n} style={{
-                    height: "3px", flex: 1, borderRadius: "2px",
-                    background: n <= i ? "#FDCE06" : "#2a2a2a",
-                    transition: "background .3s",
-                  }} />
-                ))}
-              </div>
-              {i === LINES.length - 1 ? (
-                <button onClick={onClose}
-                  style={{ background: "#FDCE06", color: "#1F1F20", border: "none", padding: "9px 20px",
-                           borderRadius: "8px", fontWeight: 700, fontSize: "13px", cursor: "pointer" }}>
-                  Have a look around
-                </button>
-              ) : (
-                <button onClick={onClose}
-                  style={{ background: "transparent", color: "#9CA3AF", border: "1px solid #333",
-                           padding: "8px 16px", borderRadius: "8px", fontSize: "13px", cursor: "pointer" }}>
-                  Skip
-                </button>
-              )}
-            </div>
-          </div>
+          {done ? (
+            <button onClick={onClose}
+              className="bg-[#FDCE06] text-[#1A1A1B] font-[Inter] font-bold text-[15px]
+                         px-5 py-2.5 rounded-lg whitespace-nowrap">
+              Have a look around
+            </button>
+          ) : (
+            <button onClick={() => setI((n) => Math.min(n + 1, LINES.length - 1))}
+              className="text-[#6B7280] hover:text-[#E5E5E5] font-[Inter] text-[13px]
+                         whitespace-nowrap transition-colors">
+              Next
+            </button>
+          )}
         </div>
       </div>
     </div>
