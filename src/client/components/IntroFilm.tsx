@@ -362,8 +362,10 @@ const IntroFilm = ({ onClose }) => {
                 begin="0.8s" fill="freeze" calcMode="spline"
                 keySplines="0.4 0 0.2 1" />
             </circle>
-            <text x="200" y="120" textAnchor="middle" fill="#9CA3AF"
+            <text x="200" y="114" textAnchor="middle" fill="#9CA3AF"
               fontSize="13" fontFamily="Inter, sans-serif">3 months</text>
+            <text x="200" y="132" textAnchor="middle" fill="#6B7280"
+              fontSize="11.5" fontFamily="Inter, sans-serif">our minimum</text>
             <text x="460" y="120" textAnchor="middle" fill="#FDCE06"
               fontSize="13" fontFamily="Inter, sans-serif">12 months</text>
             <text x="320" y="210" textAnchor="middle" fill="#FDCE06"
