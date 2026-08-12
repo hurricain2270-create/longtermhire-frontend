@@ -14,7 +14,10 @@ import api from "./services/api";
 const money = (n) =>
   n === null || n === undefined || n === "" || isNaN(Number(n))
     ? "—"
-    : "$" + Number(n).toLocaleString("en-AU");
+    : "$" + Number(n).toLocaleString("en-AU", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
 
 const RateSheet = ({ open, onClose }) => {
   const [rows, setRows] = useState(null);
@@ -195,15 +198,17 @@ const RateSheet = ({ open, onClose }) => {
                               title={r.equipment_name}>
                               {r.equipment_name}
                             </td>
-                            <td className="py-2 text-[#9CA3AF] font-[Inter] text-[13px] text-right pr-3">
+                            <td className="py-2 text-[#9CA3AF] font-[Inter] text-[13px] text-right pr-3 tabular-nums">
                               {money(r.list_price)}
                             </td>
                             <td className={
                               "py-2 font-[Inter] text-[13px] font-semibold text-right pr-3 " +
                               (custom ? "rate-custom text-[#FDCE06]" : "text-[#E5E5E5]")
                             }>
-                              {money(theirs)}
-                              {custom ? " *" : ""}
+                              <span className="tabular-nums">
+                                <span className={custom ? "" : "invisible"}>*</span>
+                                {money(theirs)}
+                              </span>
                             </td>
                             <td className="py-2 text-[#9CA3AF] font-[Inter] text-[13px]">
                               {Number(r.compounding_discount) > 0
