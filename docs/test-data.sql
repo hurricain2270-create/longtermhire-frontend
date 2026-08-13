@@ -213,7 +213,17 @@ VALUES
  (@u12, @m_E002, @me, 2900, 1.5, NULL, NULL, NOW(), NOW()),
  (@u12, @m_E003, @me, 3500, 1.0, NULL, NULL, NOW(), NOW());
 
-UPDATE longtermhire_equipment_item SET availability = 0 WHERE equipment_id IN ('E001','E003','E005','T001','S001','M001','E002','T002','E006','V001','M002','T003','V002');
+-- Availability derived from the hires that actually landed, not a fixed list.
+-- The hire_status draw is random per run, so a hardcoded list drifts out of
+-- step and leaves machines flagged out with no hire behind them.
+-- Note: client_equipment.equipment_id holds the numeric row id, not the
+-- 'E001' style plant code.
+UPDATE longtermhire_equipment_item SET availability = 1 WHERE owner_partner_id IS NULL;
+
+UPDATE longtermhire_equipment_item e SET availability = 0
+ WHERE owner_partner_id IS NULL
+   AND EXISTS (SELECT 1 FROM longtermhire_client_equipment ce
+                WHERE ce.equipment_id = e.id AND ce.hire_status = 'active');
 
 SELECT 'done' AS status,
   (SELECT COUNT(*) FROM longtermhire_client WHERE company_name LIKE 'TEST %') AS clients,
@@ -228,6 +238,8 @@ SELECT 'done' AS status,
 --     WHERE c.company_name LIKE 'TEST %';
 --   DELETE FROM longtermhire_client WHERE company_name LIKE 'TEST %';
 --   DELETE FROM longtermhire_user WHERE email LIKE '%@example.invalid';
---   UPDATE longtermhire_equipment_item SET availability = 1
---     WHERE owner_partner_id IS NULL;
+--   UPDATE longtermhire_equipment_item e SET availability = 1
+--     WHERE owner_partner_id IS NULL
+--       AND NOT EXISTS (SELECT 1 FROM longtermhire_client_equipment ce
+--                        WHERE ce.equipment_id = e.id AND ce.hire_status = 'active');
 -- ---------------------------------------------------------------------------
