@@ -23,7 +23,7 @@ module.exports = function (app) {
 
       console.log("🔍 Client forgot password request for:", email);
 
-      // Check if user exists and has member/client role
+      // Check the user exists and is a client
       const user = await sdk.findOne("user", {
         email: email,
       });
@@ -36,8 +36,9 @@ module.exports = function (app) {
         });
       }
 
-      // Check if user has member role (clients use member role)
-      if (user.role_id !== "member") {
+      // Clients carry role_id 'client'. This previously tested 'member',
+      // which matches no row, so every reset silently failed.
+      if (user.role_id !== "client") {
         return res.status(403).json({
           error: true,
           message: "This email is not associated with a client account.",
@@ -169,8 +170,9 @@ module.exports = function (app) {
         });
       }
 
-      // Check if user has member role (clients use member role)
-      if (user.role_id !== "member") {
+      // Clients carry role_id 'client'. This previously tested 'member',
+      // which matches no row, so every reset silently failed.
+      if (user.role_id !== "client") {
         return res.status(400).json({
           error: true,
           message: "Invalid request",
@@ -271,8 +273,9 @@ module.exports = function (app) {
         });
       }
 
-      // Check if user has member role (clients use member role)
-      if (user.role_id !== "member") {
+      // Clients carry role_id 'client'. This previously tested 'member',
+      // which matches no row, so every reset silently failed.
+      if (user.role_id !== "client") {
         console.log("❌ User is not a client (role_id:", user.role_id, ")");
         return res.status(400).json({
           error: true,
@@ -317,7 +320,7 @@ module.exports = function (app) {
       const updatePasswordSQL = `
         UPDATE longtermhire_user
         SET password = ?, reset_token = NULL, reset_token_expiry = NULL, updated_at = ?
-        WHERE id = ? AND role_id = 'member'
+        WHERE id = ? AND role_id = 'client'
       `;
 
       await sdk.rawQuery(updatePasswordSQL, [
