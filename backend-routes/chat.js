@@ -883,7 +883,7 @@ module.exports = function (app) {
           INNER JOIN longtermhire_client cl ON u.id = cl.user_id
           LEFT JOIN longtermhire_chat_conversations conv ON
             (conv.user1_id = u.id OR conv.user2_id = u.id)
-          WHERE u.role_id = 'member' AND cl.id IS NOT NULL
+          WHERE u.role_id = 'client' AND cl.id IS NOT NULL
           ORDER BY cl.client_name ASC, u.email ASC
         `;
 
@@ -926,7 +926,7 @@ module.exports = function (app) {
         // Verify client exists
         const clientCheckSQL = `
           SELECT id FROM longtermhire_user
-          WHERE id = ? AND role_id = 'member'
+          WHERE id = ? AND role_id = 'client'
         `;
 
         const clientExists = await sdk.rawQuery(clientCheckSQL, [client_id]);
@@ -1082,13 +1082,13 @@ module.exports = function (app) {
         const statsSQL = `
           SELECT
             (SELECT COUNT(*) FROM longtermhire_company) as total_companies,
-            (SELECT COUNT(*) FROM longtermhire_user WHERE role_id = 'member') as total_clients,
+            (SELECT COUNT(*) FROM longtermhire_user WHERE role_id = 'client') as total_clients,
             (SELECT COUNT(*) FROM longtermhire_equipment_item) as total_equipment,
             (SELECT COUNT(*) FROM longtermhire_chat_messages m
              JOIN longtermhire_user u ON m.from_user_id = u.id
              WHERE m.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) 
              AND m.read_at IS NULL 
-             AND u.role_id = 'member') as recent_messages,
+             AND u.role_id = 'client') as recent_messages,
             (SELECT COUNT(*) FROM longtermhire_equipment_requests WHERE status = 'pending') as pending_requests,
             (SELECT COUNT(*) FROM longtermhire_client_login_logs WHERE login_time >= DATE_SUB(NOW(), INTERVAL 24 HOUR)) as logins_today,
             (SELECT COUNT(*) FROM longtermhire_client_login_logs WHERE login_time >= DATE_SUB(NOW(), INTERVAL 7 DAY)) as logins_this_week
@@ -1261,7 +1261,7 @@ module.exports = function (app) {
             u.email,
             u.created_at
           FROM longtermhire_user u
-          WHERE u.role_id = 'member'
+          WHERE u.role_id = 'client'
           ORDER BY u.email
         `;
 
@@ -1337,7 +1337,7 @@ module.exports = function (app) {
             u.email,
             u.created_at
           FROM longtermhire_user u
-          WHERE u.id = ? AND u.role_id = 'member'
+          WHERE u.id = ? AND u.role_id = 'client'
         `;
 
         const clients = await sdk.rawQuery(clientQuery, [clientId]);
