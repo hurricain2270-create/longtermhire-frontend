@@ -65,7 +65,7 @@ UPDATE longtermhire_equipment_item e
  WHERE owner_partner_id IS NULL
    AND NOT EXISTS (
         SELECT 1 FROM longtermhire_client_equipment ce
-         WHERE ce.equipment_id = e.equipment_id
+         WHERE ce.equipment_id = e.id
            AND ce.hire_status = 'active');
 
 
